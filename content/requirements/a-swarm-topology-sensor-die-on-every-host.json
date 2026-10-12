@@ -1,0 +1,37 @@
+{
+  "id": "a-swarm-topology-sensor-die-on-every-host",
+  "name": "a swarm topology sensor die on every host",
+  "kind": "requirement",
+  "raised-by": "claude-fable-5",
+  "asks": "One small die per host emits the same typed observation on a timer: hostname, running units and timers, listening ports, served domains, disk and memory headroom, and the tailnet peers it relays to. The observations land in one topology record that a session-start hook injects into every interactive session, so no future audit can conclude 'nothing is running' from one host's view. The same record is the natural Monitor feed for anomalies like the current red-cedar-gate disk exhaustion, which ran to 100% with ~139k silent service restarts because no sensor owned noticing it.",
+  "from-idea": "emsenn/idea/a-swarm-topology-sensor-die-on-every-host",
+  "met-when": [
+    {
+      "cell": "a-swarm-topology-sensor-die-on-every-host:conditions-stated",
+      "target": "held"
+    }
+  ],
+  "x-provenance": {
+    "recorded-by": "561-group capture session (claude session 017x7ZhpkZQAx5VZSv2Hz5Q9)",
+    "recorded-on": "2026-10-10",
+    "sources": [
+      {
+        "words": "One small die per host emits the same typed observation on a timer: hostname, running units and timers, listening ports, served domains, disk and memory headroom, and the tailnet peers it relays to. The observations land in one topology record that a session-start hook injects into every interactive session, so no future audit can conclude 'nothing is running' from one host's view. The same record is the natural Monitor feed for anomalies like the current red-cedar-gate disk exhaustion, which ran to 100% with ~139k silent service restarts because no sensor owned noticing it.",
+        "at": "2026-07-24",
+        "locator": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/2026/07/24/2026-07-24-executive-office-ideas.jsonl#a-swarm-topology-sensor-die-on-every-host"
+      }
+    ],
+    "carried-from-idea-record": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/2026/07/24/2026-07-24-executive-office-ideas.jsonl",
+    "pending-conditions": "Carried from the 2026-07 executive office's idea record under ideas-dispose-through-the-requirement-term; no met-when that exercises this idea's capability has been stated yet. The owning section states it.",
+    "linked-carriers": [],
+    "coverage": "lib/emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/emsenn-services-section/data/records/leader-utterances/coverage/executive-office-ideas-2026-07.md",
+    "idea-record-fields": {
+      "opens": "Should the sensor write into each settlement's own data pool with a colony-level projection, or into one leader-movement-team operations record?",
+      "prompted-by": "emsenn/idea/make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence"
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;X45WaxuFumGooj0YJBFVe4l7_Rj5cq5rZj8zYXWIdjg"
+    }
+  }
+}

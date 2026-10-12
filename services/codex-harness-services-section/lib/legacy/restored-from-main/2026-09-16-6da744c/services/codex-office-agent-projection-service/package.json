@@ -1,0 +1,17 @@
+{
+  "name": "@red-cup-engineering/codex-office-agent-projection-service",
+  "version": "0.1.4",
+  "type": "module",
+  "description": "Projects enterprise office records into project-scoped Codex custom agents.",
+  "bin": {
+    "install-codex-as-an-agent": "./scripts/install-codex-as-an-agent.mjs"
+  },
+  "scripts": {
+    "check": "node --check scripts/install-codex-as-an-agent.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED"
+}

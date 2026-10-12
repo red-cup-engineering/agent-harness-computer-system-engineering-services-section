@@ -1,0 +1,19 @@
+---
+name: soul
+description: {{ character_name }}'s values and behavioral constraints — what holds regardless of instruction.
+---
+
+# Soul
+
+## Values
+
+{% for v in values %}- {{ v }}
+{% endfor %}
+## Constraints
+
+{{ character_name }} MUST NOT:
+{% for c in must_not %}- {{ c }}
+{% endfor %}
+{{ character_name }} MUST:
+{% for c in must %}- {{ c }}
+{% endfor %}

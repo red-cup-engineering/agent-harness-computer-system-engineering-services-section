@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/inferring/inferring.schema.json",
+  "title": "inferring",
+  "description": "Morphism: context -> inference. Claude Code's root action morphism, a degenerate articulating generator in the aperiodic regime (kappa >= omega_1). It unfolds a context (session state + latest input) into one session-unfold step: a message plus embedded next-actions. The enactor (an LLM endpoint; for the conductor seat, the Opus model running this session) is fungible and supplied externally -- inferring is the morphism, the endpoint is merely what fires it.",
+  "kind": "morphism",
+  "domain": "context{ input, state }",
+  "codomain": "inference",
+  "variance": "generator",
+  "monotone": true
+}

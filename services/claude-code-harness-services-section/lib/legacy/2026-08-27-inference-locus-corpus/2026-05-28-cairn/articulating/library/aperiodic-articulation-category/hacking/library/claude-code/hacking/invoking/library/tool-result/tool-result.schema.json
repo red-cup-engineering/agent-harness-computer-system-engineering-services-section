@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/invoking/library/tool-result/tool-result.schema.json",
+  "title": "tool-result",
+  "description": "The codomain of invoking: the tool that ran, an ok/error outcome, and its output payload.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool", "outcome", "output"],
+  "properties": {
+    "tool": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "outcome": { "enum": ["ok", "error"] },
+    "output": {}
+  }
+}

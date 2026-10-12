@@ -1,0 +1,466 @@
+{
+  "node": "/home/emsenn/info",
+  "agencyRoot": "/home/emsenn/info/lib",
+  "settlementRoot": "/home/emsenn/info/lib/emsenn/services/561-group/services/561-group-services-section",
+  "projector": "/home/emsenn/info/lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/claude-code-harness-services-section/reading/2026-10-09-computer-services-section-main/services/agent-harness-computer-system-engineering-services-section/services/claude-code-harness-services-section/src/claude-harness-projection.mjs",
+  "counts": {
+    "agents": 3,
+    "events": 1,
+    "mcpServers": 0,
+    "standing": true,
+    "budget": 2,
+    "deny": 43,
+    "hostResource": true
+  },
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "20000",
+    "MAX_MCP_OUTPUT_TOKENS": "8000"
+  },
+  "denyCount": 43,
+  "obstructions": [
+    {
+      "office": "emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section#mathematical-library-steward",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section#obsmetrologia-consultant",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section#senior-scientist",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/esther-davis-services-section/services/binding-generations-services-section#binding-generations-owner",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/esther-davis-services-section/services/binding-generations-services-section#binding-generations-website",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/engineering-services-section#senior-engineer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/institutional-annual-contracts-services-section/services/institutional-annual-contract-service#institutional-contract-lead",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/indigenous-data-governance-consulting-services-section/services/indigenous-data-governance-consulting-service#consulting-engagement-lead",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team#trusted-assistant-to-the-leader",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors#executive-assistant-to-the-board-of-directors",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#anti-gremlin",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-engineering-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-executive-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-operations-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-technology-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section#senior-scientist",
+      "reason": "the session's own office does not project: Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/engineering-services-section#senior-engineer",
+      "reason": "the session's own office does not project: Cannot read properties of undefined (reading 'kind')"
+    }
+  ]
+}
+    2248  .claude/agents/chief-computation-theorist.md
+    1931  .claude/agents/chief-mathematician.md
+    1877  .claude/agents/chief-sociologist.md
+    9895  .claude/CLAUDE.md
+   50173  .claude/hooks/host-resource-hook.mjs
+   50173  .codex/hooks/host-resource-hook.mjs
+     304  .codex/hooks.json
+{
+  "kind": "claude-harness.check",
+  "node": "/home/emsenn/info",
+  "current": false,
+  "drift": [
+    {
+      "path": ".claude/agents/chief-computation-theorist.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-mathematician.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-sociologist.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/CLAUDE.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/hooks/host-resource-hook.mjs",
+      "reason": "absent"
+    },
+    {
+      "path": ".codex/hooks/host-resource-hook.mjs",
+      "reason": "absent"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "hooks differ"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "env BASH_MAX_OUTPUT_LENGTH is not 20000"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "env MAX_MCP_OUTPUT_TOKENS is not 8000"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "permissions.deny differs"
+    }
+  ],
+  "obstructions": [
+    {
+      "office": "emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section#mathematical-library-steward",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section#obsmetrologia-consultant",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section#senior-scientist",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/esther-davis-services-section/services/binding-generations-services-section#binding-generations-owner",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/esther-davis-services-section/services/binding-generations-services-section#binding-generations-website",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/engineering-services-section#senior-engineer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/institutional-annual-contracts-services-section/services/institutional-annual-contract-service#institutional-contract-lead",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/indigenous-data-governance-consulting-services-section/services/indigenous-data-governance-consulting-service#consulting-engagement-lead",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team#trusted-assistant-to-the-leader",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors#executive-assistant-to-the-board-of-directors",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#anti-gremlin",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-engineering-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-executive-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-operations-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-technology-officer",
+      "reason": "Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/science-services-section#senior-scientist",
+      "reason": "the session's own office does not project: Cannot read properties of undefined (reading 'kind')"
+    },
+    {
+      "office": "emsenn/services/561-group/services/engineering-services-section#senior-engineer",
+      "reason": "the session's own office does not project: Cannot read properties of undefined (reading 'kind')"
+    }
+  ]
+}

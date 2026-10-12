@@ -1,0 +1,32 @@
+{
+  "id": "codex-node",
+  "name": "Codex Node",
+  "kind": "node",
+  "entity": "561-group-llc",
+  "faces": "The Group's other micro-enterprises, whose office work and bounded assignments it executes as Codex sessions on the host machine: it holds its own queue in its own root, starts queued tasks as its slots free, and integrates their branches. It sells them Codex execution capacity.",
+  "offices": [
+    "codex-node-lead"
+  ],
+  "host": "bare-cedar-fog",
+  "takes": {
+    "words": [
+      "codex-task",
+      "codex task",
+      "codex harness",
+      "codex exec",
+      "codex session"
+    ]
+  },
+  "assesses": {
+    "work": "assessing-codex-node-demand",
+    "skill": "assess-taken-demand"
+  },
+  "turns": [
+    "codex-node-turn"
+  ],
+  "x-provenance": {
+    "recorded-by": "claude-opus-5-5",
+    "recorded-on": "2026-09-30",
+    "source": "561-group-services-section/content/text/documents/articles/notes/2026/09/30/2026-09-30-note-on-micro-enterprises-holding-their-own-work.md"
+  }
+}

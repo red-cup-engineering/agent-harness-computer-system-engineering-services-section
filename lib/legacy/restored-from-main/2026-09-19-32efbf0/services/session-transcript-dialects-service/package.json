@@ -1,0 +1,23 @@
+{
+  "name": "@red-cup-engineering/session-transcript-dialects",
+  "version": "0.4.0",
+  "type": "module",
+  "description": "Provider-neutral seam for reading inference-session transcripts (Codex, Claude, ...): file enumeration, row classification, token-usage and tool-call extraction, and the privacy floor, factored out of one provider's readers so a second provider never re-derives them.",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "exports": {
+    "./codex-exec-trace": "./src/codex-exec-trace.mjs",
+    "./codex-tool-accounting": "./src/codex-tool-accounting.mjs",
+    "./src/shared.mjs": "./src/shared.mjs",
+    "./src/codex-dialect.mjs": "./src/codex-dialect.mjs",
+    "./src/claude-dialect.mjs": "./src/claude-dialect.mjs",
+    "./shared": "./src/shared.mjs",
+    "./claude-dialect": "./src/claude-dialect.mjs",
+    "./codex-dialect": "./src/codex-dialect.mjs",
+    "./scripts/project-codex-exec-trace.mjs": "./scripts/project-codex-exec-trace.mjs"
+  },
+  "bin": {
+    "project-codex-exec-trace": "scripts/project-codex-exec-trace.mjs"
+  }
+}

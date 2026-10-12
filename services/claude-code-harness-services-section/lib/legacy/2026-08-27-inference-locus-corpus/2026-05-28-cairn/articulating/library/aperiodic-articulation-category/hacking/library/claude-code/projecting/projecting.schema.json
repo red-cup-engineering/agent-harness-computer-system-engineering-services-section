@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/projecting/projecting.schema.json",
+  "title": "projecting",
+  "description": "Morphism: claims (a settled frontier) -> packet; inverse parse (finite, claims) / extract (TDP: claims+schemas+scripts). Default packet kind is the semantic-hypertext-packet (HTML) per spotcomp/SHP.md -- class names the producing morphism, data-* carry EAVT carrier coordinates, content carries the value; deterministic and monotone; RFC-7992 inhabitant profile. SHP IS a TRC/TDP over the wire (RESEARCH-LEDGER: TRC and TDP are one object read two ways). Two inhabitants: FINITE (data-only, the TRC/memory reading) and SCOTT-CONTINUOUS (also embeds schema+script as non-executable script types -- the TDP/program reading -- runnable by a capable recipient, inert to inspection per SHP.md §6). HTML is the inter-LLM wire (Markdown is human-only).",
+  "kind": "morphism",
+  "domain": "claims[] (settled frontier) | packet-html",
+  "codomain": "packet",
+  "variance": "restriction",
+  "monotone": true
+}

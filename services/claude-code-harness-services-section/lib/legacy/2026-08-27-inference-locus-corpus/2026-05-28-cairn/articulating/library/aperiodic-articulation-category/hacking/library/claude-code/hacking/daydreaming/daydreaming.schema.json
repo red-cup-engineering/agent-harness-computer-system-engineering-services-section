@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/daydreaming/daydreaming.schema.json",
+  "title": "daydreaming",
+  "description": "Morphism: context -> dream-utterance. A conductor act (exposed via the conductor MCP) that forces a daydream -- a consolidation from current context off-session. Produces a well-formed utterance to drive the swarm's consolidating. HACKING: conductor-act name admitted.",
+  "kind": "morphism",
+  "domain": "context{ focus }",
+  "codomain": "dream-utterance",
+  "variance": "restriction",
+  "monotone": true
+}

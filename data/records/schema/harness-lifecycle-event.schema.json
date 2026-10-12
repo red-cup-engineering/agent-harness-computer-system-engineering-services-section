@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bare-cedar-fog:harness-lifecycle-event:v1",
+  "title": "Bare Cedar Fog agent harness lifecycle event",
+  "$comment": "actor: validated nonempty string, not an enum. Admission is application-layer (see ADMITTED_HARNESS_ACTORS); urn:ame:* is provisional.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "name"],
+      "properties": {
+        "type": { "const": "bare-cedar-fog.harness/skill-selected" },
+        "version": { "const": 1 },
+        "actor": { "type": "string", "minLength": 1 },
+        "turn": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "receiverActor", "capability", "channel", "workClass", "allocationBasisPoints", "inputRefs", "route", "receiverCondition"],
+      "properties": {
+        "type": { "const": "bare-cedar-fog.harness/coordination-commissioned" },
+        "version": { "const": 1 }, "actor": { "type": "string", "minLength": 1 }, "turn": { "type": "string", "minLength": 1 },
+        "receiverActor": { "type": "string", "minLength": 1 }, "capability": { "type": "string", "minLength": 1 }, "channel": { "type": "string", "minLength": 1 }, "workClass": { "type": "string", "minLength": 1 },
+        "allocationBasisPoints": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "inputRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "route": { "type": "string", "minLength": 1 }, "receiverCondition": { "type": "string", "minLength": 1 }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "coordination"],
+      "properties": { "type": { "const": "bare-cedar-fog.harness/coordination-acknowledged" }, "version": { "const": 1 }, "actor": { "type": "string", "minLength": 1 }, "turn": { "type": "string", "minLength": 1 }, "coordination": { "type": "string", "minLength": 1 } }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "coordination", "resultRefs"],
+      "properties": { "type": { "const": "bare-cedar-fog.harness/coordination-completed" }, "version": { "const": 1 }, "actor": { "type": "string", "minLength": 1 }, "turn": { "type": "string", "minLength": 1 }, "coordination": { "type": "string", "minLength": 1 }, "resultRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } } }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "coordination", "refusal"],
+      "properties": { "type": { "const": "bare-cedar-fog.harness/coordination-refused" }, "version": { "const": 1 }, "actor": { "type": "string", "minLength": 1 }, "turn": { "type": "string", "minLength": 1 }, "coordination": { "type": "string", "minLength": 1 }, "refusal": { "type": "string", "minLength": 1 } }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "name", "task"],
+      "properties": {
+        "type": { "const": "bare-cedar-fog.harness/provider-commissioned" },
+        "version": { "const": 1 },
+        "actor": { "type": "string", "minLength": 1 },
+        "turn": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "task": { "type": "string", "minLength": 1 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "version", "actor", "turn", "provider", "model", "outcome", "latencySeconds", "price", "exchangeId"],
+      "$comment": "price and usage are structurally required-when-present only: assertHarnessLifecycleEvent checks top-level string/const/enum rules and does not deep-validate nested object shape. price.amount/denomination follow the exact-fraction and {kind,asset,unit} shapes used by @red-cup-engineering/capability-pricing-service; a free-tier row records amount {numerator:\"0\",denominator:\"1\"}.",
+      "properties": {
+        "type": { "const": "bare-cedar-fog.harness/inference-purchased" },
+        "version": { "const": 1 },
+        "actor": { "type": "string", "minLength": 1 },
+        "turn": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "outcome": { "type": "string", "enum": ["completion", "refusal"] },
+        "latencySeconds": { "type": "number", "minimum": 0 },
+        "exchangeId": { "type": "string", "minLength": 1 },
+        "price": {
+          "type": "object",
+          "required": ["denomination", "amount"],
+          "additionalProperties": false,
+          "properties": {
+            "denomination": {
+              "type": "object",
+              "required": ["kind", "asset", "unit"],
+              "additionalProperties": false,
+              "properties": {
+                "kind": { "type": "string", "minLength": 1 },
+                "asset": { "type": "string", "minLength": 1 },
+                "unit": { "type": "string", "minLength": 1 }
+              }
+            },
+            "amount": {
+              "type": "object",
+              "required": ["numerator", "denominator"],
+              "additionalProperties": false,
+              "properties": {
+                "numerator": { "type": "string", "pattern": "^-?[0-9]+$" },
+                "denominator": { "type": "string", "pattern": "^[1-9][0-9]*$" }
+              }
+            }
+          }
+        },
+        "usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "input": {
+              "type": "object",
+              "required": ["quantity", "denomination"],
+              "additionalProperties": false,
+              "properties": {
+                "quantity": { "type": "integer", "minimum": 0 },
+                "denomination": { "type": "string", "minLength": 1 }
+              }
+            },
+            "output": {
+              "type": "object",
+              "required": ["quantity", "denomination"],
+              "additionalProperties": false,
+              "properties": {
+                "quantity": { "type": "integer", "minimum": 0 },
+                "denomination": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

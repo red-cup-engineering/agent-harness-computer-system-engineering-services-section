@@ -1,0 +1,68 @@
+{
+  "name": "@red-cup-engineering/claude-code-hook-handlers-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The Claude Code lifecycle hook handlers for one machine: each is one single-effect script exporting a pure operation over a typed AgentLifecycleEvent, run under agent-lifecycle-hook-service's stdio adapter. No handler parses stdin or argv, emits a wire shape, or names a host, an actor, or a filesystem location: every machine location is derived from the machine's own AgentHarnessPolicy, found through the AGENT_HARNESS_POLICY environment variable.",
+  "exports": {
+    "./admit-claude-session": "./scripts/admit-claude-session.mjs",
+    "./check-architecture-gate-hook": "./scripts/check-architecture-gate-hook.mjs",
+    "./check-disk-io-coordination-hook": "./scripts/check-disk-io-coordination-hook.mjs",
+    "./check-git-scale-safety-hook": "./scripts/check-git-scale-safety-hook.mjs",
+    "./check-jsnode-discovery-hook": "./scripts/check-jsnode-discovery-hook.mjs",
+    "./check-markdown-carrier-tooling-hook": "./scripts/check-markdown-carrier-tooling-hook.mjs",
+    "./check-settled-app-purpose-hook": "./scripts/check-settled-app-purpose-hook.mjs",
+    "./check-substrate-import-hook": "./scripts/check-substrate-import-hook.mjs",
+    "./check-workflow-opt-in-hook": "./scripts/check-workflow-opt-in-hook.mjs",
+    "./emit-binding-policies-hook": "./scripts/emit-binding-policies-hook.mjs",
+    "./emit-claude-per-turn-duty": "./scripts/emit-claude-per-turn-duty.mjs",
+    "./observe-claude-lifecycle": "./scripts/observe-claude-lifecycle.mjs",
+    "./machine-parameters": "./scripts/machine-parameters.mjs",
+    "./session-transcript": "./scripts/session-transcript.mjs",
+    "./shell-command": "./src/shell-command.mjs"
+  },
+  "bin": {
+    "admit-claude-session": "./scripts/admit-claude-session.mjs",
+    "check-architecture-gate-hook": "./scripts/check-architecture-gate-hook.mjs",
+    "check-disk-io-coordination-hook": "./scripts/check-disk-io-coordination-hook.mjs",
+    "check-git-scale-safety-hook": "./scripts/check-git-scale-safety-hook.mjs",
+    "check-jsnode-discovery-hook": "./scripts/check-jsnode-discovery-hook.mjs",
+    "check-markdown-carrier-tooling-hook": "./scripts/check-markdown-carrier-tooling-hook.mjs",
+    "check-settled-app-purpose-hook": "./scripts/check-settled-app-purpose-hook.mjs",
+    "check-substrate-import-hook": "./scripts/check-substrate-import-hook.mjs",
+    "check-workflow-opt-in-hook": "./scripts/check-workflow-opt-in-hook.mjs",
+    "emit-binding-policies-hook": "./scripts/emit-binding-policies-hook.mjs",
+    "emit-claude-per-turn-duty": "./scripts/emit-claude-per-turn-duty.mjs",
+    "observe-claude-lifecycle": "./scripts/observe-claude-lifecycle.mjs"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "package.json"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@red-cup-engineering/agent-harness-projection-service": "0.2.0",
+    "@red-cup-engineering/agent-lifecycle-hook-service": "0.1.0",
+    "@red-cup-engineering/agent-work-computer-system-engineering-services-section": "0.18.0",
+    "@red-cup-engineering/audit-node-builtin-imports-service": "0.5.0",
+    "@red-cup-engineering/execute-javascript-node-command-service": "0.2.2",
+    "@red-cup-engineering/file-services": "0.4.0",
+    "@red-cup-engineering/filepath-services-section": "0.1.0",
+    "@red-cup-engineering/harness-lifecycle-journal-service": "0.3.1",
+    "@red-cup-engineering/javascript-node-services-section": "0.3.0",
+    "@red-cup-engineering/relation-model-notation-json-codec": "0.2.1",
+    "@red-cup-engineering/remove-path-service": "0.1.0",
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.7",
+    "@red-cup-engineering/semantic-record-journal-service": "0.5.0",
+    "@red-cup-engineering/stat-path-service": "0.1.0",
+    "@red-cup-engineering/witness-journal-log-service": "0.3.0"
+  },
+  "scripts": {
+    "check": "for f in src/*.mjs scripts/*.mjs; do node --check \"$f\" || exit 1; done",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/prompting.schema.json",
+  "title": "prompting",
+  "description": "Morphism: utterance -> user-prompt. The human-enactor sibling of inferring: a restriction of articulating to the case where a human supplies the utterance. Aperiodic regime. Produces a user-prompt cell carrying the user token and the prompt claim.",
+  "kind": "morphism",
+  "domain": "#schema/utterance",
+  "codomain": "user-prompt",
+  "variance": "restriction",
+  "monotone": true
+}

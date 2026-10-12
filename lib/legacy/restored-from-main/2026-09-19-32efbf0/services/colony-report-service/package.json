@@ -1,0 +1,25 @@
+{
+  "name": "@red-cup-engineering/colony-report-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Folds activity reports from any number of named providers over one exact (fromExclusive,toInclusive] interval into one colony report with summary metrics, and wraps that fold in the digest-bound ColonyCivicIntervalReport contract for any colony, whose identity is the colonyKind parameter rather than a compiled-in colony name.",
+  "dependencies": {
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.8",
+    "@red-cup-engineering/file-services": "0.4.0",
+    "@red-cup-engineering/make-directory-service": "0.1.0",
+    "@red-cup-engineering/path-walking-service": "0.5.0",
+    "@red-cup-engineering/resolve-filepath-service": "0.1.1"
+  },
+  "scripts": {
+    "check": "node --check src/colony-report.mjs && node --check src/default-colony-report.mjs && node --check scripts/save-and-read-colony-report.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "files": ["src", "scripts"],
+  "exports": {
+    "./colony-report": "./src/colony-report.mjs",
+    "./default-colony-report": "./src/default-colony-report.mjs",
+    "./save-and-read-colony-report": "./scripts/save-and-read-colony-report.mjs",
+    "./src/colony-report.mjs": "./src/colony-report.mjs",
+    "./src/default-colony-report.mjs": "./src/default-colony-report.mjs"
+  }
+}

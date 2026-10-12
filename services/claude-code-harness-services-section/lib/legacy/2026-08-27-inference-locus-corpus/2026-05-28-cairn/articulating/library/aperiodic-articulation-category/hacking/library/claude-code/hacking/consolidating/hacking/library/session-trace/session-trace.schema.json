@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/consolidating/hacking/library/session-trace/session-trace.schema.json",
+  "title": "session-trace",
+  "description": "A transcript of a session: an ordered array of messages (role + content). The input the swarm consolidates into placed memory. HACKING: session-trace-as-object admitted.",
+  "kind": "object",
+  "type": "array",
+  "items": { "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/library/message/message.schema.json" }
+}

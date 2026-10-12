@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+
+const output = process.argv[process.argv.indexOf("-o") + 1];
+const prompt = readFileSync(0, "utf8");
+if (process.env.FAKE_CODEX_WRITE_PATH) writeFileSync(process.env.FAKE_CODEX_WRITE_PATH, `${process.cwd()}\n${prompt.match(/^Responsibility: (.+)$/mu)?.[1] ?? "task"}\n`);
+if (process.env.FAKE_CODEX_DELAY_MS) await new Promise((resolve) => setTimeout(resolve, Number(process.env.FAKE_CODEX_DELAY_MS)));
+// FAKE_CODEX_CAPACITY_ONCE names a marker file: the first session reports the model at capacity,
+// and a later one must resume the thread it started.
+const marker = process.env.FAKE_CODEX_CAPACITY_ONCE;
+if (marker && !existsSync(marker)) {
+  writeFileSync(marker, "");
+  process.stdout.write('{"type":"thread.started","thread_id":"thread-from-artifacts"}\n');
+  process.stdout.write('{"type":"error","message":"Selected model is at capacity. Please try a different model."}\n');
+  process.stdout.write('{"type":"turn.failed","error":{"message":"Selected model is at capacity. Please try a different model."}}\n');
+  process.exit(1);
+}
+if (marker && !(process.argv.includes("resume") && process.argv.includes("thread-from-artifacts"))) process.exit(2);
+process.stdout.write('{"type":"thread.started","thread_id":"thread-from-artifacts"}\n');
+process.stdout.write('not json\n');
+process.stdout.write('{"type":"turn.completed","usage":{"input_tokens":12,"output_tokens":7}}\n');
+writeFileSync(output, "durable final message\n");

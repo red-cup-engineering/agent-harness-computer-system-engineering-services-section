@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-lifecycle-event.schema.json",
+  "title": "AgentLifecycleEvent",
+  "description": "One lifecycle event an agent runtime delivers to a hook, decoded from the runtime's wire shape into one runtime-neutral record. The native wire input is retained verbatim for handlers that need a field the neutral record does not carry.",
+  "type": "object",
+  "required": ["kind", "version", "runtime", "event", "session", "native"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "agent-lifecycle-event" },
+    "version": { "const": 1 },
+    "runtime": { "enum": ["codex", "claude"] },
+    "event": { "enum": ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SubagentStart", "SubagentStop", "SessionEnd"] },
+    "session": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "turnId": { "type": "string", "minLength": 1 },
+        "transcriptPath": { "type": "string", "minLength": 1 },
+        "cwd": { "type": "string", "minLength": 1 },
+        "permissionMode": { "type": "string", "minLength": 1 }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "required": ["name", "input"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "useId": { "type": "string", "minLength": 1 },
+        "input": {},
+        "response": {}
+      }
+    },
+    "prompt": { "type": "string" },
+    "source": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "stopHookActive": { "type": "boolean" },
+    "native": { "type": "object" }
+  }
+}

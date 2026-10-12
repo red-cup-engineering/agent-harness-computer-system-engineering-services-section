@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/transfinite-dreaming/transfinite-dreaming.schema.json",
+  "title": "transfinite-dreaming",
+  "description": "Morphism: memory -> new-predicate claims. The TRANSFINITE-BOUNDED dream (omega < kappa < omega_1): derives NEW PREDICATES (new dimensions of relation) from co-occurrence -- subjects sharing a (predicate,value) become related by a derived co-<predicate>. Grows the relational vocabulary (so closure is transfinite), but bounded below omega_1 and INTERNAL (the new predicates are derived, not channeled -- which keeps it below the aperiodic regime). HACKING: name + regime placement admitted.",
+  "kind": "morphism",
+  "domain": "memory claims[]",
+  "codomain": "new-predicate claims[]",
+  "variance": "generator",
+  "monotone": true
+}

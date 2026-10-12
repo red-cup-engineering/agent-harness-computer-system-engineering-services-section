@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/library/utterance/utterance.schema.json",
+  "title": "utterance",
+  "description": "The ordered pair [token, claim] — the Chu-shape carrier that articulating consumes. The utterance is the carrier, not the act; token precedes claim by declared ordering.",
+  "kind": "object",
+  "type": "array",
+  "prefixItems": [
+    { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }
+  ],
+  "items": false,
+  "minItems": 2,
+  "maxItems": 2
+}

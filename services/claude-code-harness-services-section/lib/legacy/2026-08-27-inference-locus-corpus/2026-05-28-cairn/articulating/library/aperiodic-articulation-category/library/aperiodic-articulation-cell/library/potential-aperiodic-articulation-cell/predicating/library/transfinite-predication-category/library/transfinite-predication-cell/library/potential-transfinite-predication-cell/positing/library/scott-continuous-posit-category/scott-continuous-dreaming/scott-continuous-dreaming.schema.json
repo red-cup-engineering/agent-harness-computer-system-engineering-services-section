@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/scott-continuous-dreaming/scott-continuous-dreaming.schema.json",
+  "title": "scott-continuous-dreaming",
+  "description": "Morphism: memory -> evidence-consolidated claims. The SCOTT-CONTINUOUS dream (kappa = omega): for each cell (e,a), joinK (knowledge-order join) of ALL observed FOUR-values across the trajectory -- the directed supremum of accumulated evidence, converging at omega (positing regime). Internal, no network. Consolidates EVIDENCE (vs finite dreaming which recombines structure); disagreeing evidence joins to top. HACKING: name + regime placement admitted.",
+  "kind": "morphism",
+  "domain": "memory claims[]",
+  "codomain": "consolidated claims[]",
+  "variance": "generator",
+  "monotone": true
+}

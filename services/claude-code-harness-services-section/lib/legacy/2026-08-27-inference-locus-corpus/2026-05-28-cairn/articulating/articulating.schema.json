@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/articulating.schema.json",
+  "title": "articulating",
+  "description": "Morphism: utterance -> potential-aperiodic-articulation-cell. The topmost generator; generates aperiodic-articulation-category and forces FOUR (token x claim = 2 x 2 = 4 phases). Output is the cell [utterance, [void, void]]: neither axis yet articulated, the bottom (potential) phase of FOUR, which is exactly the room downstream morphisms need to work.",
+  "kind": "morphism",
+  "domain": "#schema/utterance",
+  "codomain": "potential-aperiodic-articulation-cell",
+  "variance": "generator",
+  "monotone": true
+}

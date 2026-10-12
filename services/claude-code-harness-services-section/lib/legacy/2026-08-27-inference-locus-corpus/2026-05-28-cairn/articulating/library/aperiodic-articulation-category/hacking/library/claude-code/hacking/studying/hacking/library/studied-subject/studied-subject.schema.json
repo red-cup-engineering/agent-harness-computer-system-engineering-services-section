@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/studying/hacking/library/studied-subject/studied-subject.schema.json",
+  "title": "studied-subject",
+  "description": "The codomain of studying: a subject after its claim-lattice has been settled. consensus = knowledge-order meet of observers; truth = the resolved FOUR value (top if still contradictory after the budget); confidence = |mean truth-lean|; dissent = a STUB dispersion measure (the real measure is the deferred sheaf Laplacian / H^1, not this); accepted = confidence within threshold. Only an accepted studied-subject is fit to project into a spacesuit as memory.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["subject", "consensus", "truth", "confidence", "dissent", "accepted", "rounds", "claimCount"],
+  "properties": {
+    "subject": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "consensus": { "enum": ["bottom", "true", "false", "top"] },
+    "truth": { "enum": ["bottom", "true", "false", "top"] },
+    "confidence": { "type": "number", "minimum": 0 },
+    "dissent": { "description": "STUB dispersion; the real measure is the deferred sheaf Laplacian", "type": "number", "minimum": 0 },
+    "accepted": { "type": "boolean" },
+    "rounds": { "type": "integer", "minimum": 0 },
+    "claimCount": { "type": "integer", "minimum": 0 }
+  }
+}

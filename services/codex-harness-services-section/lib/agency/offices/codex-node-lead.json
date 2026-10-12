@@ -1,0 +1,26 @@
+{
+  "id": "codex-node-lead",
+  "name": "Codex Node lead",
+  "kind": "office",
+  "normative-structure": "The Codex Node lead answers for the demand Codex Node takes up from the work board: it assesses each taken demand in the terms of the faces Codex Node serves, turns what is Codex Node's work into work its own offices do, posts what another micro-enterprise does back on the board, and gives back what is not Codex Node's work with its reasons. It staffs nothing outside Codex Node, does not hand a thread to a chosen enterprise, and does not accept its own results.",
+  "deontic-profile": {
+    "assessing-codex-node-demand": "duty",
+    "accepting-its-own-work": "deontic-immunity"
+  },
+  "bears-duty": [
+    "emsenn/duty/assessing-codex-node-demand"
+  ],
+  "provides-skill": [
+    "assess-taken-demand"
+  ],
+  "jurisdiction": "codex-node",
+  "founded": "2026-09-30",
+  "theory-basis": [
+    "Rendanheyi sanquan: a micro-enterprise's decision right (what it takes) and personnel right (who does it) are its own; its lead staffs only from its own offices"
+  ],
+  "x-provenance": {
+    "recorded-by": "claude-opus-5-5",
+    "recorded-on": "2026-09-30",
+    "source": "561-group-services-section/content/text/documents/articles/notes/2026/09/30/2026-09-30-note-on-micro-enterprises-holding-their-own-work.md"
+  }
+}

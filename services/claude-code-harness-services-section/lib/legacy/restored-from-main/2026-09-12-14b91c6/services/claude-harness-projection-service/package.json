@@ -1,0 +1,32 @@
+{
+  "name": "@red-cup-engineering/claude-harness-projection-service",
+  "version": "0.12.6",
+  "type": "module",
+  "description": "Projects a machine-specific Claude actor's office-roster policy into one project-local .claude/agents/ runtime substrate, by calling the settlement's own installing-claude-as-an-agent instrument once per colleague office. Every root and colleague seat is verified by the principal-office seating law before projection: only a seat whose recognition and induction both settle to 't' (dignitas, the double settlement) is projected.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./hooks": "./src/hooks.mjs",
+    "./permissions": "./src/permissions.mjs",
+    "./projector": "./src/projector.mjs"
+  },
+  "bin": {
+    "project-claude-harness": "./scripts/project-claude-harness.mjs"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "!scripts/seat-office-with-default-character.mjs",
+    "package.json"
+  ],
+  "dependencies": {
+    "@red-cup-engineering/agent-root-instructions-projection-service": "0.7.12",
+    "@red-cup-engineering/principal-office-seating-service": "0.1.4",
+    "@red-cup-engineering/atomic-json-file-service": "0.1.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

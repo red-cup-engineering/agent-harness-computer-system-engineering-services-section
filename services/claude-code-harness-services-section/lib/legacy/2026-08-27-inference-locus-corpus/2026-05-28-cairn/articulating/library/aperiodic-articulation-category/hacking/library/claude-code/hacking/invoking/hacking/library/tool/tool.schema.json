@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/invoking/hacking/library/tool/tool.schema.json",
+  "title": "tool",
+  "description": "A tool the conductor may invoke: a name token and a description claim. HACKING: tool-as-object admitted pending categorical confirmation.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "description"],
+  "properties": {
+    "name": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "description": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }
+  }
+}

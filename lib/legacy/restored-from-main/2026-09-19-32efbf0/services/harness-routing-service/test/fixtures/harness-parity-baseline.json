@@ -1,0 +1,55 @@
+{
+  "type": "HarnessParityBaseline",
+  "demand": "urn:demand:fixture-harness-parity",
+  "objectKindNamespace": "fixture-harness",
+  "capabilities": [
+    {
+      "id": "first-capability",
+      "contract": "urn:contract:first-capability",
+      "parityAssay": "urn:assay:first-capability",
+      "currentSources": ["preserved/first.mjs"],
+      "actuator": {
+        "actor": "urn:ame:first-capability-actuator",
+        "operation": "observe_first_capability",
+        "inputType": "FirstCapabilityRequest",
+        "outputType": "FirstCapabilityPosition",
+        "offer": "urn:offer:first-capability",
+        "implementationState": "declared"
+      },
+      "evidence": {}
+    },
+    {
+      "id": "second-capability",
+      "contract": "urn:contract:second-capability",
+      "parityAssay": "urn:assay:second-capability",
+      "currentSources": ["preserved/inner/second.mjs"],
+      "actuator": {
+        "actor": "urn:ame:second-capability-actuator",
+        "operation": "observe_second_capability",
+        "inputType": "SecondCapabilityRequest",
+        "outputType": "SecondCapabilityPosition",
+        "offer": "urn:offer:second-capability",
+        "implementationState": "declared"
+      },
+      "evidence": {}
+    }
+  ],
+  "sourceSets": [
+    { "root": "preserved", "treeIdentity": "ni:///sha-256;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" }
+  ],
+  "backupCoverageRules": [
+    { "prefix": "preserved/first", "capabilities": ["first-capability"] },
+    { "prefix": "preserved/inner", "capabilities": ["second-capability"] }
+  ],
+  "actuatorDefaults": { "consideration": { "unknownIsZero": false } },
+  "closurePolicy": {
+    "requiredImplementationState": "receiver-accepted",
+    "requiredEvidence": ["providerReceipt", "exactCandidateDigest", "completionObservationReceipt", "customerOutcomeReceipt"]
+  },
+  "deprecationPolicy": {
+    "authority": "urn:leader:fixture-customer",
+    "requiredCapabilityState": "receiver-accepted",
+    "requiredEvidence": ["providerReceipt", "exactCandidateDigest", "completionObservationReceipt", "customerOutcomeReceipt"],
+    "removalRequiresExplicitLeaderAct": true
+  }
+}

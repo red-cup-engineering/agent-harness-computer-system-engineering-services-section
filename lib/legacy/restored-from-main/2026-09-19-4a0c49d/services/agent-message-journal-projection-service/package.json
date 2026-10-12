@@ -1,0 +1,34 @@
+{
+  "name": "@red-cup-engineering/agent-message-journal-projection-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Admits and folds explicit agent-channel messages and derives Knowing lesson carriers without acquiring journal state.",
+  "exports": {
+    ".": "./src/message-events.mjs",
+    "./message-snapshot": "./src/message-snapshot.mjs",
+    "./message-learning": "./src/message-learning.mjs"
+  },
+  "bin": {
+    "admit-channel-message": "./scripts/admit-channel-message.mjs",
+    "project-channel-messages": "./scripts/project-channel-messages.mjs",
+    "derive-message-learning": "./scripts/derive-message-learning.mjs"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "scripts": {
+    "check": "node --check src/*.mjs && node --check scripts/*.mjs",
+    "test": "node --test"
+  },
+  "peerDependencies": {
+    "@red-cup-engineering/agentic-knowledge-engine": "0.1.3"
+  },
+  "devDependencies": {
+    "@red-cup-engineering/agentic-knowledge-engine": "0.1.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": false
+}

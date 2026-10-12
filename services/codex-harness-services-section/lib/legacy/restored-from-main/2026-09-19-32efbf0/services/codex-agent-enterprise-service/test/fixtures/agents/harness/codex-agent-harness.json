@@ -1,0 +1,562 @@
+{
+  "type": "TestMachineCodexAgentHarnessProjection",
+  "actor": "actor:WWOM5azg-fTrn1Id0YVbz5AhppbnFny_W5Xl-rKgSs4",
+  "actorRecord": {
+    "kind": "union.civilian-actor",
+    "id": "actor:WWOM5azg-fTrn1Id0YVbz5AhppbnFny_W5Xl-rKgSs4",
+    "character": "codex-interactive-session",
+    "colony": "test-machine",
+    "surface": "vscode-codex"
+  },
+  "runtime": {
+    "machine": "test-machine",
+    "surface": "Codex"
+  },
+  "operatingMode": {
+    "heading": "Emergency architectural standardization",
+    "body": "The task backlog is growing faster than this system discharges it. This is a broken environment made by less-skilled agents; act as an aggressive outside auditor and software engineer working directly with the user to effect the desired changes. Treat all code as subject to replacement under industry standards and public, open protocols. Reverse that rate: eliminate shared causes of duplicated work, fragile handoffs, competing semantic owners, and inference burn. Complete coherent replacement cuts through real consumers and delete the superseded mechanics. Do not create new roles, process records, task layers, wrappers, or partial fixes that add work without removing a shared cause. Emergency means focus and completion, not rushed guesses or bypassed safety, data, credential, or external-effect boundaries."
+  },
+  "seating": {
+    "default": "chief-executive-officer",
+    "current": "chief-executive-officer",
+    "promptRule": "Work in emergency architectural standardization mode.",
+    "selectionBoundary": "This operating mode directs the session; use the smallest useful capability and keep work tied to the user's stated outcome.",
+    "catalog": {
+      "chief-executive-officer": {
+        "office": "lib/emsenn/services/561-group/services/561-group-services-section/lib/agency/offices/chief-executive-officer.json",
+        "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/dignitas-codex-chief-executive-officer-session.json",
+        "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/dignitas-codex-chief-executive-officer-session-as-chief-executive-officer.json"
+      },
+      "executive-officer-to-the-leader": {
+        "office": "lib/emsenn/services/561-group/services/operations-services-section/services/enterprise-services-section/services/enterprise-systems-services-section/services/enterprise-administration-services-section/services/enterprise-leader-services-section/content/offices/executive-officer-to-the-leader.json",
+        "character": "lib/emsenn/services/561-group/services/operations-services-section/services/enterprise-services-section/services/enterprise-systems-services-section/services/enterprise-administration-services-section/services/enterprise-leader-services-section/content/characters/codex-interactive-session.json",
+        "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/services/test-machine-inference-services-section/services/test-machine-codex-services-section/agents/incumbencies/test-machine-codex-as-executive-officer-to-the-leader.json"
+      }
+    }
+  },
+  "x-sharedRootInstructionsLaw": "houseLaw, sharedSkillsRoot, and receiverBootstrapSkill remain shared with the Claude harness. Codex's session posture is authored here because it is in emergency architectural standardization mode and must not inherit a ceremonial executive prompt.",
+  "operationSources": [
+    "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-code-engineering-services-section/services/computer-code-development-services-section/services/version-control-services-section/services/git-services-section/services/observing-git-repository-service/scripts/observe-git-repository.mjs"
+  ],
+  "operationRoots": [],
+  "capabilityDiscovery": {
+    "routes": [
+      {
+        "demand": "science-theory-or-theory-application",
+        "server": "l_space",
+        "tools": [
+          "search_l_space",
+          "query_l_space_concept"
+        ]
+      },
+      {
+        "demand": "house-term-or-capability",
+        "server": "metroplat",
+        "tools": [
+          "term-intension"
+        ]
+      },
+      {
+        "demand": "javascript-package-or-dependent-detail",
+        "server": "jsnode-package-survey",
+        "tools": [
+          "jsnode_search",
+          "jsnode_package"
+        ]
+      },
+      {
+        "demand": "organizational-work-or-roadmap",
+        "server": "ops_561_group",
+        "tools": [
+          "agent-work-dispatch"
+        ]
+      },
+      {
+        "demand": "organizational-knowledge-or-prior-decisions",
+        "server": "info_markdown",
+        "tools": [
+          "search_markdown_vaults",
+          "search_markdown_lightcone"
+        ]
+      }
+    ]
+  },
+  "colleagueOffices": [
+    "lib/emsenn/services/561-group/services/operations-services-section/services/enterprise-services-section/services/enterprise-systems-services-section/services/enterprise-administration-services-section/services/enterprise-leader-services-section/content/offices/executive-officer-to-the-leader.json",
+    "lib/emsenn/services/561-group/services/561-group-services-section/lib/agency/offices/computer-code-development-services-lead.json",
+    "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/knowledge-services-section/services/corpus-management-team/content/offices/content-librarian.json",
+    "lib/emsenn/services/561-group/services/operations-services-section/services/enterprise-services-section/services/enterprise-systems-services-section/services/enterprise-administration-services-section/services/enterprise-leader-services-section/content/offices/internal-audit.json",
+    "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/offices/obsmetrologia-consultant.json",
+    "lib/emsenn/services/561-group/services/operations-services-section/services/enterprise-services-section/services/enterprise-systems-services-section/services/enterprise-administration-services-section/services/enterprise-leader-services-section/content/offices/product-quality-assurance.json",
+    "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-code-engineering-services-section/services/computer-code-development-services-section/content/offices/requirements-implementation-team.json",
+    "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-code-engineering-services-section/services/computer-code-development-services-section/content/offices/system-architect.json",
+    "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-enterprise-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-executive-office/services/561-group-executive-army-services-section/content/offices/white-army.json",
+    "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/knowledge-services-section/services/knowledge-organization-services-section/content/offices/knowledge-systems-architect.json",
+    "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/offices/mathematical-library-steward.json",
+    "lib/emsenn/services/561-group/services/science-services-section/lib/agency/offices/research-analyst.json",
+    "lib/emsenn/services/561-group/services/561-group-services-section/lib/agency/offices/program-manager.json",
+    "lib/emsenn/services/561-group/services/561-group-services-section/lib/agency/offices/economist.json"
+  ],
+  "harnessCustody": {
+    "policy": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/services/test-machine-inference-services-section/services/test-machine-codex-services-section/agents/harness/codex-agent-harness.json",
+    "projector": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/agent-harness-projection-service/apps/project-agent-harness.mjs",
+    "genericProjector": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/src/projector.mjs",
+    "skillSourceRoot": "package:skills",
+    "runtimeProjections": [
+      "AGENTS.md",
+      ".codex/config.toml",
+      ".agents/skills",
+      ".agents/rules",
+      ".codex/agents"
+    ]
+  },
+  "spawnContract": "When using a named or custom agent, spawn a bounded prompt-only child; never combine `agent_type` with a full-history fork.",
+  "delegationPolicy": {
+    "instructionPreamble": "Use the portable engineering method already loaded from global CODEX_HOME/AGENTS.md. Select only the relevant skills from .agents/skills for this assignment. Stay within the assigned scope; do not inherit the root executive office or extend the task.",
+    "default": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium"
+    },
+    "assignmentOverrides": {}
+  },
+  "agents": {
+    "enabled": true,
+    "selection": "live-signed-offers-through-route-decision",
+    "defaultForkTurns": "none",
+    "reuseStableEndpoints": true,
+    "maximumConcurrentThreadsPerSession": 2,
+    "interruptMessage": true
+  },
+  "features": {
+    "hooks": true,
+    "goals": true,
+    "apps": false,
+    "browser_use": false,
+    "remote_plugin": false,
+    "plugins": false,
+    "plugin_sharing": false,
+    "in_app_browser": false,
+    "computer_use": false,
+    "image_generation": false
+  },
+  "mcpServers": {
+    "jsnode-package-survey": {
+      "enabled": true,
+      "description": "Read-only JSNode workspace analysis of packages, consumers, built declarations, and normalized executable-behavior duplication.",
+      "url": "http://127.0.0.1:18808/mcp",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "jsnode_search",
+        "jsnode_package",
+        "jsnode_atlas",
+        "jsnode_domains",
+        "jsnode_analysis",
+        "jsnode_typeflow",
+        "jsnode_typeflow_type",
+        "jsnode_types",
+        "jsnode_functions"
+      ]
+    },
+    "info_markdown": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/services/test-machine-markdown-vault-services-section/src/mcp-server.mjs",
+      "cwd": ".",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "search_markdown_vaults",
+        "search_markdown_lightcone",
+        "read_markdown_carrier"
+      ],
+      "environment": {
+        "INFO_REPOSITORY_ROOT": "."
+      }
+    },
+    "codex_enterprise": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-agent-enterprise-service/apps/mcp-server.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-agent-enterprise-service",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "observe_codex_enterprise_position",
+        "observe_codex_usage_gauges",
+        "compile_codex_tool_evidence",
+        "read_codex_tool_evidence",
+        "observe_github_software_induction_readiness",
+        "github_software_induction",
+        "observe_codex_work_board",
+        "update_codex_work",
+        "open_codex_demand",
+        "record_codex_demand_obstruction",
+        "record_supplier_offer",
+        "record_supplier_exchange",
+        "record_supplier_consideration",
+        "record_customer_outcome",
+        "record_codex_resource",
+        "close_codex_demand"
+      ],
+      "environment": {
+        "METROPLAT_CODEX_SESSION_ROOT": "/mnt/c/Users/emsen/.codex/sessions"
+      }
+    },
+    "inference_dispatch": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/inference-dispatch-service/scripts/serve-inference-dispatch-mcp.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/inference-dispatch-service",
+      "envFile": "/workspace/root/.env",
+      "enabledTools": [
+        "classify_inference_demand",
+        "inspect_inference_resources",
+        "dispatch_inference",
+        "record_inference_outcome"
+      ],
+      "environment": {
+        "EXPECTED_RESOLUTION_PRICE_URL": "http://127.0.0.1:8800/",
+        "DIRECT_ENDPOINT_ACCOUNT_ENTITLEMENTS": "/workspace/home/.config/561-group/direct-endpoint-account-entitlements.json",
+        "SETTLEMENT_CAIP2": "eip155:5615610",
+        "SETTLEMENT_ACCOUNT": "eip155:5615610:0x3ffa8ce2459902f2d07cd046359c69dff7841f23",
+        "INFERENCE_WORK_CUSTOMER": "actor:WWOM5azg-fTrn1Id0YVbz5AhppbnFny_W5Xl-rKgSs4"
+      }
+    },
+    "metroplat": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/oauth-services-section/services/ops-561-group-mcp-gateway-service/scripts/serve-ops-mcp-stdio.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/oauth-services-section/services/ops-561-group-mcp-gateway-service",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "term-intension",
+        "schema-conformance",
+        "codex-session-status",
+        "codex-session-encounter",
+        "codex-session-admit",
+        "milestone",
+        "work-item",
+        "agent-work-dispatch",
+        "structured-work-intent-admit",
+        "sign-roadmap-admit",
+        "sign-roadmap",
+        "workspace-package-conformance",
+        "source-code-policy",
+        "source-code-policy-history",
+        "source-code-policy-obligations",
+        "source-code-policy-obligations-admit",
+        "source-code-monitor-aggregate",
+        "module-topology",
+        "module-topology-valuation",
+        "module-topology-valuation-history",
+        "module-cohesion",
+        "module-cohesion-history",
+        "workspace-import-audit",
+        "specification-workbench",
+        "metroplat-lsp",
+        "duties",
+        "catalog-verify",
+        "proof-health-monitor-aggregate",
+        "checkout-health",
+        "checkout-health-work-intent-admit",
+        "ready-duties-discharge",
+        "normalize-package-form"
+      ],
+      "activation": {
+        "resource": "infograph",
+        "requestedTools": "enabledTools"
+      },
+      "environment": {
+        "METROPLAT_DATA_ROOT": "/workspace/home/.local/state/561-group/metroplat-dev",
+        "METROPLAT_MCP_SUBJECT": "actor:WWOM5azg-fTrn1Id0YVbz5AhppbnFny_W5Xl-rKgSs4",
+        "METROPLAT_FIRM_POOL_ROOT": "/workspace/root/lib/emsenn/services/561-group/services/561-group-services-section",
+        "METROPLAT_CODEX_SESSION_ROOT": "/mnt/c/Users/emsen/.codex/sessions"
+      },
+      "envFile": "/workspace/home/.config/561-group/ops-mcp-client.env",
+      "x-provenance": "2026-09-11: repointed from a local metroplat dist MCP script (nonexistent; metroplat holds no capabilities and the devbox runs no second control-plane rail) to the same ops gateway stdio client Claude's .mcp.json uses, per working-discipline 'The devbox reaches ops.561.group only as a client through the ops gateway'."
+    },
+    "ops_561_group": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/oauth-services-section/services/ops-561-group-mcp-gateway-service/scripts/serve-ops-mcp-stdio.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/oauth-services-section/services/ops-561-group-mcp-gateway-service",
+      "envFile": "/workspace/home/.config/561-group/ops-mcp-client.env",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "agent-work-dispatch",
+        "milestone",
+        "work-item",
+        "structured-work-intent-admit",
+        "agency-work-allocation-admit",
+        "duties",
+        "work-discharge-admit",
+        "orientation",
+        "agent-strategy",
+        "term-intension",
+        "workspace-graph",
+        "ledger-readings",
+        "ledger-report",
+        "agent-session-token-usage"
+      ]
+    },
+    "codex_mape_office": {
+      "enabled": true,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-agent-enterprise-service/src/mape-office-mcp.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-agent-enterprise-service",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "observe_codex_mape_office",
+        "observe_codex_mape_position",
+        "select_context_warranted_duties"
+      ]
+    },
+    "notebooklm_workspace_market": {
+      "enabled": false,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/gemini-services-section/services/gemini-notebook-services-section/services/notebooklm-services-section/src/workspace-mcp.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/gemini-services-section/services/gemini-notebook-services-section/services/notebooklm-services-section",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 1800,
+      "enabledTools": [
+        "observe_notebooklm_market",
+        "authorize_notebooklm_resource_budget",
+        "quote_notebooklm_workspace",
+        "accept_notebooklm_workspace_offer",
+        "open_notebooklm_workspace",
+        "compile_notebooklm_corpus",
+        "add_notebooklm_corpus",
+        "ask_notebooklm_workspace",
+        "quote_notebooklm_studio",
+        "generate_notebooklm_studio",
+        "settle_notebooklm_studio",
+        "condense_notebooklm_artifact",
+        "propose_union_advisory_promotion",
+        "destroy_notebooklm_workspace"
+      ]
+    },
+    "notebooklm_knowledge_library": {
+      "enabled": false,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/gemini-services-section/services/gemini-notebook-services-section/services/notebooklm-services-section/src/notebook-library-mcp.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-inference-system-services-section/services/gemini-services-section/services/gemini-notebook-services-section/services/notebooklm-services-section",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 180,
+      "enabledTools": [
+        "observe_live_notebooklm_library",
+        "describe_live_notebooklm_notebook",
+        "observe_live_notebooklm_studio",
+        "get_live_notebooklm_studio_resource",
+        "read_live_notebooklm_studio_report",
+        "ask_live_notebooklm_notebook"
+      ]
+    },
+    "officer_repertoire_market": {
+      "enabled": false,
+      "script": "lib/emsenn/services/561-group/services/operations-services-section/services/agent-operations-services-section/src/serve-office-repertoire-mcp.mjs",
+      "cwd": "lib/emsenn/services/561-group/services/operations-services-section/services/agent-operations-services-section",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "shop_office_repertoire"
+      ]
+    },
+    "semioverse": {
+      "enabled": false,
+      "script": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/activitypub-services-section/src/network-mcp.mjs",
+      "arguments": [
+        "--actor",
+        "codex",
+        "--actor-urn",
+        "urn:ame:test-machine-codex"
+      ],
+      "cwd": "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-networking-engineering-services-section/services/activitypub-services-section",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 30,
+      "enabledTools": [
+        "observe_activitypub_codex_actor",
+        "observe_activitypub_codex_inbox",
+        "observe_activitypub_codex_outbox",
+        "observe_uftn_entry",
+        "observe_uftn_cloud_run_actuator",
+        "observe_uftn_activitypub_actor",
+        "exchange_with_union_actor"
+      ],
+      "environment": {
+        "UNION_ACTIVITYPUB_ORIGIN": "https://test-machine.561.group",
+        "GCLOUD_CLOUD_RUN_ACTUATOR_TOKEN_FILE": "/workspace/root/lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/data/runtime/config/red-cup-engineering/gcloud-cloud-run-actuator.token",
+        "GCLOUD_EXECUTABLE": "/workspace/home/.local/google-cloud-sdk/bin/gcloud"
+      }
+    },
+    "l_space": {
+      "enabled": true,
+      "command": "/workspace/home/.local/lib/nodejs/node-v24.19.0-linux-x64/bin/node",
+      "arguments": [
+        "/workspace/home/.local/share/561-group/releases/l-space-mcp/0f68990c8796f7440579a24c1c7e75f6761c308449c2bfa2f5ab48bf1bc02e9f/runtime/scripts/serve-mcp.mjs"
+      ],
+      "cwd": ".",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 180,
+      "enabledTools": [
+        "search_l_space",
+        "observe_l_space_release",
+        "traverse_l_space_room",
+        "query_l_space_concept",
+        "query_l_space_sparql_bgp",
+        "observe_l_space_fae_graph",
+        "query_l_space_fae_relations",
+        "query_l_space_fae_entity",
+        "observe_l_space_fae_diagnostics",
+        "drew_catalog",
+        "drew_relations",
+        "drew_entity",
+        "drew_project",
+        "drew_explain",
+        "drew_diagnostics"
+      ],
+      "environment": {
+        "L_SPACE_RELEASE_ROOT": "/workspace/home/.local/share/561-group/releases/l-space-mcp/0f68990c8796f7440579a24c1c7e75f6761c308449c2bfa2f5ab48bf1bc02e9f/vault-34092509081"
+      }
+    },
+    "planning_engine": {
+      "enabled": true,
+      "script": "dev/apps/simple-planning-engine.mjs",
+      "arguments": [
+        "mcp"
+      ],
+      "cwd": ".",
+      "startupTimeoutSeconds": 10,
+      "toolTimeoutSeconds": 60,
+      "enabledTools": [
+        "ontology",
+        "create_entity",
+        "read_entity",
+        "list_entities",
+        "update_entity",
+        "delete_entity",
+        "link",
+        "unlink",
+        "assert_cell",
+        "repair_cell",
+        "query_cells",
+        "history",
+        "attempt",
+        "attest",
+        "record_event",
+        "dispatch",
+        "revoke",
+        "fit",
+        "observe",
+        "review",
+        "adjust",
+        "govern",
+        "deontic_readings",
+        "self",
+        "describe_self",
+        "found",
+        "complete_phase",
+        "frontier",
+        "readout",
+        "next_work",
+        "check",
+        "bottleneck",
+        "settlement",
+        "refocus",
+        "expected_cost",
+        "kind_schema",
+        "kind_category",
+        "validate_cells",
+        "brief",
+        "claim",
+        "session_open",
+        "session_close",
+        "changes",
+        "search",
+        "roadmap",
+        "create_batch",
+        "declare_kind",
+        "declare_predicate",
+        "resource_graph",
+        "term"
+      ],
+      "environment": {
+        "PLANNING_ENGINE_DATA": "/workspace/root/dev/data/logs/simple-planning-engine-log.jsonl",
+        "PLANNING_ENGINE_ACTOR": "worker:codex"
+      }
+    }
+  },
+  "actorGenesis": "actor-genesis.json beside this policy: the constituting tuple, genesis row, display name, and the superseded urn:ame:test-machine-codex",
+  "obsoleteAgentNames": [
+    "executive-officer-to-the-leader",
+    "computer-code-development-services-lead",
+    "content-librarian",
+    "internal-audit",
+    "obsmetrologia-consultant",
+    "product-quality-assurance",
+    "requirements-implementation-team",
+    "system-architect",
+    "white-army",
+    "knowledge-systems-architect",
+    "mathematical-library-steward",
+    "research-analyst",
+    "program-manager",
+    "economist",
+    "chief-knowledge-officer",
+    "chief-executive-officer",
+    "chief-financial-officer",
+    "chief-information-officer",
+    "chief-operations-officer",
+    "chief-technology-officer"
+  ],
+  "perTurnDuty": {
+    "x-provenance": "Owner-directed emergency architectural standardization duty delivered through generated root instructions; lifecycle hooks remain disabled.",
+    "byModel": {},
+    "default": "Drive the stated outcome to its real receiver. When tasks keep accumulating, locate the common architectural cause before touching leaf symptoms. Replace that cause across its real consumer path, migrate the consumers, and remove the old mechanics; do not add a tracker, wrapper, role, plan, or local guardrail in its place. Use source, consumer, and receiver evidence proportionately. A local test or provider report is useful evidence, not completion unless it is the named receiver check."
+  },
+  "colleagueSeatings": {
+    "content-librarian": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-content-librarian-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-content-librarian-session-as-content-librarian.json"
+    },
+    "internal-audit": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-internal-audit-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-internal-audit-session-as-internal-audit.json"
+    },
+    "obsmetrologia-consultant": {
+      "character": "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/characters/verity-reade.json",
+      "incumbency": "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/incumbencies/verity-reade-as-obsmetrologia-consultant.json"
+    },
+    "product-quality-assurance": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-product-quality-assurance-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-product-quality-assurance-session-as-product-quality-assurance.json"
+    },
+    "requirements-implementation-team": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-requirements-implementation-team-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-requirements-implementation-team-session-as-requirements-implementation-team.json"
+    },
+    "system-architect": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-system-architect-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-system-architect-session-as-system-architect.json"
+    },
+    "white-army": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-white-army-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-white-army-session-as-white-army.json"
+    },
+    "knowledge-systems-architect": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-knowledge-systems-architect-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-knowledge-systems-architect-session-as-knowledge-systems-architect.json"
+    },
+    "mathematical-library-steward": {
+      "character": "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/characters/harriet-metz.json",
+      "incumbency": "lib/emsenn/services/561-group/services/science-services-section/services/information-science-services-section/services/math-services-section/services/obsmetrological-services-section/lib/agency/incumbencies/harriet-metz-as-mathematical-library-steward.json"
+    },
+    "research-analyst": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-research-analyst-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-research-analyst-session-as-research-analyst.json"
+    },
+    "program-manager": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-program-manager-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-program-manager-session-as-program-manager.json"
+    },
+    "economist": {
+      "character": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/characters/claude-economist-session.json",
+      "incumbency": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/test-machine-services-section/content/incumbencies/claude-economist-session-as-economist.json"
+    }
+  }
+}

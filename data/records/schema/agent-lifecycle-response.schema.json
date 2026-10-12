@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-lifecycle-response.schema.json",
+  "title": "AgentLifecycleResponse",
+  "description": "What a hook handler decides about one lifecycle event, in one runtime-neutral shape: let the runtime continue or block it with a reason, add context the model will see, post a system message, rule on a tool permission, or replace a tool's input.",
+  "type": "object",
+  "required": ["kind", "version", "disposition"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "agent-lifecycle-response" },
+    "version": { "const": 1 },
+    "disposition": { "enum": ["continue", "block"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "additionalContext": { "type": "string", "minLength": 1 },
+    "systemMessage": { "type": "string", "minLength": 1 },
+    "permission": {
+      "type": "object",
+      "required": ["decision"],
+      "additionalProperties": false,
+      "properties": {
+        "decision": { "enum": ["allow", "deny", "ask"] },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "updatedInput": { "type": "object" }
+  }
+}

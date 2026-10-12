@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/projecting/library/packet/packet.schema.json",
+  "title": "packet",
+  "description": "The general codomain of projecting: a finite projection from a settled frontier. The carrier form depends on the packet kind; the canonical inter-LLM kind is the semantic-hypertext-packet (HTML). A human-operator kind would render Markdown. The carrier is text.",
+  "kind": "object",
+  "type": "string"
+}

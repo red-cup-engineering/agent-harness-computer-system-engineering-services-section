@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/library/message/message.schema.json",
+  "title": "message",
+  "description": "One turn in a session: a role (user or assistant) and its content claim.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["role", "content"],
+  "properties": {
+    "role": { "enum": ["user", "assistant"] },
+    "content": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }
+  }
+}

@@ -1,0 +1,4 @@
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-06-05T17:40:10.292Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-06-05T17:40:10.359Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude","a":"settled-truth","v":"true","t":"2026-06-05T17:40:11.516Z","evidence":["studied:4-claims","confidence:0.500","rounds:0"],"placement":"memory"}
+{"e":"settled-subj","a":"settled-truth","v":"true","t":"2026-06-05T17:40:13.777Z","evidence":["studied:5-claims","confidence:0.600","rounds:3"],"placement":"memory"}

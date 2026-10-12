@@ -1,0 +1,50 @@
+{
+  "name": "@red-cup-engineering/agent-harness-projection-service",
+  "version": "0.3.0",
+  "type": "module",
+  "description": "The one agent-harness projection: a typed policy for one actor on one agent runtime (Codex, Claude) is projected, purely, into the runtime's declared file surface, then written under the repository root through the file effect owner and observed back by content identity. Runtimes are parameterizations; no runtime carries its own projector.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./types": "./src/types.mjs",
+    "./policy": "./src/policy.mjs",
+    "./projection": "./src/projection.mjs",
+    "./runtimes": "./src/runtimes/index.mjs",
+    "./runtimes/codex": "./src/runtimes/codex.mjs",
+    "./runtimes/claude": "./src/runtimes/claude.mjs",
+    "./observe-agent-harness-sources": "./scripts/observe-agent-harness-sources.mjs",
+    "./observe-agent-harness-surface": "./scripts/observe-agent-harness-surface.mjs",
+    "./write-agent-harness-projection": "./scripts/write-agent-harness-projection.mjs",
+    "./schema/*": "./data/records/schema/*"
+  },
+  "bin": {
+    "project-agent-harness": "apps/project-agent-harness.mjs",
+    "observe-agent-harness-sources": "scripts/observe-agent-harness-sources.mjs",
+    "observe-agent-harness-surface": "scripts/observe-agent-harness-surface.mjs",
+    "write-agent-harness-projection": "scripts/write-agent-harness-projection.mjs"
+  },
+  "files": [
+    "apps/",
+    "data/records/schema/",
+    "scripts/",
+    "src/"
+  ],
+  "scripts": {
+    "check": "node --check src/index.mjs && node --check src/types.mjs && node --check src/policy.mjs && node --check src/projection.mjs && node --check src/runtimes/index.mjs && node --check src/runtimes/codex.mjs && node --check src/runtimes/claude.mjs && node --check scripts/observe-agent-harness-sources.mjs && node --check scripts/observe-agent-harness-surface.mjs && node --check scripts/write-agent-harness-projection.mjs && node --check apps/project-agent-harness.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/computer-data-engine": "0.11.2",
+    "@red-cup-engineering/file-services": "0.4.0",
+    "@red-cup-engineering/filepath-services-section": "0.1.0",
+    "@red-cup-engineering/javascript-node-services-section": "0.3.0",
+    "@red-cup-engineering/path-walking-service": "0.5.0",
+    "@red-cup-engineering/principal-office-seating-service": "0.1.4",
+    "@red-cup-engineering/remove-path-service": "0.1.0",
+    "@red-cup-engineering/stat-path-service": "0.1.0",
+    "@red-cup-engineering/toml-codec-service": "0.1.3",
+    "@red-cup-engineering/computer-platform": "0.5.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

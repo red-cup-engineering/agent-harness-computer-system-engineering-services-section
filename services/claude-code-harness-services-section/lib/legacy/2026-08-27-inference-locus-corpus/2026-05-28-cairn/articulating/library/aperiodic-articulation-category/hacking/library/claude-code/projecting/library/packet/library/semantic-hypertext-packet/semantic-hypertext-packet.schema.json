@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/projecting/library/packet/library/semantic-hypertext-packet/semantic-hypertext-packet.schema.json",
+  "title": "semantic-hypertext-packet",
+  "description": "A packet kind: SHP per spotcomp/SHP.md -- a hypertext projection from a settled EAVT frontier; an HTML document whose element `class` names the producing morphism and whose `data-*` attributes carry EAVT carrier coordinates (data-e, data-a, data-v). SHP IS a TRC/TDP over the wire (TRC and TDP are one object read two ways). Two inhabitants by data-regime: FINITE (data-only, the TRC/memory reading) and SCOTT-CONTINUOUS (also embeds each morphism's schema + script -- the TDP/program reading -- so a capable recipient can run the closure rules; embeds use non-executable script types, keeping inspection script-free per SHP.md §6 while remaining operational). The inter-LLM wire format; Markdown is the human-operator packet kind only. RFC-7992 is the inhabitant profile for RFC-shaped packets. Carrier is the HTML text.",
+  "kind": "object",
+  "type": "string",
+  "contentMediaType": "text/html"
+}

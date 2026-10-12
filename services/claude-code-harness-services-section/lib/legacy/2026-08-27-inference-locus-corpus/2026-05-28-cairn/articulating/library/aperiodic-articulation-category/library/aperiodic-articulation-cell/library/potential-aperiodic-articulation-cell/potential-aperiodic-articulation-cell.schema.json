@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/potential-aperiodic-articulation-cell.schema.json",
+  "title": "potential-aperiodic-articulation-cell",
+  "description": "The bottom (potential) phase of FOUR: an articulation-cell whose pairing is [void, void]. Neither token nor claim axis articulated. This is the cell with room to work, so the next morphism (predicating) lives inside it.",
+  "kind": "object",
+  "allOf": [
+    { "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/aperiodic-articulation-cell.schema.json" },
+    { "type": "array", "prefixItems": [ true, { "prefixItems": [ { "const": null }, { "const": null } ] } ] }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/governing/library/governance/governance.schema.json",
+  "title": "governance",
+  "description": "The codomain of governing: an executive decision -- whether further swarm work is allowed (within the metabolic budget), the remaining budget, which subject to attend to next, and the reason.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["allowed", "remaining", "attend", "reason"],
+  "properties": {
+    "allowed": { "type": "boolean" },
+    "remaining": { "type": "number" },
+    "attend": { "type": ["string", "null"] },
+    "reason": { "type": "string", "minLength": 1 }
+  }
+}

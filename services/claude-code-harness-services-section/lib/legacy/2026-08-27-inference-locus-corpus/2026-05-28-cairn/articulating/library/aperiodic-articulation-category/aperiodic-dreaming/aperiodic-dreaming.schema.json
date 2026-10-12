@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/aperiodic-dreaming/aperiodic-dreaming.schema.json",
+  "title": "aperiodic-dreaming",
+  "description": "Morphism: experiences -> new claims. The APERIODIC dream (kappa >= omega_1): channels genuinely new facts/generators from OUTSIDE the fibers via an LLM enactor -- not derivable internally, so not a closure (that is the aperiodic regime). NETWORK. The most generative of the four dreams; finite/Scott-continuous/transfinite dreaming are its shadow collapsed down the regime tower. HACKING: name + regime placement admitted.",
+  "kind": "morphism",
+  "domain": "experiences[] + enactor",
+  "codomain": "new claims[]",
+  "variance": "generator",
+  "monotone": true
+}

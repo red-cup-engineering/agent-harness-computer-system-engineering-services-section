@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/library/scott-continuous-posit-cell/library/potential-scott-continuous-posit-cell/settling/library/finite-settlement-algebra/finite-dreaming/finite-dreaming.schema.json",
+  "title": "finite-dreaming",
+  "description": "Morphism: memory claims -> derived claims. The FINITE dream (kappa < omega; strict-finite / settling regime): a monotone closure operator iterated to its least fixed point (Knaster-Tarski) over a FIXED claim-vocabulary -- local-derivation rules (composition, generalization, contradiction-surfacing). It only RECOMBINES existing claims (no new vocabulary), so it cannot invent facts; learning-tier output that yields to sense. It is the shadow of aperiodic-dreaming collapsed through the transfinite and Scott-continuous regimes. Network-free and deterministic, so it runs in the per-turn Stop hook. HACKING: name + regime placement admitted.",
+  "kind": "morphism",
+  "domain": "memory claims[]",
+  "codomain": "derived claims[]",
+  "variance": "generator",
+  "monotone": true
+}

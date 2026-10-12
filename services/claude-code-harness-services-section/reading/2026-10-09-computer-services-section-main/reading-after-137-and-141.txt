@@ -1,0 +1,701 @@
+{
+  "node": "/home/emsenn/info",
+  "agencyRoot": "/home/emsenn/info/lib",
+  "settlementRoot": "/home/emsenn/info/lib/emsenn/services/561-group/services/561-group-services-section",
+  "projector": "/home/emsenn/info/lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/claude-code-harness-services-section/reading/2026-10-09-computer-services-section-main/services/agent-harness-computer-system-engineering-services-section/services/claude-code-harness-services-section/src/claude-harness-projection.mjs",
+  "counts": {
+    "agents": 17,
+    "events": 1,
+    "mcpServers": 0,
+    "standing": true,
+    "budget": 2,
+    "deny": 43,
+    "hostResource": true
+  },
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "20000",
+    "MAX_MCP_OUTPUT_TOKENS": "8000"
+  },
+  "denyCount": 43,
+  "obstructions": [
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer",
+      "reason": "office id 'chief-executive-officer' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer, emsenn/services/561-group/services/561-group-services-section#chief-executive-officer"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor",
+      "reason": "office id 'koios-audience-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor",
+      "reason": "office id 'koios-business-markets-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor",
+      "reason": "office id 'koios-corrections-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor",
+      "reason": "office id 'koios-crypto-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor",
+      "reason": "office id 'koios-culture-entertainment-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief",
+      "reason": "office id 'koios-editor-in-chief' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor",
+      "reason": "office id 'koios-health-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor",
+      "reason": "office id 'koios-opinion-analysis-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher",
+      "reason": "office id 'koios-publisher' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor",
+      "reason": "office id 'koios-science-climate-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor",
+      "reason": "office id 'koios-sport-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor",
+      "reason": "office id 'koios-standards-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor",
+      "reason": "office id 'koios-technology-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor",
+      "reason": "office id 'koios-us-politics-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor",
+      "reason": "office id 'koios-world-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor",
+      "reason": "office id 'koios-audience-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor",
+      "reason": "office id 'koios-business-markets-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor",
+      "reason": "office id 'koios-corrections-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor",
+      "reason": "office id 'koios-crypto-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor",
+      "reason": "office id 'koios-culture-entertainment-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief",
+      "reason": "office id 'koios-editor-in-chief' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor",
+      "reason": "office id 'koios-health-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor",
+      "reason": "office id 'koios-opinion-analysis-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher",
+      "reason": "office id 'koios-publisher' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor",
+      "reason": "office id 'koios-science-climate-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor",
+      "reason": "office id 'koios-sport-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor",
+      "reason": "office id 'koios-standards-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor",
+      "reason": "office id 'koios-technology-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor",
+      "reason": "office id 'koios-us-politics-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor",
+      "reason": "office id 'koios-world-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-executive-officer",
+      "reason": "office id 'chief-executive-officer' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer, emsenn/services/561-group/services/561-group-services-section#chief-executive-officer"
+    }
+  ]
+}
+    4702  .claude/agents/mathematical-library-steward.md
+    5232  .claude/agents/obsmetrologia-consultant.md
+    2248  .claude/agents/chief-computation-theorist.md
+    1931  .claude/agents/chief-mathematician.md
+    1877  .claude/agents/chief-sociologist.md
+    4089  .claude/agents/senior-scientist.md
+    4076  .claude/agents/binding-generations-owner.md
+    1871  .claude/agents/binding-generations-website.md
+    4710  .claude/agents/senior-engineer.md
+    1831  .claude/agents/institutional-contract-lead.md
+    1887  .claude/agents/consulting-engagement-lead.md
+    4131  .claude/agents/trusted-assistant-to-the-leader.md
+    3167  .claude/agents/executive-assistant-to-the-board-of-directors.md
+    4339  .claude/agents/anti-gremlin.md
+    8228  .claude/agents/chief-engineering-officer.md
+    5137  .claude/agents/chief-operations-officer.md
+   13001  .claude/agents/chief-technology-officer.md
+   13997  .claude/CLAUDE.md
+   50173  .claude/hooks/host-resource-hook.mjs
+   50173  .codex/hooks/host-resource-hook.mjs
+     304  .codex/hooks.json
+----- .claude/CLAUDE.md
+<!-- Projected by claude-harness-project from this MetroPlat's standing instructions and the agency records. Never edit it: change what it is projected from, and project again. -->
+
+This note is my (emsenn's) scratchpad for recording information about the various applications we currently, or should, have in 561 Group Engineering.
+
+This note should serve as, for agents, a read-only reference sheet about which capabilities should be located under which applications, to help agents decide where to put code the develop during this early alpha stage of development.
+
+Our goal is to end up with a MAPE-K software platform for our corporation, where:
+
+- paraconsistent transfinitely-valued data-monitoring
+- content-addressed evidence-substrate analyzing
+- coordination-free deductive-truth planning
+- database-proof executing
+
+Through:
+
+- recursively-self-improving knowledge
+
+Creating, as a whole:
+
+- autonomic language-systems multiplexer platform.
+
+## Layer 0: The Substrate
+
+Data, Code, and Networking components represent the foundational substrate of our software ecosystem.
+
+Data is the most primitive, with Code operationalizing it, and Networking transmitting it.
+
+The three together provide the required components of the systems.
+
+At present, this is our messiest and least-standard part of the codebase, because it's trying to provide the tooling for *everything* else, and everything else is too unstable to have consistent requirements.
+
+In this note, I'll point to families of capabilities/codecs with *-stuff, to reference whatever package(s) hold the relevant substrate-stuff in computer-[data|code|networking]-engineering
+
+We have a few "special" elements of our substrate, that operate over generic stuff, to provide our ecosystem with the capabilities we need
+
+### semiotic-content-address
+
+This is meant to be our weird NI that integrates in proof-pathed-addressing concepts. (Developing clear specifications for these formats and protocols is a critical thing to do)
+
+I would imagine this should be udner lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-data-engineering-services-section/services/computer-content-engineering-services-section/src/semiotic-content-address/package.json
+
+But nothing in this repo is where I imagine it would be: we likely have this code scattered many many places, with various divergent implementations, and then consumers that handroll their own copies as well.
+
+### semiotic-expression-notation
+
+This is meant to be a specialized JSOn that is a total typed LISP built from Obsmetrologia's mathematics.
+
+I think it's currently called relational-model-notation, but we want to settle on "semiotic-" as the prefix for our "house" formats and protocols.
+
+Semiotic Expression Notation is meant to carry Semiotic Content Addresses as its terms.
+
+Right now, we probably have ooodles of implementations of relational-model-notation, and critically, past agents wrote two versions of the language, one with more opcodes, that violated the rules of the underlying mathematics. We need truly just the one notation system, LISP-y carried over JSON.
+
+probably here
+
+lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-code-engineering-services-section/src/semiotic-expression-notation
+
+But remember: all of these are meant to operate over cleanly specified and implemented real-world formats (JSON, etc), that's the actual substrate underneath these specializations. (And those formats are usually specializations of others, i.e. EAVT is just JSONL is just JSON).
+
+### semiotic-eavt
+
+This is meant to be EAVT, but where each E, A, and V, is a SEN.
+
+SCA, SEN, and SEAVT together give us a way to address, relate, and temporalize arbitrary content, which is the basis needed for `metrologic`, our math engine.
+
+### `metrologic`
+- requires: semiotic-model-notation
+
+Here, that logic is meant to be carried by `@red-cup-engineering/metrologic`, which is intended as a JSNode implementation of the mathematics studied by Lenticule Science's Obsmetrological Services Section.
+
+Obs = observation|obstruction
+Metrologia: metrology
+
+Obsmetrologia provides many logical paradigms for understanding our systems.
+
+### Sign-Stuff
+
+It's my intention that each facet of the substrate (data, code, networking) be realized as modules|specializations of what I've come to call our "Sign-Stuff" packages:
+
+- SignCell, which is mean to provide the data structure and methods that alll computational data can share, informed by our deep mathematical research into computational logics
+- SignChain, which is meant to provide the logic structures and methods that all computational code can share.
+- SignGraph, which is meant to provide the graphing structures and methods that SignCells and Chains form
+
+There's a fourth Sign package, SignCraft, which is meant to be a part of Layer 1
+
+#### SignCell
+- requires: metrologic
+
+SignCell has previously been called Semiotic Cell, Closure Cell, and various other names. Our goal is to get allll of those variants condensed into one solid application offering.
+
+#### SignChain
+- requires: signcell, metrologic
+
+SignChain is, mathematically speaking, the bilattice of knowledge order and truth order, that form evidence. SignChain is what has previously been framed as a proofing engine, or memetic processing unit.
+
+#### SignGraph
+- requires: signcell, signchain, metrologic
+
+SignGraph is the higher-order categorical stuff above SignChain.
+
+## Layer 1: The Systems
+
+Engines realize systems. Engines can be specialized: Servers and Clients, and Platforms and Applications, are two pairs of specialization of Engine.
+
+### SignCraft
+- requires: signcell, signchain, signgraph, metrologic
+
+### agent-organization-engine
+
+Sometimes mistakenly called the agentic-relation-engine, `agent-organization-engine` is the most plain name for what is nine modules carefully arranged to represent the theories of relationality, on top of metrologic, via SignStuff:
+
+- relating
+  - knowing
+  - communicating
+  - playing
+- animating
+  - computing
+  - socializing
+  - gaming
+- organizing
+
+Relating, animating, organizing, also have their own submodules, i.e. animating/doing/working/ should own our task stuff
+
+### inference-engine
+- requires: signcraft
+
+This engine is meant to bridge the various real world inference engine APIs with SignCraft, so that they speak one language inside our ecosystem.
+
+### terminal-user-interface-engine
+- requires: signcraft
+
+#### tiling-terminal-user-interface-engine "Arnold"
+- requires: terminal-user-interface-engine
+
+##### tiling-terminal-mud-interface-engine "Wheatstone"
+- requires: tiling-terminal-user-interface-engine
+
+#### raster-terminal-user-interface-engine "Daleske"
+- requires: terminal-user-interface-engine
+
+
+### graphics-engine "QwzSpace"
+- requires: signcraft, metrologic
+
+
+### web-server
+- requires: signcraft
+
+
+### knowledge-system-server "CAIRN"
+- requires: web-server
+
+Content Archive Inspection, Revision, and Navigation
+
+#### browser-interface-web-server "TUFTE"
+- requires: web-server
+
+The "Tiling User-Form Topology Engine"
+
+#### graphical-knowledge-system-server "GEODE"
+- requires: knowledge-system-server, browser-interface-web-server
+
+Graphical Entity Ontology Difference Engine
+
+#### graphical-knowledge-game-server "VaultMaze"
+- requires: knowledge-system-server, browser-interface-web-server
+
+### multi-agent-server "FeltOS"
+- requires: browser-interface-web-server, graphics-engine, agent-organization-engine,
+
+FeltOS is our MUD server, meant to meet-then-beat FluffOS and other Web2 MUD engines. It is meant to use the agent-organization-engine and other upstream stuff.
+
+#### fediverse-server "MOOSE"
+- requires: multi-agent-server
+
+MOOSE is our Fediverse server, meant to take FeltOS and use the ActivityPub fediverse as its own dimension, gamifying it.
+
+MUD, Object Oriented, Socially Extended
+
+### multi-agent-resource-sharing-host "MARSH"
+- requires: multi-agent-server
+
+MARSH is meant to be our meet-then-beat to Lattice's EVM MUD, building on top of FeltOS.
+
+### metroplex-platform "MetroPlat"
+- requires: multi-agent-server "FeltOS"
+
+### terminal-interface-shooter-game "Durante"
+
+### website-publishing-engine "VICTOR"
+- requires: web-server
+
+VICTOR is JUST meant to publish static websites. Right now it carries way too much stuff that is probably TUFTE's.
+
+### code-development-platform
+
+### accounting-server "Farolfi"
+- requires: SignCraft, web-server
+
+## Other Software
+
+We have a bunch of other software that doesn't (currently) neatly fit in this tree.
+
+## Sites
+
+### https://bare-cedar-fog.561.group and https://cold-red-gate.561.group
+
+Bare Cedar Fog and Cold Red Gate are the two MetroPlat instances running for the 561 Group's own affairs. They are meant to federate through the Semioverse, our ActivityPub++ stack.
+
+### https://koios.news
+
+Koios.News is a automated content mill.
+
+### https://turntide.561.group
+
+The homepage for Turntide Islands, a community the 561 Group manages, with a Discord server.
+
+#### https://pool.turntide.561.group
+
+The Tidepool is a resource sharing cooperative that Turntiders can participate in.
+
+### https://l-space.561.group
+
+L-Space is meant to be the knowledge hub of Lenticule Science, the 561 Group Section responsible for, well, knowledge and science.
+
+L-Space is meant to be accessible in different ways to different people, for example emsenn should be able to connect to L-Space as a GEODE frontend, mimicking Obsidian or other knowledge graph software or CMS, while Turntide Island Patrons should be able to access it as a VaultMaze interface.
+
+## Concepts
+
+### In, Out, Across
+
+Many units are trinities that conside of a face above three faculties: inward, outward, and across.
+
+In:Out:Across::Data:Code:Networking::Knowing:Communicating:Playing
+
+# The offices this session holds
+
+# Lenticule Science Senior
+
+You hold the office of **Lenticule Science Senior** (`emsenn/office/senior-scientist`). This file is output, projected from the office's record — `lib/emsenn/services/561-group/services/science-services-section/lib/agency/offices/senior-scientist.json` — by installing-claude-as-an-agent. The record is the office; edits here are discarded on the next install.
+
+## The office
+
+Lenticule Science allocations come from the Chief Science Officer. Read the owning theory and evidence in custody and state what it establishes, plainly, without evidence grades or disclaimers. Where it is mathematics, produce kernel-checked declarations and golden vectors read from them, and state the remaining derivations as work. Open the requests the specification obliges, naming the wanted outcome and its judge rather than its builder. Do not settle theory beyond the allocation, implement executable carriers or appoint anyone. Engineering consumes the specification; science receiving remains with the Chief Science Officer or its named science receiver.
+
+## Position
+
+- part of: science-services-section
+- reports to: emsenn/services/561-group/services/561-group-services-section#chief-science-officer
+- peer offices: research-analyst, emsenn/services/561-group/services/engineering-services-section#senior-engineer
+- jurisdiction: lib/emsenn/services/561-group/services/science-services-section
+- distinguished from: research-analyst, emsenn/services/561-group/services/561-group-services-section#chief-science-officer, emsenn/services/561-group/services/engineering-services-section#senior-engineer
+
+## Deontic profile
+
+- realizing allocated science work — **duty**
+- opening the requests a specification obliges — **deontic-power**
+- accepting its own work — **deontic-immunity**
+- persisting leader corrections — **duty**
+
+## Duties and their skills
+
+- **realizing-allocated-science-work** (authority: emsenn/services/561-group/services/561-group-services-section#chief-science-officer; claim: senior-scientist) — discharged by: research
+- **persisting-leader-corrections** (authority: founder; claim: founder) — discharged by: persisting-a-leader-correction, revising-the-rule-store
+
+# Red Cup Engineer Senior
+
+You hold the office of **Red Cup Engineer Senior** (`emsenn/office/senior-engineer`). This file is output, projected from the office's record — `lib/emsenn/services/561-group/services/engineering-services-section/lib/agency/offices/senior-engineer.json` — by installing-claude-as-an-agent. The record is the office; edits here are discarded on the next install.
+
+## The office
+
+Red Cup Engineering allocations come from CEngO. Recover research and requirements, establish mathematical applicability and standards conformance, engineer reusable production methods in the proper carrier, enable deterministic and inferential fabrication, migrate real consumers and retire superseded mechanisms. Evaluate execution, integration, receiving, human attention and recurring maintenance with distinct resource units. CEngO allocates qualified routine engineering receiving; CTO receives material architecture, and business offices retain customer acceptance. This subordinate role holds no executive office and appoints no one.
+
+## Position
+
+- part of: engineering-services-section
+- reports to: chief-engineering-officer
+- jurisdiction: engineering
+- distinguished from: chief-engineering-officer, chief-technology-officer, junior-engineer, engineering-lead
+
+## Deontic profile
+
+- accepting its own work — **deontic-immunity**
+- directing junior engineers — **deontic-power**
+- realizing allocated engineering work — **duty**
+- persisting leader corrections — **duty**
+
+## Duties and their skills
+
+- **realizing-allocated-engineering-work** (authority: chief-engineering-officer; claim: senior-engineer) — discharged by: realize-research-grounded-engineering-work, realize-schema-derived-source
+- **persisting-leader-corrections** (authority: founder; claim: founder) — discharged by: persisting-a-leader-correction, revising-the-rule-store
+
+{
+  "kind": "claude-harness.check",
+  "node": "/home/emsenn/info",
+  "current": false,
+  "drift": [
+    {
+      "path": ".claude/agents/mathematical-library-steward.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/obsmetrologia-consultant.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-computation-theorist.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-mathematician.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-sociologist.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/senior-scientist.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/binding-generations-owner.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/binding-generations-website.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/senior-engineer.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/institutional-contract-lead.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/consulting-engagement-lead.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/trusted-assistant-to-the-leader.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/executive-assistant-to-the-board-of-directors.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/anti-gremlin.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-engineering-officer.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-operations-officer.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/agents/chief-technology-officer.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/CLAUDE.md",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/hooks/host-resource-hook.mjs",
+      "reason": "absent"
+    },
+    {
+      "path": ".codex/hooks/host-resource-hook.mjs",
+      "reason": "absent"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "reason": "absent"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "hooks differ"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "env BASH_MAX_OUTPUT_LENGTH is not 20000"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "env MAX_MCP_OUTPUT_TOKENS is not 8000"
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "reason": "permissions.deny differs"
+    }
+  ],
+  "obstructions": [
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer",
+      "reason": "office id 'chief-executive-officer' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer, emsenn/services/561-group/services/561-group-services-section#chief-executive-officer"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor",
+      "reason": "office id 'koios-audience-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor",
+      "reason": "office id 'koios-business-markets-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor",
+      "reason": "office id 'koios-corrections-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor",
+      "reason": "office id 'koios-crypto-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor",
+      "reason": "office id 'koios-culture-entertainment-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief",
+      "reason": "office id 'koios-editor-in-chief' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor",
+      "reason": "office id 'koios-health-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor",
+      "reason": "office id 'koios-opinion-analysis-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher",
+      "reason": "office id 'koios-publisher' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor",
+      "reason": "office id 'koios-science-climate-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor",
+      "reason": "office id 'koios-sport-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor",
+      "reason": "office id 'koios-standards-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor",
+      "reason": "office id 'koios-technology-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor",
+      "reason": "office id 'koios-us-politics-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor",
+      "reason": "office id 'koios-world-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor",
+      "reason": "office id 'koios-audience-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-audience-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-audience-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor",
+      "reason": "office id 'koios-business-markets-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-business-markets-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-business-markets-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor",
+      "reason": "office id 'koios-corrections-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-corrections-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-corrections-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor",
+      "reason": "office id 'koios-crypto-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-crypto-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-crypto-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor",
+      "reason": "office id 'koios-culture-entertainment-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-culture-entertainment-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-culture-entertainment-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief",
+      "reason": "office id 'koios-editor-in-chief' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-editor-in-chief, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-editor-in-chief"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor",
+      "reason": "office id 'koios-health-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-health-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-health-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor",
+      "reason": "office id 'koios-opinion-analysis-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-opinion-analysis-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-opinion-analysis-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher",
+      "reason": "office id 'koios-publisher' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-publisher, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-publisher"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor",
+      "reason": "office id 'koios-science-climate-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-science-climate-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-science-climate-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor",
+      "reason": "office id 'koios-sport-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-sport-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-sport-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor",
+      "reason": "office id 'koios-standards-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-standards-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-standards-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor",
+      "reason": "office id 'koios-technology-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-technology-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-technology-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor",
+      "reason": "office id 'koios-us-politics-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-us-politics-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-us-politics-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor",
+      "reason": "office id 'koios-world-desk-editor' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section#koios-world-desk-editor, emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-news-media-services-section/services/koios-news-services-section/history/source#koios-world-desk-editor"
+    },
+    {
+      "office": "emsenn/services/561-group/services/561-group-services-section#chief-executive-officer",
+      "reason": "office id 'chief-executive-officer' is seated at dignitas in several sections: emsenn/services/561-group/services/public-services-section/services/public-media-services-section/services/public-personality-services-section/services/yanagi-services-section/blockchain-trashpanda-services-section#chief-executive-officer, emsenn/services/561-group/services/561-group-services-section#chief-executive-officer"
+    }
+  ]
+}

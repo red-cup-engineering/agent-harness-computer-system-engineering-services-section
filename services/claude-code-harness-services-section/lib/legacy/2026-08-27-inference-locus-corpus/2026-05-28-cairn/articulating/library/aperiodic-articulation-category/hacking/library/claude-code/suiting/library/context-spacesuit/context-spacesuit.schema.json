@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/suiting/library/context-spacesuit/context-spacesuit.schema.json",
+  "title": "context-spacesuit",
+  "description": "instance-of: fiber. The composed fiber an enactor wears into a task -- the six-component loadout. The first five (identity, constraints, capabilities, perception, memory) ARE the suit; mission is what the suited agent meets. Loading the suit is extension; the suit itself is a RESTRICTION (perception-constraint) of the catalog's fibers. tokenEstimate keeps composition minimal -- the ~1.5K cure to the 515x overhead.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["identity", "constraints", "capabilities", "perception", "memory", "mission", "tokenEstimate"],
+  "properties": {
+    "identity": { "description": "who the suited agent is", "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "constraints": { "description": "what it cannot do (core rules)", "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" } },
+    "capabilities": { "description": "what it can do (tools/skills available)", "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" } },
+    "perception": { "description": "what it sees (projected fiber facts)", "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" } },
+    "memory": { "description": "what happened before (projected memory fragments)", "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/library/memory/memory.schema.json" } },
+    "mission": { "description": "the task the suited agent meets", "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "tokenEstimate": { "description": "approximate token cost of the composed suit", "type": "integer", "minimum": 0 }
+  }
+}

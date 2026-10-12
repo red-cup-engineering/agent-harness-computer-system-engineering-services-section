@@ -1,0 +1,27 @@
+{
+  "name": "@red-cup-engineering/harness-routing-service",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Endpoint-neutral work classification, signed-offer route selection, subagent projection reuse, provider launch preflight, change-only monitor backoff, and baseline-parameterized harness parity evaluation for any agent harness \u2014 carries no provider-specific content.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/harness-routing.mjs",
+    "./harness-routing": "./src/harness-routing.mjs",
+    "./harness-parity": "./src/harness-parity.mjs"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "check": "node --check src/harness-routing.mjs && node --check src/harness-parity.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@red-cup-engineering/path-walking-service": "0.5.0",
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.19"
+  }
+}

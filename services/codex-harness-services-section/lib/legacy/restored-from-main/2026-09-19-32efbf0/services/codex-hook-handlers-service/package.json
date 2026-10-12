@@ -1,0 +1,40 @@
+{
+  "name": "@red-cup-engineering/codex-hook-handlers-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The hook handlers the Codex runtime invokes for one machine's Codex customer enterprise: one single-effect script per wired lifecycle event, each a pure operation over a typed AgentLifecycleEvent under the agent-lifecycle-hook adapter. src holds only that algebra; everything that reaches the world lives beside the script faces and reaches it through the registry's effect owners. The machine is named only by its configuration record; no machine literal appears here.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/enterprise-hook.mjs",
+    "./enterprise-hook": "./src/enterprise-hook.mjs",
+    "./runtime-preflight": "./scripts/runtime-preflight.mjs",
+    "./scripts/observe-codex-enterprise-hook.mjs": "./scripts/observe-codex-enterprise-hook.mjs",
+    "./scripts/check-codex-runtime.mjs": "./scripts/check-codex-runtime.mjs"
+  },
+  "bin": {
+    "observe-codex-enterprise-hook": "scripts/observe-codex-enterprise-hook.mjs",
+    "check-codex-runtime": "scripts/check-codex-runtime.mjs"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "scripts": {
+    "check": "node --check src/enterprise-hook.mjs && node --check scripts/runtime-preflight.mjs && node --check scripts/observe-codex-enterprise-hook.mjs && node --check scripts/check-codex-runtime.mjs",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/agent-lifecycle-hook-service": "0.1.0",
+    "@red-cup-engineering/codex-agent-enterprise-service": "0.1.0",
+    "@red-cup-engineering/directory-services-section": "0.2.1",
+    "@red-cup-engineering/execute-javascript-node-command-service": "0.2.1",
+    "@red-cup-engineering/file-services": "0.2.1",
+    "@red-cup-engineering/filepath-services-section": "0.1.0",
+    "@red-cup-engineering/harness-routing-service": "0.1.0",
+    "@red-cup-engineering/stat-path-service": "0.1.0",
+    "@red-cup-engineering/tool-evidence-bounding-service": "0.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

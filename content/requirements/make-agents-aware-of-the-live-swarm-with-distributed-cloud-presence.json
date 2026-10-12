@@ -1,0 +1,36 @@
+{
+  "id": "make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence",
+  "name": "make agents aware of the live swarm with distributed cloud presence",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "your agents are like 'omg nothing is running\" how can we make it so that you and other agents are more aware of this as a live swarm with distributed cloud presence, and think to check if, iunno, persistent web services are maybe living on... our VPS? :P [emsenn, session of 2026-07-23, Fable web3-games session]",
+  "from-idea": "emsenn/idea/make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence",
+  "met-when": [
+    {
+      "cell": "make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence:conditions-stated",
+      "target": "held"
+    }
+  ],
+  "x-provenance": {
+    "recorded-by": "561-group capture session (claude session 017x7ZhpkZQAx5VZSv2Hz5Q9)",
+    "recorded-on": "2026-10-10",
+    "sources": [
+      {
+        "words": "your agents are like 'omg nothing is running\" how can we make it so that you and other agents are more aware of this as a live swarm with distributed cloud presence, and think to check if, iunno, persistent web services are maybe living on... our VPS? :P [emsenn, session of 2026-07-23, Fable web3-games session]",
+        "at": "2026-07-24",
+        "locator": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/2026/07/24/2026-07-24-executive-office-ideas.jsonl#make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence"
+      }
+    ],
+    "carried-from-idea-record": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/2026/07/24/2026-07-24-executive-office-ideas.jsonl",
+    "pending-conditions": "Carried from the 2026-07 executive office's idea record under ideas-dispose-through-the-requirement-term; no met-when that exercises this idea's capability has been stated yet. The owning section states it.",
+    "linked-carriers": [],
+    "coverage": "lib/emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/emsenn-services-section/data/records/leader-utterances/coverage/executive-office-ideas-2026-07.md",
+    "idea-record-fields": {
+      "opens": "What standing sensor and session-start injection would make every session and subagent audit the whole swarm (laptop, red-cedar-gate VPS, Cloudflare, tailnet peers) instead of only the local host?"
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;Fcb0Q2LfUet5OIHw-4eIxDEcLbUS6geTMxrpo5mAjUw"
+    }
+  }
+}

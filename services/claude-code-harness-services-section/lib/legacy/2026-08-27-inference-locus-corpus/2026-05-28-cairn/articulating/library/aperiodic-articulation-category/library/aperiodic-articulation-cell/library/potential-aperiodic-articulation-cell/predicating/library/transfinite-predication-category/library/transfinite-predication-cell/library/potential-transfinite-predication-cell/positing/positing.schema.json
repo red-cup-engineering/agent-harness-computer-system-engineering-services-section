@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/positing.schema.json",
+  "title": "positing",
+  "description": "Morphism: (potential-transfinite-predication-cell, posit) -> potential-scott-continuous-posit-cell. Lives inside the potential predication-cell. Generates scott-continuous-posit-category. Commits a Scott-continuous claim by raising the cell's value from bottom via the knowledge-order join with the posited evidence. Closure regime: Scott-continuous (kappa = omega).",
+  "kind": "morphism",
+  "domain": "potential-transfinite-predication-cell + posit{value}",
+  "codomain": "potential-scott-continuous-posit-cell",
+  "variance": "generator",
+  "monotone": true
+}

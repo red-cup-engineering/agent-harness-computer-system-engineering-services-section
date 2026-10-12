@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/exploring/exploring.schema.json",
+  "title": "exploring",
+  "description": "Morphism: (subject, reader) -> claim-records. OUTWARD (the sensing hand): dispatch sensing drones (being kind sensing) to crawl the environment (repo/web) for a subject and return claim-records. The reader is injected (enactors.reader for real endpoints, or a stub), keeping the morphism pure/testable while the network lives in the reader. The outward counterpart to remembering. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "subject + reader-enactor",
+  "codomain": "claim-records[]",
+  "variance": "restriction",
+  "monotone": true
+}

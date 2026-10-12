@@ -1,0 +1,38 @@
+{
+  "name": "@red-cup-engineering/agent-operation-topology-projection-service",
+  "version": "0.1.2",
+  "type": "module",
+  "description": "Projects an explicit agent harness, event structure, run, and strategy declaration into an inspectable operation topology.",
+  "exports": {
+    ".": "./src/agent-operation-topology.mjs",
+    "./agent-card": "./src/agent-card.mjs",
+    "./agent-federation": "./src/agent-federation.mjs",
+    "./agent-handoff": "./src/agent-handoff.mjs",
+    "./strategy-enactment": "./src/strategy-enactment.mjs",
+    "./agent-platform": "./src/agent-platform.mjs",
+    "./scripts/project-agent-operation-topology.mjs": "./scripts/project-agent-operation-topology.mjs"
+  },
+  "bin": {
+    "project-agent-operation-topology": "./scripts/project-agent-operation-topology.mjs",
+    "project-agent-card": "./scripts/project-agent-card.mjs",
+    "project-agent-federation": "./scripts/project-agent-federation.mjs",
+    "project-agent-handoff": "./scripts/project-agent-handoff.mjs",
+    "project-strategy-enactment": "./scripts/project-strategy-enactment.mjs",
+    "project-agent-platform": "./scripts/project-agent-platform.mjs"
+  },
+  "files": [
+    "README.md",
+    "scripts",
+    "src"
+  ],
+  "dependencies": {
+    "@red-cup-engineering/graph-data-service": "0.7.0"
+  },
+  "scripts": {
+    "check": "node --check src/*.mjs && node --check scripts/*.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

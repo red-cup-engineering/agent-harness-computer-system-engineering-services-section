@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/doing/library/act/act.schema.json",
+  "title": "act",
+  "description": "The codomain of doing: a bounded act by an agent, carrying the utterance it speaks into the substrate (token act:<agent>, claim the intent/result). The body's sensorimotor episode.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["agent", "intent", "utterance"],
+  "properties": {
+    "agent": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "intent": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "utterance": { "$ref": "https://561.group/claude-code-harness/library/utterance/utterance.schema.json" }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@red-cup-engineering/session-activity-provider-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Privacy-bounded exact-interval civic activity pulses (collectColonyActivity, observeToolInvocations) and the premium self-execution RSI sensor, for one session-transcript dialect passed as an explicit parameter \u2014 the shared owner canonicalized from the formerly-separate claude-session-activity-provider, codex-session-activity-provider, and codex-session-rsi-sensor packages.",
+  "dependencies": {
+    "@red-cup-engineering/computer-data-engine": "0.10.0",
+    "@red-cup-engineering/execute-javascript-node-command-service": "0.3.0",
+    "@red-cup-engineering/javascript-file-main-guard-service": "0.1.3",
+    "@red-cup-engineering/read-javascript-node-standard-input-text-service": "0.2.1",
+    "@red-cup-engineering/session-transcript-dialects": "0.5.0",
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.8",
+    "@red-cup-engineering/settlement-record-store-service": "0.0.0"
+  },
+  "scripts": {
+    "check": "node --check src/collect-colony-activity.mjs && node --check src/observe-tool-invocations.mjs && node --check src/session-rsi-sensor.mjs && node --check scripts/observe-and-publish-rsi-opportunity.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "exports": {
+    "./collect-colony-activity": "./src/collect-colony-activity.mjs",
+    "./observe-tool-invocations": "./src/observe-tool-invocations.mjs",
+    "./session-rsi-sensor": "./src/session-rsi-sensor.mjs",
+    "./scripts/observe-and-publish-rsi-opportunity.mjs": "./scripts/observe-and-publish-rsi-opportunity.mjs"
+  },
+  "bin": {
+    "observe-and-publish-rsi-opportunity": "scripts/observe-and-publish-rsi-opportunity.mjs"
+  }
+}

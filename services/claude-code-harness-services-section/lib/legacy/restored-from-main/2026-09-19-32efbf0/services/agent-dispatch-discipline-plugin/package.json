@@ -1,0 +1,31 @@
+{
+  "name": "@red-cup-engineering/agent-dispatch-discipline-plugin",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Claude Code plugin: a skill and a brief-completeness hook for commissioning, steering, and receiving work from subagents.",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/brief-lint.mjs",
+    "./brief-lint": "./src/brief-lint.mjs",
+    "./scripts/lint-agent-brief.mjs": "./scripts/lint-agent-brief.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/read-javascript-node-standard-input-text-service": "0.2.1"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "skills",
+    "hooks",
+    ".claude-plugin",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check src/brief-lint.mjs && node --check scripts/lint-agent-brief.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": false
+}

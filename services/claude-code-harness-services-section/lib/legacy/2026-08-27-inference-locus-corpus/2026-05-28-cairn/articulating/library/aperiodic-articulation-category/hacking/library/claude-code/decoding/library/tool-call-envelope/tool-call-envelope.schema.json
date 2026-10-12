@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/decoding/library/tool-call-envelope/tool-call-envelope.schema.json",
+  "title": "tool-call-envelope",
+  "description": "An ingress shape: a tool call (the body acting) with optional result. decoding turns it into an utterance [tool:<name>, input-or-result], so acts enter the substrate as claims the swarm can process.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["tool"],
+  "properties": {
+    "tool": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" }
+  }
+}

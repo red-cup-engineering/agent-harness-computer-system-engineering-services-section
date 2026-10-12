@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/thinking/thinking.schema.json",
+  "title": "thinking",
+  "description": "Morphism: (utterance, decomposition, posit) -> finite-settlement-cell. One thought = one descent of the meaning tower (articulate -> predicate -> posit -> settle). The general cognitive step the other inward verbs specialize or loop. INTERNAL, no network. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "utterance + decomposition + posit",
+  "codomain": "finite-settlement-cell",
+  "variance": "restriction",
+  "monotone": true
+}

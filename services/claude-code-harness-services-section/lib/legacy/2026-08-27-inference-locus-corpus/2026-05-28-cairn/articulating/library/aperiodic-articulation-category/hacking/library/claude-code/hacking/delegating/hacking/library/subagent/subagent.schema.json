@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/delegating/hacking/library/subagent/subagent.schema.json",
+  "title": "subagent",
+  "description": "A subagent: another inferring-enactor the conductor dispatches. Its id is a token; its settlement is a FOUR value contributed to the multi-observer consensus. HACKING: subagent-as-object is admitted pending emsenn's categorical confirmation.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "settlement"],
+  "properties": {
+    "id": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "settlement": { "enum": ["bottom", "true", "false", "top"] }
+  }
+}

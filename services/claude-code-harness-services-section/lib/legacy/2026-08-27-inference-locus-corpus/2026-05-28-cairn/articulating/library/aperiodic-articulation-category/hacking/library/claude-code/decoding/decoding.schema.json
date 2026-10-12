@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/decoding/decoding.schema.json",
+  "title": "decoding",
+  "description": "Morphism: (handler-class, payload) -> utterance | rejection | obstruction. Locution -- the body's sensory transduction. Every channel the organism senses or acts through decodes into the SAME language (an utterance) for articulating to consume; senses and acts both speak utterances. NESTS INSIDE the structure (nothing is outside); does not write logs or fire downstream. The handler-class enum is now 5-class -- script-argv, hook-payload, http-request, and the formerly-deferred tool-call-envelope and llm-completion (D-H5 realized), so tool calls and model completions enter the substrate too.",
+  "kind": "morphism",
+  "domain": "handler-class + raw payload",
+  "codomain": "utterance | rejection | obstruction",
+  "variance": "restriction",
+  "monotone": true
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/imagining/imagining.schema.json",
+  "title": "imagining",
+  "description": "Morphism: memory -> hypothetical recombinations. Counterfactual extension: recombine known subjects/predicates/objects into cells not yet present, marked hypothetical (low trust, never sense). Imagination proposes, it does not assert. INTERNAL, no network. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "memory[]",
+  "codomain": "hypothetical claims[]",
+  "variance": "generator",
+  "monotone": true
+}

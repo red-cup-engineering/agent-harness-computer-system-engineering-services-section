@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/remembering/remembering.schema.json",
+  "title": "remembering",
+  "description": "Morphism: (query, memory) -> recognition-weighted recall (claims). Referencing/projection restricted to the query, ordered by recognition weight (sense first), conflicts collapsed toward sense. Read side; writes nothing. INTERNAL, no network. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "query + memory[]",
+  "codomain": "recalled claims[]",
+  "variance": "restriction",
+  "monotone": true
+}

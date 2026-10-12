@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/ruminating/ruminating.schema.json",
+  "title": "ruminating",
+  "description": "Morphism: (subject, memory) -> bounded re-derivation. Repeatedly dreams over one subject. Per the rumination/self-reflection note, unbounded introspection is pathological rumination; bounded introspection that halts when it stops producing is self-reflection. So it is bounded (maxRounds) and halts on no-new-derivation -- the governance bound is the line between the two. INTERNAL, no network. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "subject + memory[]",
+  "codomain": "{ subject, rounds, derived[] }",
+  "variance": "generator",
+  "monotone": true
+}

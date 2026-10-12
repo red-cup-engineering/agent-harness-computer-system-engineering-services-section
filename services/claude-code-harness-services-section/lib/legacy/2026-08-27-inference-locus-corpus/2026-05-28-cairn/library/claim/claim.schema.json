@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/library/claim/claim.schema.json",
+  "title": "claim",
+  "description": "The claim primitive (borne axis): the thing-being-said / the content / the said. One of articulating's two non-void primitives. Presented as a non-empty string; the string is presentation, not categorical identity.",
+  "kind": "object",
+  "type": "string",
+  "minLength": 1
+}

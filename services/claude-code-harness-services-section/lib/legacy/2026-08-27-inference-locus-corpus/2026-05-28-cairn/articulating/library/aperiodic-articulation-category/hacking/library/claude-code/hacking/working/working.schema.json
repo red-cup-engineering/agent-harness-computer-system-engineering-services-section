@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/working/working.schema.json",
+  "title": "working",
+  "description": "Morphism: (agent, subject, read) -> work-process. The action tower's Scott-continuous generator (parallel to positing): sustained subconscious work. The agent gathers evidence about a subject (its read fn = evidence-gathering) and contributes a claim-record to the shared field, e-anchored by its id. PURE: the durable contribution-write is the lifecycle's job. HACKING: action-tower generator and regime placement admitted.",
+  "kind": "morphism",
+  "domain": "agent + subject + read-fn",
+  "codomain": "work-process",
+  "variance": "generator",
+  "monotone": true
+}

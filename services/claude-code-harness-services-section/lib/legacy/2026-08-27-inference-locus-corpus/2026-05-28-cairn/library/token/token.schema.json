@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/library/token/token.schema.json",
+  "title": "token",
+  "description": "The token primitive (bearer axis): the thing-being-said-about / the surface mark / the saying. One of articulating's two non-void primitives. Presented as a non-empty string; the string is presentation, not categorical identity.",
+  "kind": "object",
+  "type": "string",
+  "minLength": 1
+}

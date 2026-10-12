@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/aperiodic-articulation-cell.schema.json",
+  "title": "aperiodic-articulation-cell",
+  "description": "An articulation-cell: the 2-tuple [utterance, pairing] where pairing = [token-or-void, claim-or-void] (the Chu-shape). The 2 x 2 of pairing statuses IS FOUR: [void,void]=potential, [token,void]=potential, [void,claim]=stable, [token,claim]=absurd.",
+  "kind": "object",
+  "type": "array",
+  "prefixItems": [
+    { "$ref": "https://561.group/claude-code-harness/library/utterance/utterance.schema.json" },
+    {
+      "type": "array",
+      "prefixItems": [
+        { "oneOf": [ { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" }, { "$ref": "https://561.group/claude-code-harness/library/void/void.schema.json" } ] },
+        { "oneOf": [ { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }, { "$ref": "https://561.group/claude-code-harness/library/void/void.schema.json" } ] }
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    }
+  ],
+  "items": false,
+  "minItems": 2,
+  "maxItems": 2
+}

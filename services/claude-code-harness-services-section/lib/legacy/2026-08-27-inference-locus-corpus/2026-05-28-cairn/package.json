@@ -1,0 +1,74 @@
+{
+  "name": "@561/development.experimental.claude-code-harness",
+  "version": "0.0.0",
+  "type": "module",
+  "license": "UNLICENSED",
+  "author": "561 Group (captain: emsenn)",
+  "description": "A self-contained TRC catalog that makes Claude Code a memory-bearing conductor of an LLM swarm, built on the repo's four-regime categorical math. Claude Code is a generated $thing under articulating (aperiodic regime) -- carrier object and generated subcategory at once -- inheriting the regime machinery. Relocatable by `git mv` into the computer-operating-system claude-code slot. Conformant to the canonical TRC specification (the imports map below). See README.md.",
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "agentic-harness",
+    "spotcomp",
+    "trc",
+    "categorical",
+    "four-regime",
+    "swarm",
+    "memory",
+    "dreaming",
+    "semantic-hypertext-packet",
+    "claude-code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/emsenn/561-group.git",
+    "directory": "development/experimental/claude-code-harness"
+  },
+  "scripts": {
+    "test": "node --test conformance/*.test.mjs"
+  },
+  "imports": {
+    "#schema/void": "./library/void/void.schema.json",
+    "#schema/token": "./library/token/token.schema.json",
+    "#schema/claim": "./library/claim/claim.schema.json",
+    "#schema/utterance": "./library/utterance/utterance.schema.json",
+    "#script/articulating": "./articulating/scripts/articulating.mjs",
+    "#script/predicating": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/scripts/predicating.mjs",
+    "#script/positing": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/scripts/positing.mjs",
+    "#script/settling": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/library/scott-continuous-posit-cell/library/potential-scott-continuous-posit-cell/settling/scripts/settling.mjs",
+    "#script/inferring": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/inferring/scripts/inferring.mjs",
+    "#script/prompting": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/scripts/prompting.mjs",
+    "#script/delegating": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/delegating/scripts/delegating.mjs",
+    "#script/invoking": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/invoking/scripts/invoking.mjs",
+    "#script/decoding": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/decoding/scripts/decoding.mjs",
+    "#script/suiting": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/suiting/scripts/suiting.mjs",
+    "#script/consolidating": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/consolidating/scripts/consolidating.mjs",
+    "#script/studying": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/studying/scripts/studying.mjs",
+    "#script/being": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/being/scripts/being.mjs",
+    "#script/doing": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/doing/scripts/doing.mjs",
+    "#script/working": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/working/scripts/working.mjs",
+    "#script/governing": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/governing/scripts/governing.mjs",
+    "#script/capturing": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/capturing/scripts/capturing.mjs",
+    "#script/projecting": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/projecting/scripts/projecting.mjs",
+    "#script/daydreaming": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/daydreaming/scripts/daydreaming.mjs",
+    "#script/inquiring": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/inquiring/scripts/inquiring.mjs",
+    "#script/deriving": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/deriving/scripts/deriving.mjs",
+    "#lifecycle": "./lifecycle.mjs",
+    "#enactors": "./enactors.mjs",
+    "#script/recognizing": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/recognizing/scripts/recognizing.mjs",
+    "#script/finite-dreaming": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/library/scott-continuous-posit-cell/library/potential-scott-continuous-posit-cell/settling/library/finite-settlement-algebra/finite-dreaming/scripts/finite-dreaming.mjs",
+    "#script/aperiodic-dreaming": "./articulating/library/aperiodic-articulation-category/aperiodic-dreaming/scripts/aperiodic-dreaming.mjs",
+    "#script/scott-continuous-dreaming": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/scott-continuous-dreaming/scripts/scott-continuous-dreaming.mjs",
+    "#script/transfinite-dreaming": "./articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/transfinite-dreaming/scripts/transfinite-dreaming.mjs",
+    "#script/thinking": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/thinking/scripts/thinking.mjs",
+    "#script/remembering": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/remembering/scripts/remembering.mjs",
+    "#script/wondering": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/wondering/scripts/wondering.mjs",
+    "#script/imagining": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/imagining/scripts/imagining.mjs",
+    "#script/ruminating": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/ruminating/scripts/ruminating.mjs",
+    "#script/exploring": "./articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/exploring/scripts/exploring.mjs"
+  },
+  "dependencies": {
+    "@561/development.experimental.swarm-intelligence": "0.0.1"
+  }
+}

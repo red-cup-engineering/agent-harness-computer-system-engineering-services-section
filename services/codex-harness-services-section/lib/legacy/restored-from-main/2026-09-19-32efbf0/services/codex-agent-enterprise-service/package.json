@@ -1,0 +1,84 @@
+{
+  "name": "@red-cup-engineering/codex-agent-enterprise-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The Codex agent's sovereign-customer enterprise: its content-addressed trajectory journal, MAPE-K actuation office and duty selection, prompt cycle, historical-demand and relevant-history selection, agential forms, and its hook, MCP, and A2A faces. Every actor, customer, office, territory, session store, object-kind namespace, and state root is read from one machine configuration record named by CODEX_ENTERPRISE_CONFIGURATION or --configuration.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/enterprise.mjs",
+    "./configuration": "./src/configuration.mjs",
+    "./enterprise": "./src/enterprise.mjs",
+    "./semiotic-circuit": "./src/semiotic-circuit.mjs",
+    "./mape-office": "./src/mape-office.mjs",
+    "./duty-selection": "./src/duty-selection.mjs",
+    "./agential-forms": "./src/agential-forms.mjs",
+    "./requirement-trajectory": "./src/requirement-trajectory.mjs",
+    "./source-pinned-analysis": "./src/source-pinned-analysis.mjs",
+    "./authority-bounded-integration": "./src/authority-bounded-integration.mjs",
+    "./fresh-verification": "./src/fresh-verification.mjs",
+    "./prompt-cycle": "./src/prompt-cycle.mjs",
+    "./historical-demands": "./src/historical-demands.mjs",
+    "./relevant-history": "./src/relevant-history.mjs",
+    "./context-address": "./src/context-address.mjs",
+    "./locus-registry": "./src/locus-registry.mjs",
+    "./notebook-research-jobs": "./src/notebook-research-jobs.mjs",
+    "./github-software-induction": "./src/github-software-induction.mjs",
+    "./native-usage": "./src/native-usage.mjs",
+    "./a2a-client": "./src/a2a-client.mjs",
+    "./a2a-executor": "./src/a2a-executor.mjs",
+    "./mcp-server": "./apps/mcp-server.mjs"
+  },
+  "bin": {
+    "serve-codex-enterprise-mcp": "apps/mcp-server.mjs",
+    "serve-codex-mape-office-mcp": "src/mape-office-mcp.mjs",
+    "project-codex-enterprise-position": "scripts/project-enterprise-position.mjs",
+    "execute-codex-enterprise-a2a-message": "scripts/execute-a2a-message.mjs",
+    "observe-codex-native-usage": "scripts/observe-native-usage.mjs",
+    "project-codex-mape-cycle": "scripts/project-codex-mape-cycle.mjs",
+    "admit-next-codex-historical-demand": "scripts/admit-next-historical-demand.mjs",
+    "run-codex-notebook-research-job": "scripts/run-notebook-research-job.mjs",
+    "serve-codex-enterprise-activitypub": "scripts/serve-activitypub.mjs",
+    "assay-codex-harness-candidate": "scripts/assay-harness-candidate.mjs",
+    "assay-codex-harness-efficiency": "scripts/assay-codex-harness-efficiency.mjs"
+  },
+  "files": [
+    "apps",
+    "src",
+    "scripts"
+  ],
+  "scripts": {
+    "check": "node --check src/enterprise.mjs && node --check src/configuration.mjs && node --check src/semiotic-circuit.mjs && node --check apps/mcp-server.mjs && node --check src/mape-office-mcp.mjs",
+    "test": "CODEX_ENTERPRISE_CONFIGURATION=test/fixtures/enterprise.json node --test --test-concurrency=1 test/*.test.mjs"
+  },
+  "dependencies": {
+    "@a2a-js/sdk": "1.0.0-beta.0",
+    "@red-cup-engineering/a2a-rmn-part-service": "0.5.0",
+    "@red-cup-engineering/a2a-rmn-task-client-service": "0.10.0",
+    "@red-cup-engineering/activitypub-services-section": "0.8.1",
+    "@red-cup-engineering/computer-data-engine": "0.11.2",
+    "@red-cup-engineering/execute-javascript-node-command-service": "0.3.0",
+    "@red-cup-engineering/file-services": "0.4.0",
+    "@red-cup-engineering/find-ancestor-marker-file-service": "0.1.0",
+    "@red-cup-engineering/harness-lifecycle-journal-service": "0.3.1",
+    "@red-cup-engineering/harness-routing-service": "0.1.1",
+    "@red-cup-engineering/javascript-file-main-guard-service": "0.1.3",
+    "@red-cup-engineering/javascript-node-services-section": "0.3.0",
+    "@red-cup-engineering/make-directory-service": "0.1.0",
+    "@red-cup-engineering/path-walking-service": "0.5.0",
+    "@red-cup-engineering/project-filepath-directory-service": "0.1.1",
+    "@red-cup-engineering/read-javascript-node-standard-input-text-service": "0.2.1",
+    "@red-cup-engineering/resolve-filepath-service": "0.1.1",
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.8",
+    "@red-cup-engineering/semantic-record-journal-service": "0.5.0",
+    "@red-cup-engineering/session-transcript-dialects": "0.4.0",
+    "@red-cup-engineering/stat-path-service": "0.1.0",
+    "@red-cup-engineering/tool-evidence-bounding-service": "0.1.0",
+    "@red-cup-engineering/computer-platform": "0.5.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "@lenticule-science/articulating": "0.2.12"
+  }
+}

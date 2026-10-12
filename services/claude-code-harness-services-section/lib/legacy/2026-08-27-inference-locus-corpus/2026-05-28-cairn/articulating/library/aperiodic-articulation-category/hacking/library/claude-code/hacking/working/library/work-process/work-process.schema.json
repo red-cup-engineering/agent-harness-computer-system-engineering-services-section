@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/working/library/work-process/work-process.schema.json",
+  "title": "work-process",
+  "description": "The codomain of working: a record of an agent's sustained contribution about a subject -- which agent, which subject, status, and the claim-record it contributed to the shared field.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["agent", "subject", "status", "claim"],
+  "properties": {
+    "agent": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "subject": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "status": { "enum": ["contributed", "idle", "blocked"] },
+    "claim": { "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/studying/hacking/library/claim-record/claim-record.schema.json" }
+  }
+}

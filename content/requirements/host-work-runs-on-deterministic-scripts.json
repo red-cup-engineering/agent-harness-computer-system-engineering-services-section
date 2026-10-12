@@ -1,0 +1,175 @@
+{
+  "id": "host-work-runs-on-deterministic-scripts",
+  "name": "Git, npm and publishing run on deterministic scripts",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "That this whole, registry, pinning, publishing, that it all takes so much premium effort from agents, rather than happening automatically, deterministically, with scripts, is exactly what I am asking you to deal with. ... Invest in durable tooling that fixes this.",
+  "met-when": [
+    {
+      "cell": "host-work-runs-on-deterministic-scripts:held",
+      "target": "held",
+      "command": "test -f lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/requirements/host-work-runs-on-deterministic-scripts.json",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "strategic",
+  "x-provenance": {
+    "recorded-by": "office agent of the 561 Group (Lenticule Science Senior and Red Cup Engineer Senior), development pass sigrid-publishing-1 of debt-2026-10-09-leader-words-held-in-corpus",
+    "recorded-on": "2026-10-10",
+    "customer": "urn:leader:emsenn",
+    "basis": "The Leader's utterances cited in `sources`, read in full. `asks` and `sources[].words` are the Leader's own words; the requirements are an EARS rendering of what those words state and carry no scope the words do not.",
+    "board-opening": {
+      "speech-act": "request",
+      "need": "That this whole, registry, pinning, publishing, that it all takes so much premium effort from agents, rather than happening automatically, deterministically, with scripts, is exactly what I am asking you to deal with. ... Invest in durable tooling that fixes this.",
+      "scope": [
+        "section:services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section"
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "says": "The host-work toolchain shall perform npm publishing, pinning and repinning, git committing and git pushing by deterministic scripts that need no inference per run.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[0mchGN7_pVcY]: 'a unified platform provided by this ecosystem'; about half the tokens went to git, npm, search and other deterministic work."
+        },
+        {
+          "id": "R2",
+          "says": "The host-work toolchain shall publish packages without a human in the loop.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[V9ilzfe0J4Lc],[IpJ7eFZaUTLw]: 'You published fine, no human in the loop, yesterday.'"
+        },
+        {
+          "id": "R3",
+          "says": "The host-work toolchain shall report the first failing step and its cause when a publish fails.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[IpJ7eFZaUTLw]: 'Identify the issue and fix it.'"
+        },
+        {
+          "id": "R4",
+          "says": "The host-work toolchain shall be realized as tools, offices, duties, skills and scripts tied into the Group's systems.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[0mchGN7_pVcY]: 'real tools, real offices, duties, skills, scripts, tied into our real systems'."
+        },
+        {
+          "id": "R5",
+          "says": "The host-work toolchain shall resolve a failing gate or stale pin without escalating to the Founder.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[kO_vO9cOAyLI]: 'you have to act like 9999xx more autonomously ... why can't you publish shit?'"
+        },
+        {
+          "id": "R6",
+          "says": "The agent harness shall record the share of a week's inference spent on git, npm, search and other host work.",
+          "class": "functional",
+          "moscow": "should",
+          "rationale": "[0mchGN7_pVcY],[kFh5AWB5xAAs]: about $300 a week on npm and git handling; npm publishing and git committing the single greatest cost in every session."
+        },
+        {
+          "id": "R7",
+          "says": "The repair of a host-work failure shall be made in the toolchain that owns the failing step, so the failure does not recur in later sessions.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[02vQDYwZcQco],[SHODv3i1bHyw]: 'this is like the 10th session today where you've gone can't publish'; the fix is not done if an agent running the wrong script somewhere brings it back."
+        },
+        {
+          "id": "R8",
+          "says": "The agent harness's dependency policy shall allow Node built-ins through the file-engineering section and carry no zero-dependency limitation.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[8rYEiuViKU-w]: 'remove the fucking line about zero-dep'."
+        }
+      ],
+      "conditions": [
+        {
+          "id": "C1",
+          "says": "Two consecutive publishes of a changed package run from a script with no human step and report success or the failing step.",
+          "method": "test",
+          "verifies": [
+            "R1",
+            "R2",
+            "R3",
+            "R5"
+          ]
+        },
+        {
+          "id": "C2",
+          "says": "A failure injected in the publish script is repaired in the owning script and does not recur in the next session's run.",
+          "method": "test",
+          "verifies": [
+            "R7"
+          ]
+        },
+        {
+          "id": "C3",
+          "says": "A week's inference record shows the share spent on host work.",
+          "method": "inspection",
+          "verifies": [
+            "R6"
+          ]
+        },
+        {
+          "id": "C4",
+          "says": "The harness configuration contains no zero-dependency line.",
+          "method": "inspection",
+          "verifies": [
+            "R8"
+          ]
+        },
+        {
+          "id": "C5",
+          "says": "The tools, offices, duties and skills of the toolchain are listed in the agency.",
+          "method": "inspection",
+          "verifies": [
+            "R4"
+          ]
+        }
+      ],
+      "context": "Other agent working the npm side at the time of [8rYEiuViKU-w] ('Another agent is working our npm shit right now'). Existing carriers to extend, never replace: the npm and git skills under the agency, the `.codex.bk` directory the Founder saw on 2026-09-12 as proof the harness cleanup was not done ([SHODv3i1bHyw]), and the registry and pin tooling of the computer-engineering section. The Founder's instruction that accepted flakiness and fragility of tooling be removed, especially tooling by which an agent receives work, policies and information and searches for context ([8rYEiuViKU-w]), is carried by R1 and R7.",
+      "sources": [
+        {
+          "address": "ni:///sha-256;1GW9YjqjsvqTjNXeheo6o-gyTdPy_CG0mchGN7_pVcY",
+          "at-utc": "2026-09-11T14:24:26.919Z",
+          "words": "We literally are spending $300+ a week on you handling NPM stuff, git stuff. Invest in durable tooling that fixes this."
+        },
+        {
+          "address": "ni:///sha-256;B-u4h2oMu7RRApz6WFyK8GBp1e4dpF4kFh5AWB5xAAs",
+          "at-utc": "2026-09-11T17:36:05.870Z",
+          "words": "In EVERY session, NPM publishing and Git commiting have become the SINGLE GREATEST costs."
+        },
+        {
+          "address": "ni:///sha-256;lh4gsV8A0NHjowCr8qwLFUF5QOSuucI8rYEiuViKU-w",
+          "at-utc": "2026-09-11T17:45:11.751Z",
+          "words": "fine remove any 'dependencies' limitation ... remove the fucking line about zero-dep"
+        },
+        {
+          "address": "ni:///sha-256;7qWqk25FXRvps7w5w5Mzv9PWeEtqimqV9ilzfe0J4Lc",
+          "at-utc": "2026-09-11T17:56:03.787Z",
+          "words": "You used to publish just fine, and today, you won't."
+        },
+        {
+          "address": "ni:///sha-256;xfHxPnRvRN3Uy3aeZrZ7LFvP1sQaaMGkO_vO9cOAyLI",
+          "at-utc": "2026-09-11T19:39:18.013Z",
+          "words": "be way more fucking autonomous"
+        },
+        {
+          "address": "ni:///sha-256;miZKm6BD3PzejDaHK1b0yj8O6HTs1vqSHODv3i1bHyw",
+          "at-utc": "2026-09-12T15:33:28.025Z",
+          "words": "I see .codex.bk not .codex, so you clearly aren't actually fucking done."
+        }
+      ],
+      "serves": [
+        "debt-2026-10-09-leader-words-held-in-corpus"
+      ],
+      "after": [],
+      "traces": []
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;EmT_PogUVlvqwHB08wYQUcfCuq_g6n35gESiChBf-RI",
+      "cell": "ni:///sha-256;C2VXyeV1KRAL7QBNUav1bhOsqO0CFelSEPnp6KXXa3I"
+    }
+  }
+}

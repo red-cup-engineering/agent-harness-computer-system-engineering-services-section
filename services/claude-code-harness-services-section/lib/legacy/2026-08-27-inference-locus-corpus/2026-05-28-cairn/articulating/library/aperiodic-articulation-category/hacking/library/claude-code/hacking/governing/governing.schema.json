@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/governing/governing.schema.json",
+  "title": "governing",
+  "description": "Morphism: (state, opts) -> governance. The action tower's finite generator (parallel to settling): executive regulation. The budget governor is METABOLISM -- the hard cap that bounds swarm growth; attention allocates work to the highest-dissent subject; conflict norms prioritize top (contradiction) demands. Deterministic. HACKING: action-tower generator and regime placement admitted; real cost math (cost-compose/budget-check) is a later wire-in.",
+  "kind": "morphism",
+  "domain": "state{ budget, spent, subjects } + opts",
+  "codomain": "governance",
+  "variance": "generator",
+  "monotone": true
+}

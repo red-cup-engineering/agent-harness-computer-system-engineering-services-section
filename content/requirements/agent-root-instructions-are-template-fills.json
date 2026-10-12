@@ -1,0 +1,67 @@
+{
+  "id": "agent-root-instructions-are-template-fills",
+  "name": "An agent's root instruction is a deterministic fill of a template with data",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "\"Like this whole 'agent root instruction service' as a discrete package are you fucking KIDDING me of course your'e going to have massive code drift when 'take this agents.md jinja2, fill it with this data' turns into... whatever the fuck that is.\" (2026-09-11)",
+  "met-when": [
+    {
+      "cell": "agent-root-instructions-are-template-fills:record-held",
+      "target": "held",
+      "command": "sh -c 'ls lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/text/documents/articles/notes/2026/10/10/2026-10-10-note-on-the-agent-root-instruction-as-a-template-fill.md >/dev/null 2>&1'",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "routine",
+  "x-provenance": {
+    "recorded-by": "claude (Red Cup Engineer Senior, pass education-media)",
+    "recorded-on": "2026-10-10",
+    "customer": "urn:leader:emsenn",
+    "utterances": [
+      "ni:///sha-256;-rYIGXBAMoSNpKIfMlptbnGU26XY6251ZUjX5aIp8g8"
+    ],
+    "basis": "EARS rendering. R4 is carried from the finding in the 2026-10-09 projection note and is in service of R1.",
+    "board-opening": {
+      "speech-act": "request",
+      "need": "An agent's root instruction is produced by one template fill, with no second implementation to drift from it.",
+      "scope": [
+        "section:engineering-services-section"
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "says": "The agent root instruction shall be the output of one template applied to the agent's records as data.",
+          "class": "structural",
+          "moscow": "must",
+          "rationale": "\"take this agents.md jinja2, fill it with this data\"."
+        },
+        {
+          "id": "R2",
+          "says": "The agent harness projector shall produce byte-identical root instructions from identical template and data.",
+          "class": "quality",
+          "moscow": "must",
+          "rationale": "Code drift is the failure named."
+        },
+        {
+          "id": "R3",
+          "says": "The agent harness section shall hold exactly one implementation of the root-instruction fill.",
+          "class": "structural",
+          "moscow": "must",
+          "rationale": "\"massive code drift\" from a discrete package."
+        },
+        {
+          "id": "R4",
+          "says": "The agent harness projector shall write a root instruction for every agent it projects, including one whose records carry no standing text.",
+          "class": "functional",
+          "moscow": "should",
+          "rationale": "The 2026-10-09 projection note found a session with no CLAUDE.md when standing text is absent."
+        }
+      ]
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;tTC9LSTNLev9FqI-R7RDf4oVfMAQ_qQ0JlfqcDya-10",
+      "cell": "ni:///sha-256;3fGlumaycpRwzbP7Ruzp1dh9pFVVhI6AmGtoKm2Repg"
+    }
+  }
+}

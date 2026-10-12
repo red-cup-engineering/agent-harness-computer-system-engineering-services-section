@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-harness-observation.schema.json",
+  "title": "AgentHarnessObservation",
+  "description": "The runtime surface as it is on disk: for every path a projection names, whether it exists and the content identity of its text.",
+  "type": "object",
+  "required": ["kind", "version", "root", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "agent-harness-observation" },
+    "version": { "const": 1 },
+    "root": { "type": "string", "minLength": 1 },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "exists"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "exists": { "type": "boolean" },
+          "identity": { "type": "string", "pattern": "^ni:///sha-256;[A-Za-z0-9_-]+$" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/library/scott-continuous-posit-cell/library/potential-scott-continuous-posit-cell/settling/library/finite-settlement-algebra/library/finite-settlement-cell/finite-settlement-cell.schema.json",
+  "title": "finite-settlement-cell",
+  "description": "A settled cell: the (subject, predicate, object, value) record stamped settled=true, value resolved to one of true/false/top. The strict-finite regime outcome. From here a conductor projects an eavt-row.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "predicate", "object", "value", "settled"],
+  "properties": {
+    "subject": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "predicate": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "object": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "value": { "description": "settled FOUR value", "enum": ["true", "false", "top"] },
+    "settled": { "const": true }
+  }
+}

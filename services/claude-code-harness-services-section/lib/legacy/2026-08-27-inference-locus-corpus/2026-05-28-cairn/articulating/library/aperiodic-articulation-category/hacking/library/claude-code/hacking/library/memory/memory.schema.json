@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/library/memory/memory.schema.json",
+  "title": "memory",
+  "description": "A memory-fragment: a typed, provenanced EAVT positing event the conductor durably knows. Per continuous-learning's memoryBoundary, memory is a LOCAL FRAGMENT that is a typed resource carrying provenance -- it is an eavt-row (entity e=token, attribute a=claim, value v, time t) plus required `evidence` (provenance) and a `placement` (the slug of the $thing where this memory belongs / will be needed). Being present in a spacesuit is NOT memory (noContextPresenceAsDurableLearning); only a posited memory row is.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["e", "a", "v", "t", "evidence", "placement"],
+  "properties": {
+    "e": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "a": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "v": { "description": "the learned value presentation", "type": "string", "minLength": 1 },
+    "t": { "description": "logical/ISO time of the positing event", "type": "string", "minLength": 1 },
+    "evidence": { "description": "provenance: where this was learned", "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+    "placement": { "description": "slug of the $thing where this memory belongs", "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/decoding/library/hook-event/hook-event.schema.json",
+  "title": "hook-event",
+  "description": "An environmental trigger from a Claude Code hook (e.g. pre-tool-use, session-start, session-end, stop): an event name token and its JSON payload. Decoding turns it into an utterance.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["event"],
+  "properties": {
+    "event": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" }
+  }
+}

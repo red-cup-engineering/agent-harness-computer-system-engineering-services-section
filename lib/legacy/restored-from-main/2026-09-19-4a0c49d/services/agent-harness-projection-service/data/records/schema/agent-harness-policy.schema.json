@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-harness-policy.schema.json",
+  "title": "AgentHarnessPolicy",
+  "description": "The one authored input for one actor on one agent runtime: root instructions, runtime settings, features, MCP endpoints, lifecycle hooks, skills, seated roles, and permissions. Every path is repository-relative; nothing here names a machine.",
+  "type": "object",
+  "required": [
+    "kind",
+    "version",
+    "actor",
+    "runtime",
+    "instructions",
+    "mcpServers",
+    "hooks",
+    "skills",
+    "roles"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "repositoryRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$))[^\\u0000]+$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "scalar": {
+      "type": [
+        "string",
+        "number",
+        "boolean"
+      ]
+    },
+    "hook": {
+      "type": "object",
+      "required": [
+        "id",
+        "event",
+        "handler",
+        "timeout"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "event": {
+          "enum": [
+            "SessionStart",
+            "UserPromptSubmit",
+            "PreToolUse",
+            "PostToolUse",
+            "Stop",
+            "SubagentStart",
+            "SubagentStop",
+            "SessionEnd"
+          ]
+        },
+        "matcher": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handler": {
+          "$ref": "#/$defs/repositoryRelativePath",
+          "pattern": "\\.mjs$"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "statusMessage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "additionalContextLimit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "required": [
+        "id",
+        "office",
+        "character",
+        "incumbency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "office": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "character": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "incumbency": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasoningEffort": {
+          "enum": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "kind": {
+      "const": "agent-harness-policy"
+    },
+    "version": {
+      "const": 1
+    },
+    "actor": {
+      "type": "string",
+      "pattern": "^actor:[A-Za-z0-9_-]+$"
+    },
+    "runtime": {
+      "enum": [
+        "codex",
+        "claude"
+      ]
+    },
+    "instructions": {
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/repositoryRelativePath"
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/scalar"
+      }
+    },
+    "features": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxThreads": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        }
+      }
+    },
+    "mcpServers": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "https://schemas.561.group/computer/networking/mcp-client-endpoint.schema.json"
+      }
+    },
+    "hooks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hook"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/repositoryRelativePath"
+      },
+      "uniqueItems": true
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/role"
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultMode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allow": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "deny": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "description": "Environment the runtime gives every hook handler and shell command; `{{root}}` binds to the repository root.",
+      "propertyNames": {
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "rootRole": {
+      "$ref": "#/$defs/role",
+      "description": "The office the session itself holds: seating-verified like every role, never projected as a subagent."
+    }
+  }
+}

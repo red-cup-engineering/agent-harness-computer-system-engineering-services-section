@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/transfinite-predication-cell.schema.json",
+  "title": "transfinite-predication-cell",
+  "description": "A predication-cell produced by predicating. Records a Fregean predication: subject (token, bearer), predicate (claim, borne), object (token, bearer), and a FOUR-valued datum inherited from the surrounding articulation-cell partition. Closure regime: transfinite-bounded (omega < kappa < omega_1).",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "predicate", "object", "value"],
+  "properties": {
+    "subject": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "predicate": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "object": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "value": { "description": "FOUR, inherited from the articulation-cell partition", "enum": ["bottom", "true", "false", "top"] }
+  }
+}

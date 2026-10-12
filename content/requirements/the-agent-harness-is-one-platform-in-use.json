@@ -1,0 +1,308 @@
+{
+  "id": "the-agent-harness-is-one-platform-in-use",
+  "name": "The agent harness is one platform in use, generated from upstream software",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "The Leader's statements of 2026-08-27 to 2026-10-09 about the agent harness, collected by address; their theory is stated in the 2026-10-10 note on how agents fail in this environment (agent-harness-science-services-section).",
+  "met-when": [
+    {
+      "cell": "harness:specification-held",
+      "target": "held",
+      "command": "sh -c 'ls lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/text/documents/articles/specifications/2026-10-10-the-agent-harness-as-one-platform.md >/dev/null 2>&1'",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "major",
+  "x-provenance": {
+    "recorded-by": "harness-agents pass of debt-2026-10-09-leader-words-held-in-corpus (Red Cup Engineer Senior)",
+    "recorded-on": "2026-10-10",
+    "customer": "urn:leader:emsenn",
+    "utterances": [
+      "ni:///sha-256;087I2SF74AiBYShOg3nSiNJUkBrRGJbZZ2ITNeaJm08",
+      "ni:///sha-256;0ntUk8Wz_k1C8tjESYw8wOmGXk0TZKOYfAJSPScrRdQ",
+      "ni:///sha-256;1Z3z8eY24179KcJ4U6ZEESBFWHGtDcHJHCN5WURcXU0",
+      "ni:///sha-256;2vExbTbz0dHlUmppRYHgcdTqANU33eFqHGAOqUvCLxY",
+      "ni:///sha-256;3WdVVvj0cHXXW09zF4wCc_Ky-TxnZwtV-cvTYAyzryM",
+      "ni:///sha-256;4niMWT21sP19iqIMiPsdQOo88-6mT7FjpLkPauG36-A",
+      "ni:///sha-256;6Ojj7s0yyiZ15ebBn6emLriXtvlNtSpC_WThtAMHY30",
+      "ni:///sha-256;6k2dRHKTSQKKfvHgJJKUSNtoGigtJV97CwYvI117IWM",
+      "ni:///sha-256;716QY80DCqO1k7BoqG_QtchoFzOzgX-wZI4tN9-bJlM",
+      "ni:///sha-256;7WA1ZErzxI63tGHzTLdJRZoTU1vSw-irJyRBLmup6Z0",
+      "ni:///sha-256;CHpzexk3HKvSjP2VMsU6LKvyselEES46x9AHk24V_84",
+      "ni:///sha-256;EVYmaTal4gXivxrfqxkzSv3enMczwrxA22cDWzl5uUg",
+      "ni:///sha-256;F_Z9aOWIFF0bdCvMd_2ILGVzblAE3mrm1cvYaWAJfBo",
+      "ni:///sha-256;J0mRw263kjjH5C2n-04InWDMzS6pr6YGNh9lYfV2zho",
+      "ni:///sha-256;J21j5QVb0-2riUJjPA-3AKkm9_JKo2le4nzVRoKbb3o",
+      "ni:///sha-256;L6E8YqJMyuUXwBxSOInYZ6pX8xl3i5U3UOXoEe_1CyA",
+      "ni:///sha-256;Luy_nmN3Ba2tff93G6JW7O4BUbsxMVuyr8f3kyMvxP4",
+      "ni:///sha-256;MAGMxvjqX9M5cTz2a7l9JMHH45SJUmixK4zR0hRMUTk",
+      "ni:///sha-256;NgAKSoKSG3JlxhyDmWL7xj9iYZmRnLwAxafYdhXa3ik",
+      "ni:///sha-256;NxUsZzK2PLC_6FQH6EhIt6PvgocGRIOQX66V3rPOwaA",
+      "ni:///sha-256;O5tszvZH-u4PhjVTGurKebeGlPmOx61s6GNfu4xbhgk",
+      "ni:///sha-256;ORswzAu5yektERr7ojvEZj68JxNPpZlGdakKiOtlSMU",
+      "ni:///sha-256;Pt3hmvumA0Gx6q1HRZzvyXsc2ll69nh-0_jqis-YT4U",
+      "ni:///sha-256;Q15R_D3ypBWMgd2qwERqXP5Xlu6_CklKL0A6juC4zJc",
+      "ni:///sha-256;QbiBZFUe-COUpHldLHcPEds8MAjDdJS-RXGgn6CPGfM",
+      "ni:///sha-256;RAnOZnwx1OBCTQUcLeWRkwkYEcGYSR5KBqwgUvtZFyc",
+      "ni:///sha-256;UvF_XVvElhLcYc0N_dZH-BVlQk5Kiqg5ryjaA6HgZTg",
+      "ni:///sha-256;W5HY4Y8_H-j4RnoH8gmoUbKZuUyNMmRGwRCRwXkiboU",
+      "ni:///sha-256;WCJBLpS2ZheFr3JY_VWIet5tvsNSWuijms6PYvYxu2s",
+      "ni:///sha-256;X48Gmd8RplatD9FDwGH6rGOGtUT5UGU6IUQUbrb7Eb8",
+      "ni:///sha-256;XgFWDfoJn8OOzSIeqSohVR0a9hmWvkJw8fSncapGCpY",
+      "ni:///sha-256;XyTqEJaD_6Q716ktvSgscsPBLciI3yQR9XMtntZ_cU4",
+      "ni:///sha-256;c0BAdFjNpmYPd6nF4yaOM3kHkzPTbRAOfgQwm4zLVGc",
+      "ni:///sha-256;dCfWqNo60ai3THIevuOA1tIROZGZtntiS1lku4lbNJk",
+      "ni:///sha-256;dMTvZYRpAdUM7w2FQnomelNjQM4PKofHCA2eqeQFb48",
+      "ni:///sha-256;dym-Hd4a04ILIejmoxCEoBA32qrpAUrIytaCwcsJSr8",
+      "ni:///sha-256;epZdXu4K1zKAxYghjfeRhsXVF5P1mrey1CHdNdZ4Gt4",
+      "ni:///sha-256;fJCiF20H8Ji6_x-im7wvsIT4klJiE_Gr5LfNoO0pnaU",
+      "ni:///sha-256;gCVd5nLtL_sUylmNvA37jZu5WzU98C2oRhNwNHx3IFA",
+      "ni:///sha-256;kqV0R7IiEDKPS04yqy-TmrYtb-m3qluxqoMxE_fJDTU",
+      "ni:///sha-256;kzQ1vqesRmOFToK1TmNSdVCgsGT0kXC6oByK3hi-O2I",
+      "ni:///sha-256;lOEb94td-q33OhdV-E0j4ohRdsHyDe93RIEv9IZrGdg",
+      "ni:///sha-256;lWP0r5SXb0YW4S2-YFzu-oBW5i7ECq6ph76pdqwKmTA",
+      "ni:///sha-256;lw1iHZNboCWN214vvV6wNwGD-BFwF-QnfixbEPdIqLE",
+      "ni:///sha-256;on6olH4Vq6fidY9NxSq5z-3f-b43YwWvyjSe3XX4-ak",
+      "ni:///sha-256;pu7VEls4-mcPYYt62ybvcpMJpMgY1py9opDJuDVUpgM",
+      "ni:///sha-256;rupcPFC4Qr0tE63rULKUtdGxJLDP8flQ0yav8GC3rhg",
+      "ni:///sha-256;sy9T3ODK2txpzZVk7V4GXdBYt1zoCenJSRzQ2ShO2Bw",
+      "ni:///sha-256;vOwAgVnN3NJiEaaPzvva4elLaoiM0HrqqKeJiLsy3mc",
+      "ni:///sha-256;wNGXaIFj1J0cV76Lfg7d-x6wi7Pxd9l4mENh9YiNFL8",
+      "ni:///sha-256;x2cwn1XbtJe9EJ7O4UbL8oRfyTpZ2v-WjVOjiCKOAMQ",
+      "ni:///sha-256;yiAaWmLIR6fuXuM1sMfD_1IXKEiRqizBumxlrUmPvqI",
+      "ni:///sha-256;z7TW9L6E7roTkyjVk4HHcjvo7Gssu412ItKAI4nX3q4"
+    ],
+    "basis": "Leader utterances cited by address; the requirements are an EARS rendering of what those words state and carry no scope the words do not. No requirement names a person, model or agent as the doer of future work.",
+    "board-opening": {
+      "speech-act": "request",
+      "need": "The agent harness is one platform in which the agents of every provider are in use, controlled by software and generated from upstream software.",
+      "scope": [
+        "section:services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section"
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "says": "The agent harness shall be one platform in which Claude Code, Codex and every other agent provider are each a configuration over the same upstream software, with no per-provider fork of logic.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: Claude and Codex \"should literally each just be parameters, like literally config files, over the actual upstream software they share\". (RAnOZn, gCVd5n, on6olH, lWP0r5)"
+        },
+        {
+          "id": "R2",
+          "says": "Every script, app and package of the house shall import the shared architecture it is downstream of.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: \"you don't look at the top of a script and see import <some shared shit everything shares>\"; removing divergence is the goal, not the method. (on6olH, EVYmaT)"
+        },
+        {
+          "id": "R3",
+          "says": "The agent harness shall route every agent call that touches machine resources through a local handler platform.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 10-08: \"AGENT HARNESS MUST BE IN USE\"; capping the box is not what is asked. (NxUsZz, kzQ1vq, yiAaWm)"
+        },
+        {
+          "id": "R4",
+          "says": "The resource controller shall limit concurrent local agents, memory, paging and disk input and output by deterministic measurement and not by language-model reasoning, with the concurrent-agent ceiling a configured parameter.",
+          "class": "quality",
+          "moscow": "must",
+          "rationale": "Leader 09-10: never more than about 12 Claude agents at a time; 10-08: crashes from memory, paging and WSL virtual-disk lag; a software controller is not Claude coordinating by reasoning. The house rule sets four on the laptop; the value is the controller's parameter. (c0BAdF, NxUsZz, kzQ1vq, X48Gmd)"
+        },
+        {
+          "id": "R5",
+          "says": "The git tool surface shall offer agents status, search, history and project-management operations that do not read the whole disc, so that agents do not use raw git for project management or for searching.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-10: concurrent agents using git for everything crashed WSL. (QbiBZF, z7TW9L, NgAKSo)"
+        },
+        {
+          "id": "R6",
+          "says": "The git tool surface shall refuse any commit or checkout that would discard another agent's uncommitted work.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-10: Claude's commit wipes every other agent's work; unacceptable to tolerate. (z7TW9L, NgAKSo)"
+        },
+        {
+          "id": "R7",
+          "says": "The harness configuration shall allow routine git operations for every projected agent.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-18: a git classifier configuration blocked routine git operations. (WCJBLp)"
+        },
+        {
+          "id": "R8",
+          "says": "The agent harness shall be generated from upstream software, leaving .claude, .agents and dev with no handwritten file.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11 and 09-23: \"I want NOTHING in .claude/ that is not generated by ACTUAL robust upstream software\"; the Leader deleted these directories as agent slop. (Luy_nm, wNGXaI, kqV0R7, rupcPF)"
+        },
+        {
+          "id": "R9",
+          "says": "The rule store shall hold each rule as a machine-checkable subject-predicate-object statement of the form \"subject MUST condition\" that a program can evaluate, as Policy over a shared system of actors and resources.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: \"If you can't check them with math, they aren't rules\". (Luy_nm)"
+        },
+        {
+          "id": "R10",
+          "says": "A conformance check shall reject any services section not named domain-department-services-section.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-11: openai-systems-engineering-services-section, not openai-compatible-chat-completion-service. (Luy_nm)"
+        },
+        {
+          "id": "R11",
+          "says": "The harness shall start a new agent session within a bounded time and report where the time goes.",
+          "class": "quality",
+          "moscow": "must",
+          "rationale": "Leader 09-11: instantiating a new Claude session takes forever. (ORswzA)"
+        },
+        {
+          "id": "R12",
+          "says": "The harness shall carry no agent-installed scheduled job, hook or configuration edit that the Leader has not approved, each removable by a documented step even when deletion is blocked.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-12: a daily heartbeat editing the Codex config, private keys in the Codex config, broken hooks and configs in several places stopped Codex starting. (fJCiF2, lOEb94, XgFWDf, XyTqEJ)"
+        },
+        {
+          "id": "R13",
+          "says": "The harness shall create Codex worktrees only through itself and reintegrate or remove each when its task ends.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-28: seven Codex worktrees, two task slots, an ao worktree and a release checkout, with Codex making worktrees and not bringing them back. (7WA1ZE, dMTvZY)"
+        },
+        {
+          "id": "R14",
+          "says": "The planning engine shall be one code file, apps/simple-planning-engine.mjs, with one data file, data/logs/simple-planning-engine-log.jsonl, exposed as mcp__simple_planning_engine.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11 and 09-12: standardize the names; one file, one data file. (0ntUk8, sy9T3O)"
+        },
+        {
+          "id": "R15",
+          "says": "The agent configuration shall carry no hardcoded agent identity.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-12: hardcoding \"I'm claude\" into .mcp.json is wrong. (sy9T3O)"
+        },
+        {
+          "id": "R16",
+          "says": "The package search for local JavaScript packages shall be named local-jsnode-package-search.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: jsnode-server renamed to the more humble and honest local-jsnode-package-search. (x2cwn1)"
+        },
+        {
+          "id": "R17",
+          "says": "The bare-cedar-fog-server MCP shall be an instance of persistent-linux-machine-server, itself an instance of upstream servers, giving agents the local machine and its npm and git tools as git-engine, jsnode-engine and similar tools, each a specialization of computer-system-engine.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-11. (4niMWT)"
+        },
+        {
+          "id": "R18",
+          "says": "The MCP configuration shall exclude every server the Leader has disabled, across regenerations.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: ops_ came back; 09-27: remove LSpace by hand now. (J21j5Q, pu7VEl, 087I2S)"
+        },
+        {
+          "id": "R19",
+          "says": "The MCP servers of the house shall not scan the whole repository.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-11: adding a timeout to a whole-repo scan is the wrong decision. (3WdVVv)"
+        },
+        {
+          "id": "R20",
+          "says": "The computer-system-platform shall be downstream of computer-system-engine, hosting apps and letting them communicate with the underlying engine and doing nothing else.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-22: rename computer-platform to computer-system-platform. (MAGMxv)"
+        },
+        {
+          "id": "R21",
+          "says": "The code of file-touch, mcp-tool, serve-web and workspace-analysis shall sit with networking where it concerns a networking protocol, and otherwise in computer-X-system/apps/computer-X-engine under computer-systems-engineering.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 09-22: computer-systems-engineering ends up owning most of the Group's software. (MAGMxv)"
+        },
+        {
+          "id": "R22",
+          "says": "The markdown engine stack shall consist of computer-data-engine, computer-content-engine, computer-text-engine and markdown-engine apps, with markdown code unified in a markdown-engineering-services-section that owns its leaf packages, the duplicate legacy packages of 2026-07-29 and 2026-07-31 retired and the markdown-vault MCP server repointed.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-10: full pass now. (6Ojj7s)"
+        },
+        {
+          "id": "R23",
+          "says": "The knowledge lookup tool shall answer an agent's question about the corpus from synthesized knowledge, and not from repeated search of the repository.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-11 and 09-27: stop burning context searching the same thing; real synthesis into systems of knowledge using the Group's science and math. (dCfWqN, J0mRw2, dym-Hd, vOwAgV)"
+        },
+        {
+          "id": "R24",
+          "says": "The agent tool surface shall offer MCP tools and commands, including SPARQL over the Group's datasets, so that routine agent work does not use raw shell, grep, edit, read and write.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 10-04 and 10-09: MCP instead of bash. (vOwAgV, UvF_XV)"
+        },
+        {
+          "id": "R25",
+          "says": "The harness shall apply deterministic code, and never model inference, to arithmetic and other computations that code can do.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 10-08. (Q15R_D)"
+        },
+        {
+          "id": "R26",
+          "says": "The harness shall set the permission mode for projected agents from configuration, in one place.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 10-04: the Leader cannot set bypass permissions in VS Code; configs in a thousand places. (2vExbT, epZdXu)"
+        },
+        {
+          "id": "R27",
+          "says": "The agent harness shall keep no Group knowledge in an agent provider's private memory, holding context in context spacesuits and handoffs between agents.",
+          "class": "constraint",
+          "moscow": "must",
+          "rationale": "Leader 10-08 and 10-09. (6k2dRH, lw1iHZ, UvF_XV)"
+        },
+        {
+          "id": "R28",
+          "says": "The harness shall select providers and models by configuration, switching between them without code change, with Claude deniable now and re-enableable later, and Codex model level chosen by task size.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-24: hot swap providers and models; 09-28: Codex 5.6 Sol for big software, 5.6 Luna for small tweaks; 10-03: deny Claude for now, reversibly. (1Z3z8e, L6E8Yq, W5HY4Y, Pt3hmv)"
+        },
+        {
+          "id": "R29",
+          "says": "The harness shall start, supervise and hand work between concurrent agents of several providers, including ChatGPT Web pulses at about twenty an hour, as one coordinated multi-agent system.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 09-28, 10-01 and 10-09: an agent-actor meshnet drone swarm. (F_Z9aO, O5tszv, 716QY8, UvF_XV)"
+        },
+        {
+          "id": "R30",
+          "says": "The harness shall let Claude Cloud and Codex Cloud sessions work over the Group's repositories as first-class agents, with clean repositories, CI/CD, credentials, packages and registry.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 10-08. (CHpzex)"
+        },
+        {
+          "id": "R31",
+          "says": "The harness shall give a handoff recipient the context it needs to continue from records alone.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "Leader 10-08 and 10-09: work handed between agents, context spacesuits. (6k2dRH, UvF_XV)"
+        }
+      ]
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;FytXmQiX3S9rX9F21NoTgct_7kZy3kCIkWqtqBUi90U",
+      "cell": "ni:///sha-256;yBbt9O3GJol3ee1zE693pks40NMZNv2MKIvVe2KeTzw"
+    }
+  }
+}

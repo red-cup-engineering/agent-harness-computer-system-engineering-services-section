@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/predicating.schema.json",
+  "title": "predicating",
+  "description": "Morphism: (potential-aperiodic-articulation-cell, decomposition) -> potential-transfinite-predication-cell. Lives INSIDE the potential articulation-cell. Generates transfinite-predication-category. Produces a Fregean predication (subject token, predicate claim, object token) at value bottom -- FOUR is INHERITED from the surrounding articulation-cell, not re-forced here.",
+  "kind": "morphism",
+  "domain": "potential-aperiodic-articulation-cell + decomposition{subject,predicate,object}",
+  "codomain": "potential-transfinite-predication-cell",
+  "variance": "generator",
+  "monotone": true
+}

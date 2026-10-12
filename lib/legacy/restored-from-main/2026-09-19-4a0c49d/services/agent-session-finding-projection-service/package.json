@@ -1,0 +1,21 @@
+{
+  "name": "@red-cup-engineering/agent-session-finding-projection-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Admits charged agent-session findings and folds supplied EAVT rows into recall projections without acquiring journal state.",
+  "exports": {
+    ".": "./src/finding-events.mjs",
+    "./finding-snapshot": "./src/finding-snapshot.mjs"
+  },
+  "bin": {
+    "admit-session-finding": "./scripts/admit-session-finding.mjs",
+    "project-session-findings": "./scripts/project-session-findings.mjs"
+  },
+  "files": ["README.md", "src", "scripts"],
+  "scripts": {
+    "check": "node --check src/*.mjs && node --check scripts/*.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "sideEffects": false
+}

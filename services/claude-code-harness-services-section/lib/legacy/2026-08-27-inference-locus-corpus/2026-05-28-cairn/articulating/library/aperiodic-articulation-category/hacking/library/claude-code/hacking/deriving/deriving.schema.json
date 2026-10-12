@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/deriving/deriving.schema.json",
+  "title": "deriving",
+  "description": "Morphism: goal -> derivation-demand-utterance. A conductor act (exposed via the conductor MCP) that forces a derivation -- demands the swarm settle a specific claim/goal. Produces a well-formed utterance to drive studying toward the goal. HACKING: conductor-act name admitted.",
+  "kind": "morphism",
+  "domain": "goal",
+  "codomain": "derivation-demand-utterance",
+  "variance": "restriction",
+  "monotone": true
+}

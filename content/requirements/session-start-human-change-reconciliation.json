@@ -1,0 +1,61 @@
+{
+  "id": "session-start-human-change-reconciliation",
+  "name": "A session starts by reconciling the human changes made since the last known state into work records",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "we need to realize, use-and-improve the existing theory/research we have on this, not spin up the thinnest thing an agent can imagine in one session.",
+  "met-when": [
+    {
+      "cell": "harness:reconcile",
+      "target": "held",
+      "command": "sh -c 'grep -r -q -E \"reconcileHumanChanges\" \"${COMPUTER_SERVICES_SECTION:?checkout of the owning repository}/services/agent-harness-computer-system-engineering-services-section/src\"'",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "major",
+  "x-provenance": {
+    "recorded-by": "research-realization session (Lenticule research -> Red Cup engineering), dispatched by the orchestrator of 2026-10-10",
+    "recorded-on": "2026-10-10",
+    "customer": "urn:leader:emsenn",
+    "convert-to-signed-cells": true,
+    "conversion-note": "Written in the requirement.schema.json form pending the canonical signcell call for requirement records; each met-when condition becomes a predication cell told held or denied by its command's exit.",
+    "basis": "The founder's demand that held research be realized in running code, carried with the research claim it realizes. The founder's words are quoted unedited; the research quote is the claim the tests exercise.",
+    "research": [
+      {
+        "path": "computer-science-services-section/services/artificial-intelligence-science-services-section/.../2026-04-01-note-on-human-change-reconciliation.md",
+        "says": "Diff the repo against the last known state"
+      }
+    ],
+    "owning-repository": "red-cup-engineering/computer-services-section",
+    "board-opening": {
+      "speech-act": "request",
+      "need": "The agent harness diffs a carrier against its last known commit at session start and records each unrecorded human change as work.",
+      "requirements": [
+        {
+          "id": "R1",
+          "says": "The harness shall diff against the last known state at session start and record unrecorded changes.",
+          "class": "functional",
+          "moscow": "must"
+        }
+      ],
+      "sources": [
+        {
+          "session": "session_01PnEE1T1PdzBe6LCAMGaN8E",
+          "at": "2026-10-09",
+          "words": "we need to realize, use-and-improve the existing theory/research we have on this, not spin up the thinnest thing an agent can imagine in one session."
+        },
+        {
+          "session": "session_01WFXZzAiqfYxQPLLLaH1sGU",
+          "at": "2026-09-04",
+          "words": "there are MEGABYTES of theory notes expanding on what i'm pointing to by shorthand and it feels like i CANNOT get you to integrate that theory into the actual code that does what we're doing"
+        }
+      ]
+    },
+    "checkout-variables": "Conditions read the owning repository from the named environment variable (a checkout at the commit under test).",
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;CX-hGLdhH7xtcP77_3or1nI3OJGfohELpn43epT5wSw",
+      "cell": "ni:///sha-256;hTALZ25q8_f2RtFrPpTkkj2q56dwtxP2goyOFweLg-c"
+    }
+  }
+}

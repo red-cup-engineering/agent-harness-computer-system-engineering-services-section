@@ -1,0 +1,37 @@
+{
+  "type": "SovereignCustomerEnterprise",
+  "actor": "urn:ame:test-machine-codex",
+  "actorSlug": "test-machine-codex",
+  "objectKindNamespace": "test-machine-codex",
+  "enterpriseLabel": "test-machine-codex-enterprise",
+  "name": "Test Machine Codex",
+  "machine": "test-machine",
+  "character": "codex-interactive-session",
+  "surface": "vscode-codex",
+  "customer": "urn:leader:test-customer",
+  "office": "test-machine-codex-actuation-office",
+  "territory": "../../../../../../../../../../../../../../../../../../../..",
+  "sessionsRoot": "sessions",
+  "runtimeRoot": "runtime",
+  "agentsRoot": "agents",
+  "stateRoot": "state",
+  "harnessPolicy": "harness/codex-agent-harness.json",
+  "harnessParityBaseline": "harness/codex-harness-parity-baseline.json",
+  "notebookExchangeRoot": "lib/emsenn/services/561-group/services/red-cup-engineering/services/inference-services-section/services/notebooklm-inference-team/content/exchanges",
+  "resultSchemaNamespace": "emsenn/schema/",
+  "faces": {
+    "host": ".codex/config.toml",
+    "mcp": "stdio:serve-codex-enterprise-mcp"
+  },
+  "resourceOffer": {
+    "amount": {
+      "numerator": "200",
+      "denominator": "1"
+    },
+    "denomination": "USD",
+    "interval": "P1M",
+    "source": "test subscription statement",
+    "allocationToAnySessionOrToken": "unknown"
+  },
+  "economicInvariant": "Profit is unknown until independently observed customer value or revenue and attributable cost share exist."
+}

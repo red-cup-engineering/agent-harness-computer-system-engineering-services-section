@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/decoding/library/llm-completion/llm-completion.schema.json",
+  "title": "llm-completion",
+  "description": "An ingress shape: a completion from an LLM endpoint (a swarm enactor's inference). decoding turns it into an utterance [llm:<model>, text], so the swarm's inferences enter the substrate as claims too.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["text"],
+  "properties": {
+    "text": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }
+  }
+}

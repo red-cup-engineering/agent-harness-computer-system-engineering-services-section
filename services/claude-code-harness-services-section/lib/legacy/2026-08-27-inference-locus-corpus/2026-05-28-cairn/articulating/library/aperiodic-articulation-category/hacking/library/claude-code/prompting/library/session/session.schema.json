@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/library/session/session.schema.json",
+  "title": "session",
+  "description": "A conversation: the running context the conductor carries. Its id is a token; its history is a sequence of message claims. Session state settles INTO the eavt logs (nothing floats outside) -- this is the memory-in-the-substrate fix made concrete.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "history"],
+  "properties": {
+    "id": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "history": { "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" } }
+  }
+}

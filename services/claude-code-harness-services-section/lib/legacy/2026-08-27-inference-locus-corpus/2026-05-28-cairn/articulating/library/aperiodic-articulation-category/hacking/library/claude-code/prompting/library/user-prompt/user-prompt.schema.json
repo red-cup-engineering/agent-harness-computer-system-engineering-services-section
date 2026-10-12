@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/prompting/library/user-prompt/user-prompt.schema.json",
+  "title": "user-prompt",
+  "description": "The codomain of prompting: a user token (who) and a prompt claim (what was said). An aperiodic-articulation-cell variant produced when a human supplies the utterance.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "user", "prompt"],
+  "properties": {
+    "kind": { "const": "user-prompt" },
+    "user": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "prompt": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" }
+  }
+}

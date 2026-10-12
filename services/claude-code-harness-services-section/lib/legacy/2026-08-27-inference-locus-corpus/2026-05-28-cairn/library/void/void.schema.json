@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/library/void/void.schema.json",
+  "title": "void",
+  "description": "The void primitive: an axis not articulated. One of articulating's primitives alongside token and claim. Realized as JSON null. A void axis is the absence of an articulation on that axis, not a value on it.",
+  "kind": "object",
+  "const": null
+}

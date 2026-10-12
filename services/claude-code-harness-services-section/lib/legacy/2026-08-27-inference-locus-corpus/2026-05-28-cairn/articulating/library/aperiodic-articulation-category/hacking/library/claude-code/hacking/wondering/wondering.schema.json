@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/wondering/wondering.schema.json",
+  "title": "wondering",
+  "description": "Morphism: memory -> open questions. Surfaces the unsettled cells (top = contradiction, bottom = no-evidence) as questions -- demands routable to inquiring (outward) or deriving/ruminating (inward). INTERNAL, no network. HACKING: verb name admitted.",
+  "kind": "morphism",
+  "domain": "memory[]",
+  "codomain": "questions[]",
+  "variance": "restriction",
+  "monotone": true
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/being/being.schema.json",
+  "title": "being",
+  "description": "Morphism: spec -> agent. The action tower's aperiodic generator (parallel to articulating in the meaning tower): the organism comes to exist as a self / swarm-member. An agent is a fungible enactor that is a distinguishable contributor to the shared field (its claims are e-anchored by its id). HACKING: action-tower generator and its regime placement are second-tier-generator theory, admitted.",
+  "kind": "morphism",
+  "domain": "spec{ id, role }",
+  "codomain": "agent",
+  "variance": "generator",
+  "monotone": true
+}

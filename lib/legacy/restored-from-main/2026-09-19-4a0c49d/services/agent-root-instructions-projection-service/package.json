@@ -1,0 +1,25 @@
+{
+  "name": "@red-cup-engineering/agent-root-instructions-projection-service",
+  "version": "0.9.3",
+  "description": "Renders the root-instructions content sections (identity header, conversation style, executive-receiver bootstrap, per-turn duty and capability discovery, repository posture, semantic-duplication instructions, house law, and the live skills list) shared by every runtime-specific agent harness \u2014 Codex's AGENTS.md, Claude's CLAUDE.md \u2014 from one shared house-law source, so neither harness hand-types a duplicate policy or a duplicate renderer.",
+  "type": "module",
+  "files": [
+    "src",
+    "content"
+  ],
+  "exports": {
+    ".": "./src/index.mjs",
+    "./render-root-instructions": "./src/render-root-instructions.mjs"
+  },
+  "scripts": {
+    "check": "node --check src/*.mjs",
+    "test": "node --test test/*.test.mjs",
+    "pack:dry-run": "npm pack --dry-run --ignore-scripts"
+  },
+  "dependencies": {
+    "@red-cup-engineering/markdown-engineering-services-section": "0.5.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-harness-refusal.schema.json",
+  "title": "AgentHarnessRefusal",
+  "description": "A typed non-admission of a harness policy, projection, or write: a stable code, a message, and the details a caller acts on. Never an exception.",
+  "type": "object",
+  "required": ["kind", "code", "message"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "refusal" },
+    "code": {
+      "enum": [
+        "policy-not-admitted",
+        "sources-not-admitted",
+        "projection-not-admitted",
+        "runtime-unsupported",
+        "setting-unsupported",
+        "source-absent",
+        "source-kind-mismatch",
+        "record-unreadable",
+        "role-seating-refused",
+        "skill-source-invalid",
+        "duplicate-projected-path",
+        "path-outside-repository",
+        "drift"
+      ]
+    },
+    "message": { "type": "string", "minLength": 1 },
+    "details": { "type": "object" }
+  }
+}

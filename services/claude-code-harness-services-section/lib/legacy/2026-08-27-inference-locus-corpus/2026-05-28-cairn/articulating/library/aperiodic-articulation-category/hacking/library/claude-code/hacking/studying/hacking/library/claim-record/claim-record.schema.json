@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/studying/hacking/library/claim-record/claim-record.schema.json",
+  "title": "claim-record",
+  "description": "One observer's claim about a subject: who (observer token), what FOUR value they hold, and the evidence (provenance) they read it from. The per-observer claims that studying reconciles into a settled subject. HACKING: claim-record-as-object admitted.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["observer", "value", "evidence"],
+  "properties": {
+    "observer": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "value": { "description": "the observer's FOUR value for the subject", "enum": ["bottom", "true", "false", "top"] },
+    "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true }
+  }
+}

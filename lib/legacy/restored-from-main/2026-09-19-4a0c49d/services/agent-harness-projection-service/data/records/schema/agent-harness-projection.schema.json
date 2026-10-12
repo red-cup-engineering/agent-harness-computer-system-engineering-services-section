@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-harness-projection.schema.json",
+  "title": "AgentHarnessProjection",
+  "description": "The pure output of projecting one policy onto one runtime surface: every file the runtime reads, as repository-relative path and exact text, with the content identity of the whole set.",
+  "type": "object",
+  "required": ["kind", "version", "actor", "runtime", "root", "files", "identity"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "agent-harness-projection" },
+    "version": { "const": 1 },
+    "actor": { "type": "string", "pattern": "^actor:[A-Za-z0-9_-]+$" },
+    "runtime": { "enum": ["codex", "claude"] },
+    "root": { "type": "string", "minLength": 1 },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!\\.\\.(/|$))(?!.*/\\.\\.(/|$))[^\\u0000]+$" },
+          "text": { "type": "string" },
+          "mode": { "type": "integer", "minimum": 256, "maximum": 511 }
+        }
+      }
+    },
+    "identity": { "type": "string", "pattern": "^ni:///sha-256;[A-Za-z0-9_-]+$" }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@red-cup-engineering/agent-lifecycle-hook-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The one agent-lifecycle hook boundary: a runtime-neutral AgentLifecycleEvent decoded from what Codex or Claude Code puts on a hook's stdin, a typed AgentLifecycleResponse encoded back into that runtime's wire shape and exit code, and one stdio adapter under which every hook handler is a pure operation over the typed event. No handler parses stdin, argv, or emits a wire shape itself.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./types": "./src/types.mjs",
+    "./event": "./src/event.mjs",
+    "./response": "./src/response.mjs",
+    "./pending-text": "./src/pending-text.mjs",
+    "./run-agent-lifecycle-hook": "./scripts/run-agent-lifecycle-hook.mjs",
+    "./schema/*": "./data/records/schema/*"
+  },
+  "files": [
+    "data/records/schema/",
+    "scripts/",
+    "src/"
+  ],
+  "scripts": {
+    "check": "node --check src/index.mjs && node --check src/types.mjs && node --check src/event.mjs && node --check src/response.mjs && node --check src/pending-text.mjs && node --check scripts/run-agent-lifecycle-hook.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/computer-data-engine": "0.11.2",
+    "@red-cup-engineering/javascript-node-services-section": "0.3.0",
+    "@red-cup-engineering/read-javascript-node-standard-input-text-service": "0.2.1",
+    "@red-cup-engineering/write-javascript-node-standard-output-text-service": "0.2.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

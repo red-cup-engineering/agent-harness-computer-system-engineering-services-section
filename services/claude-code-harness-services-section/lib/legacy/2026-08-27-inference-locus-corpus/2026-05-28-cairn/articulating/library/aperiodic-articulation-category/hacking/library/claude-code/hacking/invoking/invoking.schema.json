@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/invoking/invoking.schema.json",
+  "title": "invoking",
+  "description": "Morphism: tool-call-envelope -> tool-result. A constrained action: the conductor invoking a tool. The envelope names the tool and its input; the result carries output and an ok/error outcome. HACKING: morphism name and the tool-call-envelope handler-class are admitted (emsenn deferred).",
+  "kind": "morphism",
+  "domain": "tool-call-envelope{ tool, input }",
+  "codomain": "tool-result",
+  "variance": "restriction",
+  "monotone": true
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/inferring/library/inference/inference.schema.json",
+  "title": "inference",
+  "description": "The codomain of inferring: one session-unfold step. A message (the assistant's said content, a claim) plus embedded next-actions (each a claim describing a tool-call or delegation).",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message"],
+  "properties": {
+    "message": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "actions": { "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" } }
+  }
+}

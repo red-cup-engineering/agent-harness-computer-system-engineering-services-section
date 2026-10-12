@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/delegating/delegating.schema.json",
+  "title": "delegating",
+  "description": "Morphism: task -> subagent-settlement. The conductor dispatching a task to N subagents (fungible inferring-enactors) and reconciling their settlements. Consensus is the knowledge-order MEET (greatest lower bound); genuine disagreement (true vs false) meets to bottom -- the first-cohomology obstruction of the multi-observer network sheaf. HACKING: morphism name and subagent-as-object are admitted (emsenn deferred), not proven.",
+  "kind": "morphism",
+  "domain": "task + subagent settlement values",
+  "codomain": "subagent-settlement{ consensus }",
+  "variance": "generator",
+  "monotone": true
+}

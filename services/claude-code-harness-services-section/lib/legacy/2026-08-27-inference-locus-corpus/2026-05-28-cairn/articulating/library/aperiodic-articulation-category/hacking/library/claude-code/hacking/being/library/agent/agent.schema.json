@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/being/library/agent/agent.schema.json",
+  "title": "agent",
+  "description": "A swarm-member as a MODELED PLAYER (spotcomp/MODELED-PLAYERS.md P = (id, Cap, handedness, Gov, In, Out)). id (token) + role (claim); capability (finite declaration); handedness bounds (recv/send/actuate/observe); governance regime; inbox/outbox EAVT traces (its OWN logs -- distinguishable contributor, which is what makes swarm consensus computable). kind names the hand of experiencing/: learning (inward: observe shared trace, posit/dream) or sensing (outward drone: crawl repo/web). HACKING: D9 blocks final modeled-player conformance.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["id", "role"],
+  "properties": {
+    "id": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "role": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "kind": { "enum": ["learning", "sensing"] },
+    "capability": { "type": "array", "items": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" } },
+    "handedness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "recv": { "type": "array", "items": { "type": "string" } },
+        "send": { "type": "array", "items": { "type": "string" } },
+        "actuate": { "type": "array", "items": { "type": "string" } },
+        "observe": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "governance": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "inbox": { "description": "the member's own EAVT inbox trace", "type": "string" },
+    "outbox": { "description": "the member's own EAVT outbox trace", "type": "string" }
+  }
+}

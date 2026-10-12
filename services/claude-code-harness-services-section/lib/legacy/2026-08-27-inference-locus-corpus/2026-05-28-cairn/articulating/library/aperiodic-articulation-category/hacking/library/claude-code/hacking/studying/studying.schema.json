@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/studying/studying.schema.json",
+  "title": "studying",
+  "description": "Morphism: (subject, claim-record[], swarm, opts) -> studied-subject. Settles a subject's claim-lattice into accepted truth. Observers each hold a FOUR value; consensus is the knowledge-order meet; acceptance is by a STUB truth-confidence heuristic (|mean truth-lean| >= threshold). The real consensus/disagreement measure -- the sheaf Laplacian over the observer network sheaf (moduli-descent-laplacian; Hansen-Ghrist) -- is a separate derived apparatus and is DEFERRED, not reimplemented here. A subject below threshold is UNSETTLED: its contradiction is a DEMAND the swarm (injected, fungible) satisfies by reading files and positing more claims; re-settle until confident or the round budget is spent. PURE given the swarm. HACKING: name + stub-confidence admitted.",
+  "kind": "morphism",
+  "domain": "subject + claim-record[] + swarm-enactor + {threshold, maxRounds}",
+  "codomain": "studied-subject",
+  "variance": "settlement",
+  "monotone": true
+}

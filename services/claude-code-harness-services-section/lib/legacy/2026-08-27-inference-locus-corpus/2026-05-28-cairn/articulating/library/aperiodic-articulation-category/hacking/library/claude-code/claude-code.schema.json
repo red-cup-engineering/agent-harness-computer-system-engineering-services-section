@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/claude-code.schema.json",
+  "title": "claude-code",
+  "description": "Claude Code as a generated $thing: simultaneously a carrier object AND the subcategory it generates inside aperiodic-articulation-category. By being generated here it INHERITS the aperiodic regime machinery (FOUR, the cell partition, the predicating->positing->settling descent) instead of re-implementing it. It hosts the choreography morphisms inferring (root), prompting, delegating, invoking, decoding. A claude-code datum IS an aperiodic-articulation-cell -- the inheritance made type-level. Placed under hacking/ because the full derivation chain to the OS slot is admitted, not yet proved here.",
+  "kind": "object",
+  "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/aperiodic-articulation-cell.schema.json"
+}

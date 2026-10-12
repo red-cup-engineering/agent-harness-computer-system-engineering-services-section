@@ -1,0 +1,52 @@
+{
+  "name": "@red-cup-engineering/harness-lifecycle-journal-service",
+  "version": "0.3.1",
+  "type": "module",
+  "description": "Actor-parameterized harness lifecycle journal: one admitted event schema and one recording path for every agent harness's skill selections and provider commissions, so a second harness never re-derives them.",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": "./src/harness-lifecycle.mjs",
+    "./harness-lifecycle": "./src/harness-lifecycle.mjs",
+    "./scripts/record-harness-skill-selection.mjs": "./scripts/record-harness-skill-selection.mjs",
+    "./scripts/record-harness-provider-commission.mjs": "./scripts/record-harness-provider-commission.mjs",
+    "./scripts/record-harness-inference-purchase.mjs": "./scripts/record-harness-inference-purchase.mjs",
+    "./scripts/summarize-harness-lifecycle.mjs": "./scripts/summarize-harness-lifecycle.mjs",
+    "./ops-attention-events": "./src/ops-attention-events.mjs",
+    "./harness-efficiency": "./src/harness-efficiency.mjs",
+    "./scripts/admit-set-of-session-event-arrivals.mjs": "./scripts/admit-set-of-session-event-arrivals.mjs"
+  },
+  "bin": {
+    "record-harness-skill-selection": "scripts/record-harness-skill-selection.mjs",
+    "record-harness-provider-commission": "scripts/record-harness-provider-commission.mjs",
+    "record-harness-inference-purchase": "scripts/record-harness-inference-purchase.mjs",
+    "summarize-harness-lifecycle": "scripts/summarize-harness-lifecycle.mjs",
+    "harness-lifecycle-cli": "apps/harness-lifecycle-cli.mjs",
+    "admit-set-of-session-event-arrivals": "scripts/admit-set-of-session-event-arrivals.mjs"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "apps",
+    "data/records/schema"
+  ],
+  "scripts": {
+    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/record-harness-inference-purchase.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check src/ops-attention-events.mjs && node --check apps/harness-lifecycle-cli.mjs && node --check src/harness-efficiency.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@red-cup-engineering/agent-lifecycle-hook-service": "0.1.0",
+    "@red-cup-engineering/file-services": "0.4.0",
+    "@red-cup-engineering/harness-routing-service": "0.1.1",
+    "@red-cup-engineering/javascript-node-services-section": "0.3.0",
+    "@red-cup-engineering/path-walking-service": "0.5.0",
+    "@red-cup-engineering/relate-filepath-service": "0.1.0",
+    "@red-cup-engineering/relation-model-notation-json-codec": "0.2.6",
+    "@red-cup-engineering/resolve-filepath-service": "0.1.1",
+    "@red-cup-engineering/semantic-record-journal-service": "0.5.0",
+    "@red-cup-engineering/tool-evidence-bounding-service": "0.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": false
+}

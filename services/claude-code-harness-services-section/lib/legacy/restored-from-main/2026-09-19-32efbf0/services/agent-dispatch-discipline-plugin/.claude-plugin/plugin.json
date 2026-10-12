@@ -1,0 +1,16 @@
+{
+  "name": "agent-dispatch-discipline",
+  "displayName": "Agent Dispatch Discipline",
+  "version": "1.0.0",
+  "description": "A skill and a brief-completeness hook for commissioning, steering, and receiving work from Claude Code subagents without losing context or accepting unverified claims.",
+  "license": "Apache-2.0",
+  "keywords": [
+    "subagents",
+    "multi-agent",
+    "orchestration",
+    "dispatch",
+    "delegation"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

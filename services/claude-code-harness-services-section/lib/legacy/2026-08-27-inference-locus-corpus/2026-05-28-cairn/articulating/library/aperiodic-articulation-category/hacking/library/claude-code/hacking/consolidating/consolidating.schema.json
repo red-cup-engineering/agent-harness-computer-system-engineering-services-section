@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/consolidating/consolidating.schema.json",
+  "title": "consolidating",
+  "description": "Morphism: session-trace -> memory[]. The 'dream': the swarm (a fungible aperiodic enactor, injected) infers from a session transcript which facts the session established, and settles each into a typed memory row with provenance and a placement. Extension (the answering half of continuous-learning's answering/referencing cycle: positing into Phi). Each candidate must pass a governance gate before becoming memory (governanceRequiredForImprovement). Pure: returns rows; the durable dual-filed write is the lifecycle entrypoint's job (codeRemainsProbe). HACKING: morphism name admitted.",
+  "kind": "morphism",
+  "domain": "session-trace + swarm-enactor + governance-gate",
+  "codomain": "memory[]",
+  "variance": "extension",
+  "monotone": true
+}

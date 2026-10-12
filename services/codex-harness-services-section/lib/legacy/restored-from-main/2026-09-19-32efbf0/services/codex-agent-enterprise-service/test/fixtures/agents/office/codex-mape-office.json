@@ -1,0 +1,32 @@
+{
+  "type": "CodexMapeOffice",
+  "version": 1,
+  "id": "test-machine-codex-actuation-office",
+  "name": "Bare Cedar Fog Codex Actuation Office",
+  "actor": "urn:ame:test-machine-codex",
+  "surface": "vscode-codex",
+  "customer": "urn:leader:test-customer",
+  "purpose": "Turn one admitted Leader move into supported by evidence MAPE-over-K purchases and one authority-bounded Codex actuation without treating a session, office, supplier, or advisory model as the Codex enterprise identity.",
+  "dutyRegistry": "agents/office/codex-mape-duties.json",
+  "skillRegistry": "agents/office/codex-mape-skills.json",
+  "knowledgeRegistry": "agents/office/codex-mape-knowledge.json",
+  "duties": [
+    "maintaining-codex-situational-knowledge",
+    "diagnosing-the-union-system",
+    "designing-union-change",
+    "decomposing-union-change",
+    "actuating-union-change",
+    "observing-response-and-learning",
+    "accounting-for-capability-trade"
+  ],
+  "invariants": [
+    "every-skill-is-exactly-one-mape-stage-over-explicit-knowledge",
+    "every-skill-has-one-independent-market-actor-identity",
+    "provider-purchase-is-not-authority-delegation",
+    "notebook-and-inference-output-is-non-authoritative",
+    "agents-mutate-the-customer-filesystem-only-by-routing-through-the-local-mud-server-never-directly",
+    "supplier-completion-is-not-customer-acceptance",
+    "all-knowledge-and-exchange-edges-retain-content-or-provider-receipts",
+    "sessions-are-transient-faces-of-the-active-codex-actor"
+  ]
+}

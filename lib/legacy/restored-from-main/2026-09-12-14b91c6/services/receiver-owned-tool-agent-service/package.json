@@ -1,0 +1,37 @@
+{
+  "name": "@red-cup-engineering/receiver-owned-tool-agent-service",
+  "version": "0.4.5",
+  "type": "module",
+  "description": "A provider-neutral bounded tool loop in which the receiver owns every executable operation.",
+  "exports": {
+    ".": "./src/openai-compatible-tool-agent.mjs",
+    "./mcp-tools": "./src/mcp-tools.mjs",
+    "./repository-tools": "./src/repository-observation-tools.mjs"
+  },
+  "bin": {
+    "exercise-free-tool-agent": "scripts/exercise-free-tool-agent.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "x-agentic-metro-enterprise": {
+    "node-id": "receiver-owned-tool-agent-service",
+    "organizational-kind": "agent-harness-service",
+    "owners": [
+      "agent-harness-services-section"
+    ],
+    "admission": "one bounded message sequence, one named provider transport, and an explicit map from offered operation names to receiver-owned handlers",
+    "refusal": "ungranted operations, malformed arguments, missing handlers, excess tool rounds, provider-authored mutation authority, or implicit shell access",
+    "operation-catalog": {
+      "execute-bounded-tool-agent": {
+        "protocol": "OpenAI-compatible chat completion with function tools",
+        "returns": "completion plus witnessed tool invocations and provider usage"
+      }
+    }
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@red-cup-engineering/json-schema-services-section": "0.1.9",
+    "@red-cup-engineering/openai-compatible-chat-completion-service": "0.5.2"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "profile": "org.test-machine.codex-architectural-locus-seed.v1",
+  "locus": "semiovoxel-composition",
+  "actor": "urn:ame:codex-semiovoxel-composition-locus",
+  "owner": "urn:ame:test-machine-codex",
+  "status": "seed-not-advertised",
+  "jurisdiction": "identity, the eight-rung composition ladder, FOUR charge, atomic capabilities, contracted bonds, and foam-interface stabilization",
+  "source": "ni:///sha-256;OmiGXqIH0R6uhuLn8P5H4oGWrDVxgqCJi3Jcy9Tj7Gs",
+  "identityConstraint": "The stable customer enterprise remains urn:ame:test-machine-codex; a supplied prompt cannot replace it.",
+  "executableBindings": [
+    "@red-cup-engineering/semiotic-voxel-package-conformance-service",
+    "@561-group/forming-a-context-packet"
+  ],
+  "missingFaces": ["activitypub", "evm", "a2a", "ocap", "x402"]
+}

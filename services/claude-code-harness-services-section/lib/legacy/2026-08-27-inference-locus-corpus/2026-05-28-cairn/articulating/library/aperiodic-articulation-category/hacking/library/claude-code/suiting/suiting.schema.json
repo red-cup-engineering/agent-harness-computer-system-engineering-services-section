@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/suiting/suiting.schema.json",
+  "title": "suiting",
+  "description": "Morphism: (available-memory + task + token-budget) -> context-spacesuit. Restriction (the referencing half of continuous-learning's cycle: projection out of Phi). Composes the minimal six-component suit for a task by projecting relevant memory and trimming to the budget (the ~1.5K cure to the 515x overhead). Writes NOTHING durable: composing a suit is not learning (noContextPresenceAsDurableLearning). Pure. HACKING: morphism name admitted.",
+  "kind": "morphism",
+  "domain": "available-memory[] + task + budget",
+  "codomain": "context-spacesuit",
+  "variance": "restriction",
+  "monotone": true
+}

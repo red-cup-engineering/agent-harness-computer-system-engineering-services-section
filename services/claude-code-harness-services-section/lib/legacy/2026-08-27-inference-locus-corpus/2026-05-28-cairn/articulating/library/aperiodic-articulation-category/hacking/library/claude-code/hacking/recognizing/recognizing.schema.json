@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/recognizing/recognizing.schema.json",
+  "title": "recognizing",
+  "description": "Morphism: memory rows -> recognition-weighted rows. Per spotcomp/RECOGNITION.md, trust is receiver-relative and derived from PROVENANCE (the recognition-fiber, read from evidence) -- never from the {e,a,v,t} row. Tiers: sense (direct observation: prompts, tool/world results) > remembered-sense > learning (dream/inference). Learning decays with age; sense does not, so world-truths dominate over time and beat learning on conflict. HACKING: recognition-cell settlement remains a declaration obligation; this is the provenance-weight heuristic.",
+  "kind": "morphism",
+  "domain": "memory rows[]",
+  "codomain": "recognition-weighted rows[]",
+  "variance": "restriction",
+  "monotone": true
+}

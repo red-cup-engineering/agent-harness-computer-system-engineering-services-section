@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.561.group/computer/agent-harness/agent-harness-sources.schema.json",
+  "title": "AgentHarnessSources",
+  "description": "What the world said about every path a policy references, observed once by the effect owner and handed to the pure projection: existence of handlers and MCP scripts, the texts of instructions, office, character and incumbency records, and every file beneath each skill directory.",
+  "type": "object",
+  "required": ["kind", "version", "root", "observations", "texts", "trees"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "agent-harness-sources" },
+    "version": { "const": 1 },
+    "root": { "type": "string", "minLength": 1 },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "exists", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "exists": { "type": "boolean" },
+          "kind": { "enum": ["file", "directory", "symlink", "other", "absent"] }
+        }
+      }
+    },
+    "texts": { "type": "object", "additionalProperties": { "type": "string" } },
+    "trees": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 } } }
+  }
+}

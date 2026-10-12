@@ -1,0 +1,15 @@
+{
+  "profile": "org.test-machine.codex-architectural-locus-seed.v1",
+  "locus": "foam-registry-diagnostics",
+  "actor": "urn:ame:codex-foam-registry-diagnostics-locus",
+  "owner": "urn:ame:test-machine-codex",
+  "status": "seed-not-advertised",
+  "jurisdiction": "jurisdictional routing, FOAM discovery, complaint-history-pulse-differential-treatment diagnostics, typed refusal, and registry partition conformance",
+  "source": "ni:///sha-256;e0Q0XnsQkETypW1vEyCdQrG1n7uHjkS8KRf9KxufQao",
+  "identityConstraint": "Registry actors are suppliers to Codex; Codex does not inhabit their identities.",
+  "executableBindings": [
+    "@red-cup-engineering/blockchain-services-section",
+    "@561-group/context-packet-services-section"
+  ],
+  "missingFaces": ["activitypub", "evm", "a2a", "ocap", "x402"]
+}

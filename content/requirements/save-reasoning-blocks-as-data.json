@@ -1,0 +1,36 @@
+{
+  "id": "save-reasoning-blocks-as-data",
+  "name": "save reasoning blocks as data",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "If we are getting reasoning blocks, do we want to save those? [emsenn, session of 2026-07-16, opening line of a multi-idea prompt about post-processing Claude's output; asks whether endpoint reasoning_content should be retained.]",
+  "from-idea": "emsenn/idea/save-reasoning-blocks-as-data",
+  "met-when": [
+    {
+      "cell": "save-reasoning-blocks-as-data:conditions-stated",
+      "target": "held"
+    }
+  ],
+  "x-provenance": {
+    "recorded-by": "561-group capture session (claude session 017x7ZhpkZQAx5VZSv2Hz5Q9)",
+    "recorded-on": "2026-10-10",
+    "sources": [
+      {
+        "words": "If we are getting reasoning blocks, do we want to save those? [emsenn, session of 2026-07-16, opening line of a multi-idea prompt about post-processing Claude's output; asks whether endpoint reasoning_content should be retained.]",
+        "at": "2026-07-17",
+        "locator": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/ideas/save-reasoning-blocks-as-data.json"
+      }
+    ],
+    "carried-from-idea-record": "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/lib/legacy/restored-from-main/2026-09-13-ccf2d7a/services/561-group-enterprise-services-section/services/561-group-board-of-directors/lib/legacy/2026-08-03-executive-office/data/records/ideas/ideas/save-reasoning-blocks-as-data.json",
+    "pending-conditions": "Carried from the 2026-07 executive office's idea record under ideas-dispose-through-the-requirement-term; no met-when that exercises this idea's capability has been stated yet. The owning section states it.",
+    "linked-carriers": [],
+    "coverage": "lib/emsenn/services/561-group/services/public-services-section/services/personal-services-section/services/emsenn-services-section/data/records/leader-utterances/coverage/executive-office-ideas-2026-07.md",
+    "idea-record-fields": {
+      "prompted-by": "emsenn/idea/record-the-heavy-reasoning-then-recall-doctrine"
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;CXed25I5Rn0YReRFyQ12ccDU4NaichM7Jr1vCsY263g"
+    }
+  }
+}

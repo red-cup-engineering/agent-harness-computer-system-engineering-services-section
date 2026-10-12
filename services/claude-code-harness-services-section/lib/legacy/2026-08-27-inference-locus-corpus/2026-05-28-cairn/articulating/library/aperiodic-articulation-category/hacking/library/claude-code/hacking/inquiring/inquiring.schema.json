@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/inquiring/inquiring.schema.json",
+  "title": "inquiring",
+  "description": "Morphism: subject -> inquiry-utterance. A conductor act (exposed via the conductor MCP) that forces an inquiry -- poses a subject for the swarm to study. Produces a well-formed utterance to drive swarmStudy. HACKING: conductor-act name admitted.",
+  "kind": "morphism",
+  "domain": "subject",
+  "codomain": "inquiry-utterance",
+  "variance": "restriction",
+  "monotone": true
+}

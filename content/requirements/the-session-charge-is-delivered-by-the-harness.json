@@ -1,0 +1,163 @@
+{
+  "id": "the-session-charge-is-delivered-by-the-harness",
+  "name": "The harness delivers the Founder's session charge",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "How is it that you did not know these offices and duties and such existed before dispatching your first workflow this session? ... All of this shit should be provided to you automatically by virtue of me having said what I said, and like, waaaay fucking more clean.",
+  "met-when": [
+    {
+      "cell": "the-session-charge-is-delivered-by-the-harness:held",
+      "target": "held",
+      "command": "test -f lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/requirements/the-session-charge-is-delivered-by-the-harness.json",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "strategic",
+  "x-provenance": {
+    "recorded-by": "office agent of the 561 Group (Lenticule Science Senior and Red Cup Engineer Senior), development pass sigrid-publishing-1 of debt-2026-10-09-leader-words-held-in-corpus",
+    "recorded-on": "2026-10-10",
+    "customer": "urn:leader:emsenn",
+    "basis": "The Leader's utterances cited in `sources`, read in full. `asks` and `sources[].words` are the Leader's own words; the requirements are an EARS rendering of what those words state and carry no scope the words do not.",
+    "board-opening": {
+      "speech-act": "request",
+      "need": "How is it that you did not know these offices and duties and such existed before dispatching your first workflow this session? ... All of this shit should be provided to you automatically by virtue of me having said what I said, and like, waaaay fucking more clean.",
+      "scope": [
+        "section:services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section"
+      ],
+      "requirements": [
+        {
+          "id": "R1",
+          "says": "The agent harness shall present the session charge (the Chief Executive Officer role, the four officers the CEO coordinates, the day's domain, the effort split and the order of work) when a session opens, without the session searching the repository for it.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[xvRco7i0guKc]: the session found offices, duties and staff only after dispatching its first workflow."
+        },
+        {
+          "id": "R2",
+          "says": "The agent harness shall resolve a dispatch of staff into a call to the Group's federation through MCP, under context injection.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[xvRco7i0guKc]: 'dispatch staff is meant to be a call to our federation via MCP to get these models actually operating under context injection, part of our system'."
+        },
+        {
+          "id": "R3",
+          "says": "The agent harness shall offer a subagent fallback for staff dispatch while the federation call is unavailable.",
+          "class": "functional",
+          "moscow": "should",
+          "rationale": "[xvRco7i0guKc]: 'but even just short term'."
+        },
+        {
+          "id": "R4",
+          "says": "The agent harness shall derive its skill set from the agency's offices, duties and skills, with each skill carrying the date and source it was last derived from.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[xvRco7i0guKc]: a hodgepodge of skills that never get updated is an unacceptable harness and the largest cause of failure."
+        },
+        {
+          "id": "R5",
+          "says": "The session charge record shall carry the day's effort split as shares of the session that total one hundred percent.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[aHLjymxzUo8o],[s5syDhYgdW30],[Aday6X6Is7pI]: seventy percent stack cleanup, ten percent product improvement, twenty percent operations, harness and direct frictions."
+        },
+        {
+          "id": "R6",
+          "says": "The session charge record shall order work from the most primitive engineering systems outward, with leaf applications last.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[z8OylWWYAErY],[LD-j_cMy8xxc]: 'NOT working on the leaves first or even financial primitives'."
+        },
+        {
+          "id": "R7",
+          "says": "The session charge record shall direct, after the urgent work, effort to shared data formats, code paradigms and network protocols for modeled actors, resources, messages and channels, to shared engines, servers, clients, platforms and applications, and to the processes, procedures, runbooks, skills, duties and offices that do the work.",
+          "class": "functional",
+          "moscow": "must",
+          "rationale": "[aHLjymxzUo8o]-[LD-j_cMy8xxc]: the second paragraph of every charge."
+        },
+        {
+          "id": "R8",
+          "says": "The agent harness shall hold the charge's model tiers as parameters resolved at dispatch.",
+          "class": "functional",
+          "moscow": "should",
+          "rationale": "The charges name Terra-medium, Sonnet, Codex and Fable tiers that differ by day; no requirement names one."
+        }
+      ],
+      "conditions": [
+        {
+          "id": "C1",
+          "says": "A reader opens a session cold on a charged weekday and finds the CEO role, the officers, the split and the order of work in the opening context.",
+          "method": "inspection",
+          "verifies": [
+            "R1",
+            "R5",
+            "R6",
+            "R7"
+          ]
+        },
+        {
+          "id": "C2",
+          "says": "A dispatch of staff in a test session reaches the federation through MCP, and the fallback runs when the federation is stopped.",
+          "method": "test",
+          "verifies": [
+            "R2",
+            "R3"
+          ]
+        },
+        {
+          "id": "C3",
+          "says": "The skill directory lists no skill without a derivation date and a source in the agency.",
+          "method": "inspection",
+          "verifies": [
+            "R4"
+          ]
+        },
+        {
+          "id": "C4",
+          "says": "The harness's configuration holds each model tier as a named parameter.",
+          "method": "inspection",
+          "verifies": [
+            "R8"
+          ]
+        }
+      ],
+      "context": "The charge was typed by the Founder into session after session: 99% of that message 'should be already in your operational tooling and harness configuration, but is not, and cannot be until the parallel divergent systems are massively simplified' ([0ic_rcrM-Gk8],[13vUOeRat7zY]). Terms: `session-charge.md`, `fintech-friday.md`, `webby-wednesday.md` at the 561 Group's glossary. Held already: the office `chief-executive-officer` and skill `lead-the-company` in the agency (the office services, not the delivery).",
+      "sources": [
+        {
+          "address": "ni:///sha-256;Yt-tPXmeXqj3eHhrJj-RmgNdrEe2rlX2of0jgsVSJi0",
+          "at-utc": "2026-09-10T16:14:19.202Z",
+          "words": "Act as CEO on Webby Wednesday; coordinate CKO, CTO, COO, and CFO through their own staff toward the highest-urgency work."
+        },
+        {
+          "address": "ni:///sha-256;0Qx7siUAz6G9D6XPNY4zSvpVqFhQ8zFaHLjymxzUo8o",
+          "at-utc": "2026-09-11T12:59:01.365Z",
+          "words": "You role this session, occurring on Fintech Friday, is to serve as Chief Executive Officer of the 561 Group. Your four ... subagents should serve as Chief Knowledge Officer, Chief Technology Officer, Chief Operations Officer, and Chief Information Officer."
+        },
+        {
+          "address": "ni:///sha-256;wzYq95_L2GKdB0UsbcXJDGPXUuICE4MxvRco7i0guKc",
+          "at-utc": "2026-09-11T13:30:20.503Z",
+          "words": "WOW that you're like, just completely blind to what is meant to be your harness/configuration here? ... I see nothing that seems to teach you 'you're to serve as CEO', I see nothing that sets you up with staff."
+        },
+        {
+          "address": "ni:///sha-256;9JxPVtKReNtL8VfmVgid3cXRAMI8eYIz8OylWWYAErY",
+          "at-utc": "2026-09-11T17:06:10.804Z",
+          "words": "with your work starting on our most primitive engineering systems and working your way out from there, NOT working on the leaves first."
+        },
+        {
+          "address": "ni:///sha-256;_oONEWESd-SsSI1SGNniNaeHQGF7xpt0ic_rcrM-Gk8",
+          "at-utc": "2026-09-11T18:40:43.912Z",
+          "words": "^--- 99% of this message should be already in your operational tooling and harness configuration, but is not."
+        }
+      ],
+      "serves": [
+        "debt-2026-10-09-leader-words-held-in-corpus"
+      ],
+      "after": [],
+      "traces": []
+    },
+    "sign-cell": {
+      "type": "emsenn/schema/requirement",
+      "mark": "ni:///sha-256;Fe8QKlzDU0WwhiMk4uW3e-QQkq19OnNjfcLiXyVI5Ak",
+      "cell": "ni:///sha-256;f_uylU54mShj4auFfk_AEcFbpQIl3ITkleyPP-mxXgM"
+    }
+  }
+}

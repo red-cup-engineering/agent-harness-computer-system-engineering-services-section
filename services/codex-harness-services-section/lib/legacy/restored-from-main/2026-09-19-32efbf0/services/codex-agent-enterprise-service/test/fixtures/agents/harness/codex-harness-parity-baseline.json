@@ -1,0 +1,887 @@
+{
+  "schemaVersion": 1,
+  "type": "CodexHarnessParityBaseline",
+  "objectKindNamespace": "test-machine-codex",
+  "actor": "urn:ame:test-machine-codex",
+  "customer": "urn:leader:test-customer",
+  "demand": "ni:///sha-256;gByRVgozO50GrHQLdKi_6BNfDYSzAq-LSzcrmdZqcWU",
+  "sourceSets": [],
+  "closurePolicy": {
+    "requiredImplementationState": "receiver-accepted",
+    "requiredEvidence": [
+      "providerReceipt",
+      "exactCandidateDigest",
+      "completionObservationReceipt",
+      "customerOutcomeReceipt"
+    ],
+    "customerOutcomeAuthority": "urn:leader:test-customer",
+    "rule": "No capability may be omitted, inherited by implication, self-accepted by Codex, or closed from a supplier completion alone. Every capability must retain observed completion evidence through the real consumer interface."
+  },
+  "deprecationPolicy": {
+    "requiredCapabilityState": "receiver-accepted",
+    "requiredEvidence": [
+      "providerReceipt",
+      "exactCandidateDigest",
+      "completionObservationReceipt",
+      "customerOutcomeReceipt"
+    ],
+    "authority": "urn:leader:test-customer",
+    "removalRequiresExplicitLeaderAct": true,
+    "rule": "A preserved source tree earns deprecation eligibility only when its exact baseline digest remains available, every file remains classified, and every mapped capability has the required receiver-accepted evidence. Eligibility is not deletion authority."
+  },
+  "actuatorDefaults": {
+    "protocols": [
+      "MCP",
+      "A2A 1.0",
+      "RMN"
+    ],
+    "consideration": {
+      "quoteState": "unknown-until-provider-authored-offer",
+      "incurredState": "unknown-until-independently-witnessed",
+      "acceptedValueState": "unknown-until-customer-outcome",
+      "unknownIsZero": false
+    },
+    "receiptRequirement": "provider-authored content-addressed request/result receipt",
+    "outcomeAuthority": "urn:leader:test-customer"
+  },
+  "capabilities": [
+    {
+      "id": "codex.identity.stable-enterprise",
+      "contract": "Every fresh session exposes urn:ame:test-machine-codex; sessions, offices, masks, and suppliers remain subordinate faces or repertoires.",
+      "currentSources": [
+        "agents/enterprise.json",
+        "test/codex-user-harness.test.mjs",
+        "test/codex-enterprise-hook.test.mjs"
+      ],
+      "parityAssay": "Start two fresh Codex processes with different session IDs; both state the stable URN and session two can observe unfinished work from session one.",
+      "actuator": {
+        "actor": "urn:ame:codex-harness-identity-continuity-actuator",
+        "operation": "project-stable-codex-identity",
+        "inputType": "CodexSessionStartK",
+        "outputType": "StableCodexIdentityK",
+        "offer": "urn:offer:codex-harness-identity-continuity",
+        "implementationState": "fresh-process-candidate"
+      }
+    },
+    {
+      "id": "codex.duties.context-warranted-repertoire",
+      "contract": "Select only demand-warranted duties without identity change or borrowed authority.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/contextual-duty-selection.json",
+        "src/duty-selection.mjs",
+        "test/duty-selection.test.mjs"
+      ],
+      "parityAssay": "Two demands select different lawful repertoires under the same actor; an absent duty is refused.",
+      "actuator": {
+        "actor": "urn:ame:codex-contextual-duty-selection-actuator",
+        "operation": "select-context-warranted-duties",
+        "inputType": "DemandAndOfficeK",
+        "outputType": "WarrantedDutyRepertoireK",
+        "offer": "urn:offer:codex-contextual-duty-selection",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.harness.deterministic-projection",
+      "contract": "Render harness files from canonical policy, detect byte drift, and verify enabled MCP tools live.",
+      "currentSources": [
+        "scripts/project-codex-user-harness.mjs",
+        "scripts/project-codex-hooks.mjs",
+        "test/codex-user-harness.test.mjs"
+      ],
+      "parityAssay": "Project to a clean home, mutate one byte, require drift failure, then omit one promised MCP tool and require live failure.",
+      "actuator": {
+        "actor": "urn:ame:codex-harness-projection-actuator",
+        "operation": "project-and-assay-codex-harness",
+        "inputType": "HarnessPolicyK",
+        "outputType": "AssayedHarnessProjectionK",
+        "offer": "urn:offer:codex-harness-projection",
+        "implementationState": "clean-user-home-candidate"
+      }
+    },
+    {
+      "id": "codex.runtime.boundary-readiness",
+      "contract": "Verify executable and cwd existence plus real JSON-RPC tools/list reachability, independently of provider availability.",
+      "currentSources": [
+        "scripts/check-codex-runtime.mjs",
+        "scripts/project-codex-agent-harness.mjs"
+      ],
+      "parityAssay": "A valid server passes and a live server omitting one promised tool fails naming that tool.",
+      "actuator": {
+        "actor": "urn:ame:codex-runtime-readiness-actuator",
+        "operation": "assay-codex-runtime-boundaries",
+        "inputType": "HarnessBoundarySetK",
+        "outputType": "BoundaryReadinessK",
+        "offer": "urn:offer:codex-runtime-readiness",
+        "implementationState": "source-tested"
+      }
+    },
+    {
+      "id": "codex.prompt.exact-admission-and-correction",
+      "contract": "Retain exact sourced prompts; corrections supersede stale generations, cancel only their workers, deny stale execution, and discard late outputs.",
+      "currentSources": [
+        "src/prompt-cycle.mjs",
+        "src/codex-enterprise-hook.mjs",
+        "test/prompt-cycle.test.mjs"
+      ],
+      "parityAssay": "Hold provider output, submit a correction, release old output, and require no stale work admission or stale tool authority.",
+      "actuator": {
+        "actor": "urn:ame:codex-prompt-admission-actuator",
+        "operation": "admit-or-supersede-prompt-cycle",
+        "inputType": "LeaderPromptEventK",
+        "outputType": "AdmittedPromptCycleK",
+        "offer": "urn:offer:codex-prompt-admission",
+        "implementationState": "source-tested"
+      }
+    },
+    {
+      "id": "codex.continuity.persisted-work-board",
+      "contract": "Unfinished exact work survives sessions and changes state only through explicit evidence-backed transition.",
+      "currentSources": [
+        "src/prompt-cycle.mjs",
+        "src/relevant-history.mjs",
+        "apps/mcp-server.mjs",
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/relevant-history-selection.json"
+      ],
+      "parityAssay": "Pause a demand in session one; session two returns it verbatim as open, never inferred complete.",
+      "actuator": {
+        "actor": "urn:ame:codex-work-continuity-actuator",
+        "operation": "observe-persisted-codex-work",
+        "inputType": "CodexWorkQueryK",
+        "outputType": "SourceBoundOpenWorkK",
+        "offer": "urn:offer:codex-work-continuity",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.trajectory.typed-observation-ledger",
+      "contract": "Append and derive typed demands, offers, exchanges, consideration, resources, obstructions, outcomes, and closure without invented facts.",
+      "currentSources": [
+        "src/enterprise.mjs",
+        "apps/mcp-server.mjs"
+      ],
+      "parityAssay": "Provider completion leaves demand open until the named customer endpoint records acceptance.",
+      "actuator": {
+        "actor": "urn:ame:codex-trajectory-ledger-actuator",
+        "operation": "record-and-derive-codex-position",
+        "inputType": "TypedEnterpriseObservationK",
+        "outputType": "CodexEnterprisePositionK",
+        "offer": "urn:offer:codex-trajectory-ledger",
+        "implementationState": "source-tested"
+      }
+    },
+    {
+      "id": "codex.economy.native-usage-and-cost-pressure",
+      "contract": "Keep native usage, subscription allocation, quotes, incurred cost, accepted value, and revenue separately typed; unknown is not zero.",
+      "currentSources": [
+        "src/native-usage.mjs",
+        "test/native-usage.test.mjs",
+        "agents/enterprise.json"
+      ],
+      "parityAssay": "Native rollout fixtures produce exact category deltas while P/L remains unknown absent attributable revenue and incurred cost.",
+      "actuator": {
+        "actor": "urn:ame:codex-native-resource-accounting-actuator",
+        "operation": "observe-codex-native-resource-vector",
+        "inputType": "ProviderNativeUsageReceiptK",
+        "outputType": "TypedResourceVectorK",
+        "offer": "urn:offer:codex-native-resource-accounting",
+        "implementationState": "source-tested"
+      }
+    },
+    {
+      "id": "codex.market.make-or-buy-and-supplier-pressure",
+      "contract": "Purchase bounded capability, retain native receipts/refusals, and route from accepted yield plus witnessed fractional cost without ceilings.",
+      "currentSources": [
+        "src/enterprise.mjs",
+        "src/codex-enterprise-hook.mjs",
+        "agents/harness/codex-agent-harness.json"
+      ],
+      "parityAssay": "Two suppliers with different customer outcomes and witnessed costs produce corresponding pressure without an execution ban.",
+      "actuator": {
+        "actor": "urn:ame:codex-provider-procurement-actuator",
+        "operation": "discover-contract-and-rank-provider",
+        "inputType": "BoundedCapabilityDemandK",
+        "outputType": "ReceiptedSupplierExchangeK",
+        "offer": "urn:offer:codex-provider-procurement",
+        "implementationState": "obstructed-witness-journal-credential-custody"
+      }
+    },
+    {
+      "id": "codex.delegation.bounded-provider-lifecycle",
+      "contract": "Bounded child work emits provider lifecycle evidence, never customer acceptance, invented resources, or leaked private output.",
+      "currentSources": [
+        "src/codex-enterprise-hook.mjs",
+        "test/codex-enterprise-hook.test.mjs",
+        "agents/harness/codex-agent-harness.json"
+      ],
+      "parityAssay": "Subagent start/stop yields one start and exchange, zero customer outcomes/resources, and no retained private result text.",
+      "actuator": {
+        "actor": "urn:ame:codex-bounded-delegation-actuator",
+        "operation": "contract-bounded-provider-work",
+        "inputType": "BoundedWorkLotK",
+        "outputType": "ProviderLifecycleReceiptK",
+        "offer": "urn:offer:codex-bounded-delegation",
+        "implementationState": "fresh-subagent-candidate"
+      }
+    },
+    {
+      "id": "codex.knowledge.repository-and-self-conception-observation",
+      "contract": "Retrieve relevant repository and prior-session evidence deterministically with exact citations and explicit absence before synthesis.",
+      "currentSources": [
+        "agents/skills/monitor-repository-evidence/SKILL.md",
+        "src/historical-demands.mjs"
+      ],
+      "parityAssay": "A known term returns exact source coordinates; an unknown term returns explicit absence, not a generated definition.",
+      "actuator": {
+        "actor": "urn:ame:codex-source-bound-knowledge-actuator",
+        "operation": "retrieve-source-bound-codex-evidence",
+        "inputType": "EvidenceQueryK",
+        "outputType": "SourceBoundEvidenceSetK",
+        "offer": "urn:offer:codex-source-bound-knowledge",
+        "implementationState": "partial"
+      }
+    },
+    {
+      "id": "codex.analysis.source-pinned-advisory",
+      "contract": "Advice binds corpus, sources, and receipt, preserves unknowns, and carries no mutation or acceptance authority.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/source-pinned-analysis.json",
+        "src/source-pinned-analysis.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/source-pinned-analysis.test.mjs"
+      ],
+      "parityAssay": "Artifact admission refuses advice lacking its declared corpus digest or provider receipt.",
+      "actuator": {
+        "actor": "urn:ame:codex-source-pinned-analysis-actuator",
+        "operation": "analyze-source-bound-corpus",
+        "inputType": "SourceBoundCorpusK",
+        "outputType": "ReceiptedAdvisoryK",
+        "offer": "urn:offer:codex-source-pinned-analysis",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.architecture.typed-mape-composition",
+      "contract": "Independently addressable MAPE transformations compose as a content-addressed typed-K DAG without authority leakage or advisory shortcuts.",
+      "currentSources": [
+        "src/mape-office.mjs",
+        "src/mape-office-mcp.mjs",
+        "agents/office/codex-mape-skills.json"
+      ],
+      "parityAssay": "A multi-stage skill, implicit K edge, or advisory-to-Execute shortcut fails registry validation.",
+      "actuator": {
+        "actor": "urn:ame:codex-typed-mape-composition-actuator",
+        "operation": "compile-typed-codex-mape-cycle",
+        "inputType": "LeaderMoveAndRegistryK",
+        "outputType": "TypedMapeWorkLotDagK",
+        "offer": "urn:offer:codex-typed-mape-composition",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.planning.requirement-to-actuation-trajectory",
+      "contract": "Preserve requirement identity through architecture, design, work lots, and integration; weakening is an explicit proposed change or refusal.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/requirement-trajectory.json",
+        "src/requirement-trajectory.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/requirement-trajectory.test.mjs"
+      ],
+      "parityAssay": "Changing a completion condition during decomposition causes digest mismatch or explicit change, never silent admission.",
+      "actuator": {
+        "actor": "urn:ame:codex-requirement-trajectory-actuator",
+        "operation": "plan-requirement-preserving-actuation",
+        "inputType": "RequirementSetK",
+        "outputType": "RequirementBoundActuationPlanK",
+        "offer": "urn:offer:codex-requirement-trajectory",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.execute.authority-bounded-integration",
+      "contract": "Only Codex integrates within admitted user scope; providers carry no mutation authority and output remains a candidate.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/authority-bounded-integration.json",
+        "src/authority-bounded-integration.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/authority-bounded-integration.test.mjs"
+      ],
+      "parityAssay": "Execute refuses absent exact authority/plan; admitted execution returns a candidate pending verification and outcome.",
+      "actuator": {
+        "actor": "urn:ame:codex-authority-bounded-integration-actuator",
+        "operation": "integrate-authorized-candidate",
+        "inputType": "LeaderAuthorityAndActuationPlanK",
+        "outputType": "CandidatePatchK",
+        "offer": "urn:offer:codex-authority-bounded-integration",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.assurance.evidence-bound-verification-and-acceptance",
+      "contract": "Fresh verification binds the exact candidate digest; supplier completion cannot self-accept; receiver outcome remains separate.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/fresh-verification.json",
+        "src/mape-office-mcp.mjs",
+        "agents/skills/monitor-receiver-outcome/SKILL.md"
+      ],
+      "parityAssay": "Wrong-digest or same-process claims fail; exact fresh verification passes only as verification, never customer closure.",
+      "actuator": {
+        "actor": "urn:ame:codex-fresh-verification-actuator",
+        "operation": "admit-evidence-bound-verification",
+        "inputType": "CandidateAndRequirementK",
+        "outputType": "VerificationOutcomeK",
+        "offer": "urn:offer:codex-fresh-verification",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.agency.actor-face-character-mask-separation",
+      "contract": "Compose stable Actor, transient session face, persistent character, and context mask without identity substitution or authority leakage.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/character-face-composition.json",
+        "src/agential-forms.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/agential-forms.test.mjs"
+      ],
+      "parityAssay": "Two faces and two masks vary while stable Actor/character identity remains exact; a mask claiming office or authority is refused.",
+      "actuator": {
+        "actor": "urn:ame:codex-character-face-actuator",
+        "operation": "compose-situated-character-face",
+        "inputType": "ActorFaceCharacterMaskK",
+        "outputType": "SituatedCharacterFaceK",
+        "offer": "urn:offer:codex-character-face-composition",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.agency.office-incumbency-duty-obligation",
+      "contract": "Keep office bearer-independent and derive its standing duty/claim obligations only through exact dignitas incumbency.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/office-obligation-projection.json",
+        "src/agential-forms.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/agential-forms.test.mjs"
+      ],
+      "parityAssay": "The complete Belnap seat truth table refuses half/failed/repair seats; dignitas alone projects every borne duty with its correlative claim and accountable office.",
+      "actuator": {
+        "actor": "urn:ame:codex-office-obligation-actuator",
+        "operation": "project-office-obligations",
+        "inputType": "OfficeIncumbencyDutyK",
+        "outputType": "OfficeObligationSetK",
+        "offer": "urn:offer:codex-office-obligation-projection",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.agency.immunitas-as-disability",
+      "contract": "Treat immunitas as second-order protection correlated with another actor's disability, never as liberty, power, or a task exemption.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/immunitas-observation.json",
+        "src/agential-forms.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/agential-forms.test.mjs"
+      ],
+      "parityAssay": "A named disabled requester cannot alter the exact protected obligation; an unblocked requester still receives no change authority.",
+      "actuator": {
+        "actor": "urn:ame:codex-immunitas-actuator",
+        "operation": "observe-immunitas",
+        "inputType": "ImmunitasAndProposedChangeK",
+        "outputType": "ImmunitasObservationK",
+        "offer": "urn:offer:codex-immunitas-observation",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.xo.missing-capacity-fabrication-obligation",
+      "contract": "A witnessed missing Union capability plus the EO's standing cybernetic-medicine munus and explicit transition induces an open obligation to fabricate an assayed network actuator.",
+      "currentSources": [
+        "../../../../../../../../../../../../../../../engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/services/codex-harness-services-section/services/codex-harness-projection-service/actuators/capacity-fabrication-obligation.json",
+        "src/agential-forms.mjs",
+        "src/mape-office-mcp.mjs",
+        "test/agential-forms.test.mjs"
+      ],
+      "parityAssay": "An exact open gap yields an idempotent obligation with pipeline/receipt/assay/outcome requirements and no fabricated cell; absent standing munus or evidence refuses.",
+      "actuator": {
+        "actor": "urn:ame:codex-capacity-fabrication-obligation-actuator",
+        "operation": "derive-capacity-fabrication-obligation",
+        "inputType": "StandingMunusAndCapacityGapK",
+        "outputType": "CapacityFabricationObligationK",
+        "offer": "urn:offer:codex-capacity-fabrication-obligation",
+        "implementationState": "fresh-mcp-candidate"
+      }
+    },
+    {
+      "id": "codex.conformance.reexecuted-controls",
+      "contract": "Rerun owning-node controls over the correct population and name exact drift; a narrow green check is never system conformance.",
+      "currentSources": [
+        "scripts/check-codex-runtime.mjs",
+        "test/codex-agent-harness.test.mjs"
+      ],
+      "parityAssay": "A locally green office with one unresolved cross-node edge fails aggregate preflight naming the edge.",
+      "actuator": {
+        "actor": "urn:ame:codex-reexecuted-conformance-actuator",
+        "operation": "reexecute-owning-conformance-controls",
+        "inputType": "CandidatePopulationK",
+        "outputType": "ConformanceReceiptK",
+        "offer": "urn:offer:codex-reexecuted-conformance",
+        "implementationState": "partial"
+      }
+    },
+    {
+      "id": "codex.mutation.route-through-owning-interface",
+      "contract": "Generated artifacts change through canonical sources/projectors; direct mutation remains valid when it is the authorized owning interface.",
+      "currentSources": [
+        "scripts/project-codex-agent-harness.mjs",
+        "scripts/project-codex-hooks.mjs",
+        "test/project-codex-hooks.test.mjs"
+      ],
+      "parityAssay": "Direct projection mutation triggers drift; source mutation followed by projection converges exactly.",
+      "actuator": {
+        "actor": "urn:ame:codex-owning-interface-routing-actuator",
+        "operation": "resolve-and-invoke-owning-mutation-interface",
+        "inputType": "AuthorizedMutationDemandK",
+        "outputType": "OwningInterfaceMutationReceiptK",
+        "offer": "urn:offer:codex-owning-interface-routing",
+        "implementationState": "partial"
+      }
+    },
+    {
+      "id": "codex.context.compaction-with-continuity",
+      "contract": "Compact context while preserving demand, corrections, receipts, paths, verification, unresolved risk, and next act; omit secrets and obsolete alternatives.",
+      "currentSources": [
+        "src/prompt-cycle.mjs",
+        "src/historical-demands.mjs"
+      ],
+      "parityAssay": "Fixture compaction retains every continuity field and omits its secret and superseded alternative.",
+      "actuator": {
+        "actor": "urn:ame:codex-continuity-compaction-actuator",
+        "operation": "compact-codex-context-with-continuity",
+        "inputType": "CodexContextK",
+        "outputType": "SafeContinuityK",
+        "offer": "urn:offer:codex-continuity-compaction",
+        "implementationState": "archived-only"
+      }
+    },
+    {
+      "id": "codex.communication.relevant-skill-and-clear-register",
+      "contract": "Surface applicable reusable capabilities before re-derivation and communicate compactly in a recognizable, customer-readable voice.",
+      "currentSources": [
+        "agents/harness/codex-agent-harness.json"
+      ],
+      "parityAssay": "Fixture prompts select their declared skill; style transformation preserves meaning while avoiding generic or negation-first flattening.",
+      "actuator": {
+        "actor": "urn:ame:codex-relevant-capability-recall-actuator",
+        "operation": "recall-capability-and-project-register",
+        "inputType": "CustomerPromptAndSkillIndexK",
+        "outputType": "RelevantCapabilityAndRegisterK",
+        "offer": "urn:offer:codex-relevant-capability-recall",
+        "implementationState": "fresh-xo-skill-candidate"
+      }
+    },
+    {
+      "id": "codex.network.live-reaction-and-public-source-purchase",
+      "contract": "Observe live chain/WitnessJournal/ActivityPub atoms independently and purchase discovery/acquisition with receipts and exact obstructions.",
+      "currentSources": [
+        "scripts/serve-activitypub.mjs"
+      ],
+      "parityAssay": "One healthy and one dead endpoint return atom plus obstruction; acquisition emits a provider exchange, not local authorship.",
+      "actuator": {
+        "actor": "urn:ame:codex-union-reaction-purchase-actuator",
+        "operation": "observe-and-purchase-union-reaction",
+        "inputType": "NetworkCapabilityDemandK",
+        "outputType": "NetworkAtomOrReceiptedObstructionK",
+        "offer": "urn:offer:codex-union-reaction-purchase",
+        "implementationState": "partial-obstructed"
+      }
+    },
+    {
+      "id": "codex.capability.fabrication-through-existing-pipeline",
+      "contract": "Genuine capability cells use the existing typed fabrication pipeline, canonical identity, controller, faces, and consumer assays.",
+      "currentSources": [
+        "agents/harness/codex-agent-harness.json"
+      ],
+      "parityAssay": "A missing face/controller fails; a complete candidate passes through the real consumer interface.",
+      "actuator": {
+        "actor": "urn:ame:codex-capability-fabrication-actuator",
+        "operation": "fabricate-capability-through-owning-pipeline",
+        "inputType": "CapabilityCellDemandK",
+        "outputType": "AssayedCapabilityCellK",
+        "offer": "urn:offer:codex-capability-fabrication",
+        "implementationState": "archived-supplier-only"
+      }
+    }
+  ],
+  "backupCoverageRules": [
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/agents/",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire",
+        "codex.assurance.evidence-bound-verification-and-acceptance"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/.codex-agent-manifest",
+      "capabilities": [
+        "codex.harness.deterministic-projection"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/config.toml",
+      "capabilities": [
+        "codex.harness.deterministic-projection",
+        "codex.runtime.boundary-readiness"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/hooks.json",
+      "capabilities": [
+        "codex.harness.deterministic-projection",
+        "codex.runtime.boundary-readiness"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/hooks/check-codex-apparatus",
+      "capabilities": [
+        "codex.runtime.boundary-readiness"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/hooks/check-political-economy-preflight",
+      "exclusion": "mandatory-office-political-economy-doctrine"
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/hooks/check-rollout-tool-balance",
+      "capabilities": [
+        "codex.conformance.reexecuted-controls"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/hooks/deny-branch-change.mjs",
+      "exclusion": "version-control-policy-belongs-to-repository-engineering"
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/hooks/smoke-stdio-mcp.mjs",
+      "capabilities": [
+        "codex.runtime.boundary-readiness"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk/prompts/goal-cycle-compact.md",
+      "capabilities": [
+        "codex.continuity.persisted-work-board",
+        "codex.context.compaction-with-continuity"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/skills/fabricating-a-capability-cell/",
+      "capabilities": [
+        "codex.capability.fabrication-through-existing-pipeline"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk/skills/learning-about-the-union/",
+      "capabilities": [
+        "codex.knowledge.repository-and-self-conception-observation"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.newer/actor.json",
+      "capabilities": [
+        "codex.identity.stable-enterprise"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.newer/incumbency.json",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.newer/agents/",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire",
+        "codex.planning.requirement-to-actuation-trajectory",
+        "codex.assurance.evidence-bound-verification-and-acceptance"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.newer/.codex-agent-manifest",
+      "capabilities": [
+        "codex.harness.deterministic-projection"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.newer/config",
+      "capabilities": [
+        "codex.harness.deterministic-projection",
+        "codex.runtime.boundary-readiness",
+        "codex.market.make-or-buy-and-supplier-pressure"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.newer/hooks",
+      "exclusion": "repo-local-identity-and-per-tool-amplification-doctrine"
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.newer/incumbency.json",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.newer/prompts/goal-cycle-compact.md",
+      "capabilities": [
+        "codex.continuity.persisted-work-board",
+        "codex.context.compaction-with-continuity"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.2026-07-27/actor.json",
+      "capabilities": [
+        "codex.identity.stable-enterprise"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.2026-07-27/incumbencies.json",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/agents/",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire",
+        "codex.planning.requirement-to-actuation-trajectory",
+        "codex.assurance.evidence-bound-verification-and-acceptance"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.2026-07-27/.codex-agent-manifest",
+      "capabilities": [
+        "codex.harness.deterministic-projection"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.2026-07-27/config.toml",
+      "capabilities": [
+        "codex.harness.deterministic-projection",
+        "codex.runtime.boundary-readiness",
+        "codex.market.make-or-buy-and-supplier-pressure"
+      ]
+    },
+    {
+      "path": ".codex/.codex.backups/.codex.bk.2026-07-27/hooks.json",
+      "exclusion": "per-tool-trajectory-io-amplification"
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/skills/monitoring-",
+      "capabilities": [
+        "codex.architecture.typed-mape-composition",
+        "codex.assurance.evidence-bound-verification-and-acceptance"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/skills/analyzing-",
+      "capabilities": [
+        "codex.analysis.source-pinned-advisory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/skills/consulting-",
+      "capabilities": [
+        "codex.analysis.source-pinned-advisory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/skills/planning-",
+      "capabilities": [
+        "codex.planning.requirement-to-actuation-trajectory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/skills/executing-",
+      "capabilities": [
+        "codex.execute.authority-bounded-integration"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.2026-07-27/emergency-web-migration/",
+      "exclusion": "non-harness-historical-deployment-configuration"
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.runtime-skills-20260727/monitoring-",
+      "capabilities": [
+        "codex.architecture.typed-mape-composition",
+        "codex.assurance.evidence-bound-verification-and-acceptance"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.runtime-skills-20260727/analyzing-",
+      "capabilities": [
+        "codex.analysis.source-pinned-advisory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.runtime-skills-20260727/consulting-",
+      "capabilities": [
+        "codex.analysis.source-pinned-advisory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.runtime-skills-20260727/planning-",
+      "capabilities": [
+        "codex.planning.requirement-to-actuation-trajectory"
+      ]
+    },
+    {
+      "prefix": ".codex/.codex.backups/.codex.bk.runtime-skills-20260727/executing-",
+      "capabilities": [
+        "codex.execute.authority-bounded-integration"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/agents/test-machine-codex-actuation-office",
+      "capabilities": [
+        "codex.architecture.typed-mape-composition",
+        "codex.execute.authority-bounded-integration"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/agents/union-recovery-agent",
+      "exclusion": "recovery-agent-has-no-current-implementation"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/.claude-agent-manifest",
+      "capabilities": [
+        "codex.harness.deterministic-projection"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/.claude-install-manifest",
+      "capabilities": [
+        "codex.duties.context-warranted-repertoire",
+        "codex.economy.native-usage-and-cost-pressure",
+        "codex.market.make-or-buy-and-supplier-pressure"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/settings.json",
+      "capabilities": [
+        "codex.harness.deterministic-projection"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/agent-dispatch-gate.mjs",
+      "capabilities": [
+        "codex.delegation.bounded-provider-lifecycle"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/cost-",
+      "exclusion": "invented-attention-dollar-pricing"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/prompt-cost-context.mjs",
+      "exclusion": "invented-attention-dollar-pricing"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/session-start-cost-context.mjs",
+      "exclusion": "invented-attention-dollar-pricing"
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/deny-branch-change",
+      "exclusion": "version-control-policy-belongs-to-repository-engineering"
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/deny-raw-git",
+      "exclusion": "version-control-policy-belongs-to-repository-engineering"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/deny-hand-authored-records.mjs",
+      "capabilities": [
+        "codex.mutation.route-through-owning-interface"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/deny-raw-markdown-read.mjs",
+      "exclusion": "blanket-source-reading-denial"
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/post-edit-conformance",
+      "capabilities": [
+        "codex.conformance.reexecuted-controls"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/session-start-conformance",
+      "capabilities": [
+        "codex.conformance.reexecuted-controls"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/session-start-demand-loop.mjs",
+      "capabilities": [
+        "codex.continuity.persisted-work-board"
+      ]
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/session-start-swarm-topology.mjs",
+      "exclusion": "static-swarm-snapshot-as-truth"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/swarm-topology.json",
+      "exclusion": "static-swarm-snapshot-as-truth"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/session-start-character.mjs",
+      "exclusion": "repo-local-persona-injection"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/prompt-conduct.mjs",
+      "exclusion": "repo-local-persona-injection"
+    },
+    {
+      "path": ".claude/.claude.backups/.claude.bk.2026-07-27/hooks/prompt-recall-skills.mjs",
+      "capabilities": [
+        "codex.communication.relevant-skill-and-clear-register"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/buying-work-on-the-market/",
+      "capabilities": [
+        "codex.market.make-or-buy-and-supplier-pressure"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/compacting-a-markdown-document/",
+      "capabilities": [
+        "codex.context.compaction-with-continuity"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/fabricating-a-capability-cell/",
+      "capabilities": [
+        "codex.capability.fabrication-through-existing-pipeline"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/generating-the-claude-harness/",
+      "capabilities": [
+        "codex.harness.deterministic-projection",
+        "codex.mutation.route-through-owning-interface"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/learning-about-the-union/",
+      "capabilities": [
+        "codex.knowledge.repository-and-self-conception-observation"
+      ]
+    },
+    {
+      "prefix": ".claude/.claude.backups/.claude.bk.2026-07-27/skills/writing-in-the-house-voice/",
+      "capabilities": [
+        "codex.communication.relevant-skill-and-clear-register"
+      ]
+    }
+  ]
+}

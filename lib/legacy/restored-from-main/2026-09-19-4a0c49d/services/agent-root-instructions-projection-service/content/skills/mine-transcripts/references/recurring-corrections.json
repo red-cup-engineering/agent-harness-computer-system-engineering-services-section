@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cannot-express-request",
+    "pattern": "\\bi\\s+(?:(?:truly|really|just|honestly|literally|seriously)\\s+)*(?:(?:do\\s*not|don['\u2019]?t|dont|odn['\u2019]?t|can['\u2019]?t)\\s+(?:even\\s+|really\\s+|fucking\\s+|possibly\\s+)*(?:know|explain|describe|express)|(?:am|['\u2019]m)\\s+(?:not\\s+sure|unsure))\\b[^.!?\\n]{0,180}\\b(?:say|saying|explain|describe|express|prompt|word|make\\s+you|get\\s+you|clear|clearer)\\b"
+  },
+  {
+    "id": "how-to-prompt",
+    "pattern": "\\bhow\\s+(?:do|can|could|should|would|the\\s+fuck\\s+do)\\s+i\\b[^.!?\\n]{0,100}\\b(?:prompt\\s+you|get\\s+you|make\\s+you|explain\\s+(?:this|it))\\b"
+  },
+  {
+    "id": "repeated-instruction",
+    "pattern": "\\bi\\s+(?:keep|kept)\\s+(?:fucking\\s+)?(?:saying|asking|telling|explaining|repeating)\\b|\\bi\\s+(?:shouldn['\u2019]?t|should\\s+not|cannot|can['\u2019]?t)\\s+(?:have\\s+to\\s+|keep\\s+)(?:explain|explaining|say|saying|prompt|prompting|repeat|repeating)\\b"
+  },
+  {
+    "id": "expertise-gap",
+    "pattern": "\\bi\\s+(?:(?:am|['\u2019]m)\\s+not|(?:am|['\u2019]m)\\s+(?:just|only)|(?:am|['\u2019]m))\\s+(?:a\\s+)?(?:non[- ]?(?:professional\\s+)?(?:programmer|developer)|(?:professional\\s+)?(?:programmer|developer|software\\s+engineer))\\b|\\byou\\s+are\\b[^.!?\\n]{0,55}\\b(?:experienced|professional|knowledgeable|knowledgable)\\s+(?:software\\s+)?engineer\\b"
+  },
+  {
+    "id": "cannot-supply-prompt",
+    "pattern": "\\bi\\s+(?:cannot|can['\u2019]?t)\\s+(?:(?:really|literally|keep|fucking)\\s+)*(?:explain|describe|prompt)\\b[^.!?\\n]{0,100}|\\b(?:lost|losing)\\s+(?:the\\s+)?capacity\\s+to\\s+imagine\\s+new\\s+ways\\s+to\\s+prompt\\b"
+  },
+  {
+    "id": "at-a-loss",
+    "pattern": "\\bi\\b[^.!?\\n]{0,55}\\bat\\s+a\\s+loss\\b[^.!?\\n]{0,100}\\b(?:say|prompt|explain|get\\s+you)\\b"
+  },
+  {
+    "id": "uncertain-how-to-ask",
+    "pattern": "\\bi(?:['\u2019]m|\\s+am)?\\s+(?:(?:really|just|honestly)\\s+)*(?:dunno|have\\s+no\\s+(?:idea|clue)|(?:am\\s+)?(?:unsure|not\\s+sure))\\b[^.!?\\n]{0,110}\\b(?:say|explain|describe|prompt|ask|word|get\\s+you|make\\s+you)\\b"
+  }
+]

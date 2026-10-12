@@ -1,0 +1,182 @@
+{
+  "type": "CodexMapeSkillRegistry",
+  "version": 1,
+  "skills": [
+    {
+      "id": "monitor-leader-move",
+      "order": 10,
+      "duty": "maintaining-codex-situational-knowledge",
+      "stage": "monitor",
+      "provider": { "mode": "direct-incubation", "requiredActor": "urn:ame:test-machine-codex", "protocol": "CodexLifecycle", "reusableSupplierDemand": true },
+      "consumes": ["LeaderExpressionK"],
+      "produces": ["LeaderMoveK", "RequirementK"],
+      "dependsOn": [],
+      "mutation": false
+    },
+    {
+      "id": "monitor-repository-evidence",
+      "order": 20,
+      "duty": "maintaining-codex-situational-knowledge",
+      "stage": "monitor",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:union-corpus-query-cell", "protocol": "local-content-addressed-query", "selection": "exact-capability" },
+      "consumes": ["LeaderMoveK"],
+      "produces": ["RepositoryEvidenceK"],
+      "dependsOn": ["monitor-leader-move"],
+      "mutation": false
+    },
+    {
+      "id": "monitor-provider-market",
+      "order": 30,
+      "duty": "maintaining-codex-situational-knowledge",
+      "stage": "monitor",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:inference-work-lot-service", "protocol": "MCP+A2A", "selection": "observe-only" },
+      "consumes": ["RequirementK"],
+      "produces": ["ProviderMarketK"],
+      "dependsOn": ["monitor-leader-move"],
+      "mutation": false
+    },
+    {
+      "id": "analyze-pinned-union-corpus",
+      "order": 40,
+      "duty": "diagnosing-the-union-system",
+      "stage": "analyze",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:notebooklm-inference-team", "protocol": "digest-pinned-provider-cli", "selection": "exact-source-id", "authority": "none" },
+      "consumes": ["LeaderMoveK", "RepositoryEvidenceK"],
+      "produces": ["AdvisorySynthesisK", "ProviderReceiptK"],
+      "dependsOn": ["monitor-repository-evidence"],
+      "mutation": false
+    },
+    {
+      "id": "analyze-schema-bound-corpus",
+      "order": 50,
+      "duty": "diagnosing-the-union-system",
+      "stage": "analyze",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:notebooklm-inference-team", "protocol": "notebooklm-workspace-market-mcp", "selection": "customer-owned-lease-plus-schema-bound-json-studio-lot", "authority": "none", "cleanup": "exact-workspace-and-studio-cleanup-receipts-required-after-local-artifact-is-seated" },
+      "consumes": ["AdvisorySynthesisK", "RepositoryEvidenceK"],
+      "produces": ["StructuredDataK", "ProviderReceiptK"],
+      "dependsOn": ["analyze-pinned-union-corpus"],
+      "mutation": false
+    },
+    {
+      "id": "analyze-reingested-structured-corpus",
+      "order": 60,
+      "duty": "diagnosing-the-union-system",
+      "stage": "analyze",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:notebooklm-inference-team", "protocol": "notebooklm-workspace-market-mcp", "selection": "fresh-customer-owned-lease-plus-native-data-table-studio-lot", "authority": "none", "cleanup": "exact-workspace-and-studio-cleanup-receipts-required-after-local-artifact-is-seated" },
+      "consumes": ["StructuredDataK", "RepositoryEvidenceK"],
+      "produces": ["DataTableK", "ProviderReceiptK"],
+      "dependsOn": ["analyze-schema-bound-corpus"],
+      "mutation": false
+    },
+    {
+      "id": "analyze-contradictions-and-obstructions",
+      "order": 70,
+      "duty": "diagnosing-the-union-system",
+      "stage": "analyze",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:notebooklm-inference-team", "protocol": "digest-pinned-provider-cli", "selection": "exact-source-id", "authority": "none" },
+      "consumes": ["AdvisorySynthesisK", "StructuredDataK", "DataTableK", "RepositoryEvidenceK", "ProviderMarketK"],
+      "produces": ["ContradictionSetK", "ProviderReceiptK"],
+      "dependsOn": ["analyze-reingested-structured-corpus", "monitor-provider-market"],
+      "mutation": false
+    },
+    {
+      "id": "plan-software-architecture-specification",
+      "order": 80,
+      "duty": "designing-union-change",
+      "stage": "plan",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:claude-code-inference-team", "protocol": "inference-work-lot-market", "selection": "required-provider-capability", "reasoningClass": "high" },
+      "consumes": ["RequirementK", "RepositoryEvidenceK", "AdvisorySynthesisK", "ContradictionSetK"],
+      "produces": ["SoftwareArchitectureSpecificationK", "ProviderReceiptK"],
+      "dependsOn": ["analyze-contradictions-and-obstructions"],
+      "mutation": false
+    },
+    {
+      "id": "plan-high-level-design",
+      "order": 90,
+      "duty": "designing-union-change",
+      "stage": "plan",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:claude-code-inference-team", "protocol": "inference-work-lot-market", "selection": "required-provider-capability", "reasoningClass": "high" },
+      "consumes": ["RequirementK", "SoftwareArchitectureSpecificationK", "ContradictionSetK"],
+      "produces": ["HighLevelDesignK", "ProviderReceiptK"],
+      "dependsOn": ["plan-software-architecture-specification"],
+      "mutation": false
+    },
+    {
+      "id": "plan-low-level-design",
+      "order": 100,
+      "duty": "decomposing-union-change",
+      "stage": "plan",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:inference-work-lot-service", "protocol": "inference-work-lot-market", "selection": "lowest-observed-fractional-cost-among-compatible-offers", "reasoningClass": "bounded" },
+      "consumes": ["HighLevelDesignK", "RepositoryEvidenceK", "ProviderMarketK"],
+      "produces": ["LowLevelDesignK", "ProviderReceiptK"],
+      "dependsOn": ["plan-high-level-design", "monitor-provider-market"],
+      "mutation": false
+    },
+    {
+      "id": "plan-bounded-work-lots",
+      "order": 110,
+      "duty": "decomposing-union-change",
+      "stage": "plan",
+      "provider": { "mode": "purchase", "requiredActor": "urn:ame:inference-work-lot-service", "protocol": "inference-work-lot-market", "selection": "lowest-observed-fractional-cost-among-compatible-offers", "reasoningClass": "bounded" },
+      "consumes": ["LowLevelDesignK", "ProviderMarketK"],
+      "produces": ["WorkLotPlanK", "ProviderReceiptK"],
+      "dependsOn": ["plan-low-level-design"],
+      "mutation": false
+    },
+    {
+      "id": "plan-integrate-actuation",
+      "order": 120,
+      "duty": "actuating-union-change",
+      "stage": "plan",
+      "provider": { "mode": "direct-incubation", "requiredActor": "urn:ame:test-machine-codex", "protocol": "CodexVSCode", "reusableSupplierDemand": true },
+      "consumes": ["RequirementK", "SoftwareArchitectureSpecificationK", "HighLevelDesignK", "LowLevelDesignK", "WorkLotPlanK"],
+      "produces": ["ActuationPlanK"],
+      "dependsOn": ["plan-bounded-work-lots"],
+      "mutation": false
+    },
+    {
+      "id": "execute-repository-mutation",
+      "order": 130,
+      "duty": "actuating-union-change",
+      "stage": "execute",
+      "provider": { "mode": "direct-incubation", "requiredActor": "urn:ame:test-machine-codex", "protocol": "CodexVSCode", "reusableSupplierDemand": true },
+      "consumes": ["ActuationPlanK", "LeaderAuthorityK"],
+      "produces": ["CandidatePatchK"],
+      "dependsOn": ["plan-integrate-actuation"],
+      "mutation": true
+    },
+    {
+      "id": "monitor-receiver-outcome",
+      "order": 150,
+      "duty": "observing-response-and-learning",
+      "stage": "monitor",
+      "provider": { "mode": "external-observation", "requiredActor": "urn:leader:test-customer", "protocol": "LeaderMovement", "selection": "named-acceptance-authority" },
+      "consumes": ["LeaderMoveK", "CandidatePatchK"],
+      "produces": ["CustomerOutcomeK"],
+      "dependsOn": ["execute-repository-mutation"],
+      "mutation": false
+    },
+    {
+      "id": "monitor-supplier-exchange",
+      "order": 160,
+      "duty": "accounting-for-capability-trade",
+      "stage": "monitor",
+      "provider": { "mode": "direct-incubation", "requiredActor": "urn:ame:test-machine-codex", "protocol": "CodexEnterpriseTrajectory", "reusableSupplierDemand": true },
+      "consumes": ["ProviderReceiptK"],
+      "produces": ["SupplierExchangeK"],
+      "dependsOn": ["execute-repository-mutation"],
+      "mutation": false
+    },
+    {
+      "id": "monitor-acceptance-pressure",
+      "order": 170,
+      "duty": "accounting-for-capability-trade",
+      "stage": "monitor",
+      "provider": { "mode": "direct-incubation", "requiredActor": "urn:ame:test-machine-codex", "protocol": "CodexEnterpriseTrajectory", "reusableSupplierDemand": true },
+      "consumes": ["SupplierExchangeK", "CustomerOutcomeK"],
+      "produces": ["EconomicPressureK"],
+      "dependsOn": ["monitor-supplier-exchange", "monitor-receiver-outcome"],
+      "mutation": false
+    }
+  ]
+}

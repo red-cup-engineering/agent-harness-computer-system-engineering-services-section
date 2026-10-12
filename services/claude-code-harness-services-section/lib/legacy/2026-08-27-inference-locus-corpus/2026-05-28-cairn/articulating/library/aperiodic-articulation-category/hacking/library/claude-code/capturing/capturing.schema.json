@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/capturing/capturing.schema.json",
+  "title": "capturing",
+  "description": "Morphism: (handler-class, payload) -> captured claim(s). Realizes the IO-ARTICULATION rule (external I/O -> utterance -> articulating -> claim) so that ALL activity -- tool calls, prompts, llm completions, hook events -- is transduced into claims the swarm can process. Composes decoding (locution) -> articulating. PURE; the durable dual-filed write is the capture entrypoint's job. HACKING: name admitted.",
+  "kind": "morphism",
+  "domain": "handler-class + raw payload",
+  "codomain": "captured claim[]",
+  "variance": "restriction",
+  "monotone": true
+}

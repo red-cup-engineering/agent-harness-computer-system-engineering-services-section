@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/positing/library/scott-continuous-posit-category/library/scott-continuous-posit-cell/library/potential-scott-continuous-posit-cell/settling/library/finite-settlement-algebra/library/eavt-row/eavt-row.schema.json",
+  "title": "eavt-row",
+  "description": "An EAVT positing event (TRC spec §8): entity e (token, the subject anchor), attribute a (claim, the predicate/morphism anchor), value v, time t. Each row is dually filed at the e-anchored log and the a-anchored log (§4). This is where the conductor's state settles into the substrate -- nothing floats outside.",
+  "kind": "object",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["e", "a", "v", "t"],
+  "properties": {
+    "e": { "$ref": "https://561.group/claude-code-harness/library/token/token.schema.json" },
+    "a": { "$ref": "https://561.group/claude-code-harness/library/claim/claim.schema.json" },
+    "v": { "description": "the posited value presentation", "type": "string", "minLength": 1 },
+    "t": { "description": "logical/ISO time of the positing event", "type": "string", "minLength": 1 },
+    "evidence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  }
+}

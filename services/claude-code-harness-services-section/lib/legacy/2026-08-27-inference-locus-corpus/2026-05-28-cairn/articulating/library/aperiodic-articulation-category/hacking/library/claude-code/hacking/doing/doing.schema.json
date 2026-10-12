@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/hacking/doing/doing.schema.json",
+  "title": "doing",
+  "description": "Morphism: (agent, intent) -> act. The action tower's transfinite-bounded generator (parallel to predicating): a bounded act, the body sensing or effecting. The act produces an utterance (sense and effect both speak utterances) that enters the substrate. invoking is a doing sub-morphism. HACKING: action-tower generator and regime placement admitted.",
+  "kind": "morphism",
+  "domain": "agent + intent",
+  "codomain": "act",
+  "variance": "generator",
+  "monotone": true
+}

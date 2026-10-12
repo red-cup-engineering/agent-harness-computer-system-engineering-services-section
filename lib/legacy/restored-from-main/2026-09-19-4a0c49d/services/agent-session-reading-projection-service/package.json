@@ -1,0 +1,9 @@
+{
+  "name": "@red-cup-engineering/agent-session-reading-projection-service", "version": "0.1.2", "type": "module",
+  "description": "Joins explicit agent journals into bounded session readings without acquiring state.",
+  "exports": { ".": "./src/session-reading.mjs", "./session-phase": "./src/session-phase.mjs", "./session-summary": "./src/session-summary.mjs" },
+  "bin": { "project-agent-session-reading": "./scripts/project-agent-session-reading.mjs", "project-agent-session-phase": "./scripts/project-agent-session-phase.mjs", "project-agent-session-summary": "./scripts/project-agent-session-summary.mjs" },
+  "files": ["src", "scripts", "README.md"],
+  "scripts": { "check": "node --check src/*.mjs scripts/*.mjs", "test": "node --test test/*.test.mjs" },
+  "engines": { "node": ">=22" }, "sideEffects": false
+}

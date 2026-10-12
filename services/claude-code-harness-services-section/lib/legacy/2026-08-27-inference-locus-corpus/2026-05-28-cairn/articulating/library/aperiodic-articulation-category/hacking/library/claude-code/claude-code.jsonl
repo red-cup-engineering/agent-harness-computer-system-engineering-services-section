@@ -1,0 +1,55 @@
+{"e":"claude-code","a":"learned","v":"from session: settled","t":"2026-05-28T20:34:46.187Z","evidence":["session-trace:2-messages"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T20:35:52.182Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T20:35:52.203Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T20:36:19.039Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T20:36:19.062Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T20:37:29.006Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T20:37:29.016Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T20:38:14.925Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T20:38:14.930Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T20:47:45.700Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T20:47:45.704Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T21:03:03.354Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T21:03:03.370Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T21:39:47.226Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T21:39:47.230Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T21:46:29.206Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T21:46:29.224Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T21:51:59.260Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T21:51:59.269Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T22:19:53.002Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T22:19:53.006Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T22:21:05.774Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T22:21:05.780Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T22:21:54.727Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T22:21:54.728Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:06:25.597Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:06:25.599Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:06:55.343Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:06:55.344Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:11:51.977Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:11:51.980Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:12:16.410Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:12:16.411Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:13:04.069Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:13:04.071Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:27:11.555Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:27:11.557Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:36:50.081Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:36:50.083Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-28T23:41:52.305Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-28T23:41:52.314Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T00:32:16.756Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T00:32:16.757Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T01:10:27.761Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T01:10:27.762Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T01:10:34.592Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T01:10:34.594Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T01:11:14.083Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T01:11:14.084Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T01:37:40.527Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T01:37:40.528Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-05-29T01:43:21.291Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-05-29T01:43:21.296Z","evidence":["cycle-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"learned","v":"conductor-fact:2","t":"2026-06-05T17:40:10.292Z","evidence":["conformance-test"],"placement":"claude-code"}
+{"e":"claude-code","a":"conducts","v":"the swarm","t":"2026-06-05T17:40:10.359Z","evidence":["cycle-test"],"placement":"claude-code"}

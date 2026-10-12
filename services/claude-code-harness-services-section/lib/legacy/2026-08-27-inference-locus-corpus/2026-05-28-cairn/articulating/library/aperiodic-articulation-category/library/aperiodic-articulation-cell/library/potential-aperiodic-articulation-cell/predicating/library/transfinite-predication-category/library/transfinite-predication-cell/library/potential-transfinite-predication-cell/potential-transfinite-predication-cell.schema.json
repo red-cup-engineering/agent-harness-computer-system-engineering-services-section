@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/library/potential-transfinite-predication-cell/potential-transfinite-predication-cell.schema.json",
+  "title": "potential-transfinite-predication-cell",
+  "description": "The potential (true) phase of a transfinite-predication-cell: value is bottom, no evidence committed. The next morphism (positing) lives inside it.",
+  "kind": "object",
+  "allOf": [
+    { "$ref": "https://561.group/claude-code-harness/articulating/library/aperiodic-articulation-category/library/aperiodic-articulation-cell/library/potential-aperiodic-articulation-cell/predicating/library/transfinite-predication-category/library/transfinite-predication-cell/transfinite-predication-cell.schema.json" },
+    { "properties": { "value": { "const": "bottom" } } }
+  ]
+}
