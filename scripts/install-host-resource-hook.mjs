@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
  * Install the host-resource controller (`src/host-resource-hook.mjs`) for one user of a machine, for
- * the machines where no node projection (`claude-harness-project`) writes it: copy the hook to a
- * stable directory and name it in the user's Claude Code settings (or Codex `hooks.json`) as a
+ * the machines where no node projection (`claude-harness-project`) writes it: reference the owning
+ * source file in the user's Claude Code settings (or Codex `hooks.json`) as a
  * PreToolUse hook on Bash. The hook entry is built by the same `hookEntries` the projection uses.
  *
- *   install-host-resource-hook [--dest <dir>] [--settings <file>] [--provider claude|codex]
+ *   install-host-resource-hook [--settings <file>] [--provider claude|codex]
  *                              [--vscode-settings <file>] [--no-containment] [--dry-run]
  *
  * Every other key of the settings file, and every other hook in it, is kept as it is; an entry this
@@ -26,7 +26,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CONTAINMENT_SLICE, hookEntries, hookSource, launcherScript, sliceUnit } from "../src/host-resource-hook.mjs";
+import { CONTAINMENT_SLICE, hookEntries, hostResourceControl, launcherScript, sliceUnit } from "../src/host-resource-hook.mjs";
 
 const LAUNCHER_FILE = "claude-contained";
 const WRAPPER_SETTING = "claudeCode.claudeProcessWrapper";
@@ -80,15 +80,15 @@ const HOOK_FILE = "host-resource-hook.mjs";
 const isOurs = (entry) => (entry?.hooks ?? []).some((handler) => typeof handler?.command === "string" && handler.command.includes(HOOK_FILE));
 
 /**
- * `{ hook, settings, provider, changed }`: the hook file written under `dest` and the settings file
- * now naming it. With `dryRun` nothing is written and `changed` says what would be.
+ * `{ hook, settings, provider, changed }`: the owning hook source and the settings file naming it.
+ * With `dryRun` nothing is written and `changed` says what would be.
  */
-export function installHostResourceHook({ dest, settings, provider = "claude", environment = process.env, dryRun = false, containment = false, vscodeSettings, reload } = {}) {
+export function installHostResourceHook({ settings, provider = "claude", environment = process.env, dryRun = false, containment = false, vscodeSettings, reload } = {}) {
   if (!["claude", "codex"].includes(provider)) throw new TypeError(`provider is claude or codex, not ${provider}`);
   const contained = provider === "claude" && containment ? installContainment({ environment, vscodeSettings, dryRun, reload }) : undefined;
   const outcome = (hook, settingsFile, changed) => Object.freeze({ hook, settings: settingsFile, provider, changed: changed || contained?.changed === true, ...(contained ? { containment: contained } : {}) });
   const home = environment.HOME ?? homedir();
-  const hookPath = path.resolve(dest ?? path.join(environment.XDG_DATA_HOME || path.join(home, ".local", "share"), "agent-harness"), HOOK_FILE);
+  const hookPath = hostResourceControl({ node: home }).source;
   const settingsPath = path.resolve(settings ?? (provider === "codex"
     ? path.join(environment.CODEX_HOME || path.join(home, ".codex"), "hooks.json")
     : path.join(environment.CLAUDE_CONFIG_DIR || path.join(home, ".claude"), "settings.json")));
@@ -103,14 +103,9 @@ export function installHostResourceHook({ dest, settings, provider = "claude", e
   const others = Array.isArray(current.hooks?.PreToolUse) ? current.hooks.PreToolUse.filter((entry) => !isOurs(entry)) : [];
   const next = { ...current, hooks: { ...current.hooks, PreToolUse: [...others, ...ours] } };
   const text = `${JSON.stringify(next, null, 2)}\n`;
-  const hookChanged = !existsSync(hookPath) || readFileSync(hookPath, "utf8") !== hookSource();
-  const changed = hookChanged || text !== before;
+  const changed = text !== before;
   if (dryRun || !changed) return outcome(hookPath, settingsPath, changed);
 
-  mkdirSync(path.dirname(hookPath), { recursive: true });
-  const staged = `${hookPath}.${process.pid}.tmp`;
-  writeFileSync(staged, hookSource());
-  renameSync(staged, hookPath);
   if (text !== before) {
     mkdirSync(path.dirname(settingsPath), { recursive: true });
     const keep = `${settingsPath}.before-host-resource-hook`;
@@ -123,7 +118,6 @@ export function installHostResourceHook({ dest, settings, provider = "claude", e
 function main(argv) {
   const option = (name) => { const at = argv.indexOf(name); return at < 0 ? undefined : argv[at + 1]; };
   const result = installHostResourceHook({
-    dest: option("--dest"),
     settings: option("--settings"),
     provider: option("--provider") ?? "claude",
     vscodeSettings: option("--vscode-settings"),
