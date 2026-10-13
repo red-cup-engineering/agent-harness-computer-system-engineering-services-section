@@ -1,3 +1,5 @@
+import { skillError } from "@red-cup-engineering/animating/becoming/doing/working/governing/skill";
+import { workResultFromSkillResult } from "@red-cup-engineering/organizing/work/schema";
 import { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SHAPE, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 export { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SCHEMA, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 
@@ -223,7 +225,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
   const provider = (item) => {
     const producer = Object.freeze({ id: workerId, revision: `${dialect.name}:${model ?? "default"}` });
     if (item.delegation?.provider !== workerId) {
-      return Promise.resolve(Object.freeze({ producer, execution: `refused:${item.scope}`, result: Object.freeze({ kind: "skill-error", error: "provider is not the current allocated delegate" }), providerEvidence: Object.freeze([`allocation-provider:${item.delegation?.provider ?? "none"}`]) }));
+      return Promise.resolve(Object.freeze({ producer, execution: `refused:${item.scope}`, result: workResultFromSkillResult(skillError("ValidationFailure", "provider is not the current allocated delegate", item.scope)), providerEvidence: Object.freeze([`allocation-provider:${item.delegation?.provider ?? "none"}`]) }));
     }
     const run = async ({ onSession: bindSession } = {}) => {
       const selectedModel = item.allocatedModel ?? model;
