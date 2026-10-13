@@ -1,5 +1,6 @@
-import { skillError } from "@red-cup-engineering/animating/becoming/doing/working/governing/skill";
-import { workResultFromSkillResult } from "@red-cup-engineering/organizing/work/schema";
+import { skillError, skillSuccess } from "@red-cup-engineering/animating/becoming/doing/working/governing/skill";
+import { skillResultSchema } from "@red-cup-engineering/animating/becoming/doing/working/governing/carriers";
+import { admitAgencyWorkResult, workResultFromSkillResult } from "@red-cup-engineering/organizing/work/schema";
 import { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SHAPE, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 export { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SCHEMA, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 
@@ -39,7 +40,7 @@ import {
 } from "./session.mjs";
 
 /** The typed outcome every carrier's last message is: a skill result or a skill error. */
-export const AGENCY_OUTCOME_SHAPE = "{\"kind\":\"skill-result\",\"value\":{...your observed result and evidence...}} if the stated receiver condition is met, or {\"kind\":\"skill-error\",\"error\":\"precise unmet condition and accountable owner\"} otherwise";
+export const AGENCY_OUTCOME_SHAPE = `${JSON.stringify(workResultFromSkillResult(skillSuccess({ output: "your actual method output and evidence" })))} when the invocation produces its declared output; otherwise ${JSON.stringify(workResultFromSkillResult(skillError("Unresolvable", "precise unmet condition and accountable owner", "the allocated work scope")))}. Preserve the actual native outcome and use its matching error class and reading; independent receiving decides fulfillment`;
 
 /** The JSON Schema of that outcome, its value typed by the work item's `returns` where it declares
  *  one: the response constraint a carrier that validates output holds its session to. One object,
@@ -48,8 +49,8 @@ export const AGENCY_OUTCOME_SHAPE = "{\"kind\":\"skill-result\",\"value\":{...yo
 export function agencyOutcomeSchema(returns) {
   return Object.freeze({
     type: "object",
-    properties: { kind: { enum: ["skill-result", "skill-error"] }, value: returns ?? { type: "object" }, error: { type: "string", minLength: 1 } },
-    required: ["kind"],
+    properties: { kind: { enum: ["skill-result", "skill-error"] }, value: returns ?? { type: "object" }, error: { type: "string", minLength: 1 }, skillOutcome: skillResultSchema },
+    required: ["kind", "skillOutcome"],
     additionalProperties: false,
   });
 }
@@ -101,7 +102,7 @@ export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeNam
       `When the method needs the original journal subject, use ${workPrefix}work-item ${JSON.stringify({ id: item.subject })}; do not substitute the demand id. When it needs dispatch state beyond this allocation, id means the Character; select only the necessary page, starting with ${workPrefix}agent-work-dispatch ${JSON.stringify({ id: item.agent, limit: 1 })}.`,
       ...(item.methodResources === undefined ? [] : [`The holder has delegated these actual installed method Resources, including their exact input contracts: ${JSON.stringify(item.methodResources)}`]),
       ...(publicationPlanResources.length === 1 && typeof publicationPlanResources[0].id === "string" && typeof publicationPlanResources[0].witness === "string"
-        ? [`If the allocated method explicitly calls for the read-only package publication plan carried by its signed Action, return the ordinary typed envelope {"kind":"skill-result","value":{"kind":"npm-workspace-publication-plan-request@1","scope":${JSON.stringify(item.scope)},"resource":${JSON.stringify(publicationPlanResources[0].id)},"witness":${JSON.stringify(publicationPlanResources[0].witness)}}}. This requests only the host's fixed read-only plan at the end of this actual session; it does not publish, change package files, or authorize any other command. Do not request it unless this duty's stated method requires the plan.`] : []),
+        ? [`If the allocated method explicitly calls for the read-only package publication plan carried by its signed Action, return this native typed plan request ${JSON.stringify(workResultFromSkillResult(skillSuccess({kind:"npm-workspace-publication-plan-request@1",scope:item.scope,resource:publicationPlanResources[0].id,witness:publicationPlanResources[0].witness})))}. This requests only the host's fixed read-only plan at the end of this actual session; it does not publish, change package files, or authorize any other command. Do not request it unless this duty's stated method requires the plan.`] : []),
       `This duty is already allocated and invoked by the resident work controller: ${JSON.stringify({ allocation: item.allocation, scope: item.scope, provider: item.delegation?.provider, execution: item.execution })}. Perform its method in this worker; do not allocate this same duty again or require access to the controller's private execute/pump verbs.`,
       `When you need current execution state, read only your exact delegated duty: ${workPrefix}agency-work-delegated ${JSON.stringify({ scope: item.scope })}. Its native execution receipt and admitted session are process evidence, distinct from an assignment label. Missing a resource actually needed by your method is a separate obstruction.`,
       ...(item.signedAction === undefined ? [] : [`Signed next Action and witnessed Resources: ${JSON.stringify(item.signedAction)}`]),
@@ -174,8 +175,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
       dialect.startupFailure(session) ? { failure: "carrier-startup" } : {});
     let result;
     try { result = JSON.parse(session.message); } catch { throw new TypeError(`${dialect.label} worker did not return a typed service outcome`); }
-    if (!(result?.kind === "skill-result" && Object.hasOwn(result, "value"))
-      && !(result?.kind === "skill-error" && typeof result.error === "string" && result.error.length > 0)) throw new TypeError(`${dialect.label} worker returned an invalid service outcome`);
+    result = admitAgencyWorkResult(result);
     const selectedModel = item.allocatedModel ?? model;
     const carrier = observedCarrier(session, selectedModel, requiredEffort(item));
     const producer = { id: workerId, revision: `${dialect.name}:${carrier.model}` };
