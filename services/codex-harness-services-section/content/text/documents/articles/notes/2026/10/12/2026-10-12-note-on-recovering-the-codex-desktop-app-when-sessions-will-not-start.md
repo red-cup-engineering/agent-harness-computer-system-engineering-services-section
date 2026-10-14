@@ -4,10 +4,14 @@ date-created: 2026-10-12
 tags:
 - codex-harness
 - recovery
-- runbook
+- historical-report
 - sqlite
 - wsl
 ---
+
+> **Unqualified historical report.** The original report below is prior agent testimony about the 2026-10-12 incident, not a verified current recovery procedure. Its causal claims, app-state assumptions and destructive SQLite deletion steps remain unqualified. Its instruction to “follow it next time” and all procedural wording are retained as historical testimony only: they grant no execution authority and must not be treated as directions to perform repairs. This source delivery preserves evidence only; no app or database operation was executed.
+
+## Original agent report
 
 On 2026-10-12 one Codex session crashed, and after that the Codex desktop app on emsenn's Windows machine would not start a new session. This note records where the app keeps its state, what had gone wrong, and the steps that fixed it. Follow it the next time Codex hangs or refuses to start a thread.
 
