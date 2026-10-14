@@ -79,6 +79,10 @@ fallback.
 
 `project-office-context <binding>` writes a project office's source context to the binding's `target`. Codex's workspace-write sandbox holds `.codex` read-only, so the target lies outside it (Bare Cedar Fog: `.office-context/office-context.md`). A current briefing is confirmed without a write; a stale one that cannot be written exits 3 and must be projected outside the sandbox. See [the 2026-10-09 note](content/text/documents/articles/notes/2026/10/09/2026-10-09-note-on-codex-office-context-memory-and-sign-in.md).
 
+## Desktop app recovery evidence
+
+[The 2026-10-12 recovery note](content/text/documents/articles/notes/2026/10/12/2026-10-12-note-on-recovering-the-codex-desktop-app-when-sessions-will-not-start.md) retains the historical incident observations and repair account. Its app-state assumptions and destructive repair steps need independent qualification against the current app before reuse.
+
 ## Field
 
 | Actor | Operation | Boundary |
