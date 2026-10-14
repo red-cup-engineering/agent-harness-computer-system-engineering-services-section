@@ -989,8 +989,8 @@ export function hostResourceControl({ node, codex = true }) {
 }
 
 /** Retain unrelated hooks; replace only this guard's original copies and owning reference. */
-export function mergeHostResourceHooks(existing, entries, node) {
-  const sources = [fileURLToPath(import.meta.url), path.join(node, ".claude/hooks/host-resource-hook.mjs"), path.join(node, ".codex/hooks/host-resource-hook.mjs")];
+export function mergeHostResourceHooks(existing, entries, node, { retiredSources = [] } = {}) {
+  const sources = [fileURLToPath(import.meta.url), path.join(node, ".claude/hooks/host-resource-hook.mjs"), path.join(node, ".codex/hooks/host-resource-hook.mjs"), ...retiredSources];
   const hooks = { ...existing };
   hooks.PreToolUse = (hooks.PreToolUse ?? []).flatMap(group => {
     const held = (group.hooks ?? []).filter(handler => !sources.some(source => String(handler.command ?? "").includes(source)));
