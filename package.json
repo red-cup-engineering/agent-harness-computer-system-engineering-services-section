@@ -58,7 +58,8 @@
     "./carrier/workspace": "./src/carrier/workspace.mjs",
     "./agent-briefing": "./src/agent-briefing.mjs",
     "./scripts/project-agent-briefing.mjs": "./scripts/project-agent-briefing.mjs",
-    "./host-resource-hook": "./src/host-resource-hook.mjs"
+    "./host-resource-hook": "./src/host-resource-hook.mjs",
+    "./connector-call-evidence": "./src/connector-call-evidence.mjs"
   },
   "bin": {
     "record-harness-skill-selection": "scripts/record-harness-skill-selection.mjs",
@@ -83,7 +84,7 @@
     "services"
   ],
   "scripts": {
-    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs",
+    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
@@ -107,7 +108,8 @@
     "@red-cup-engineering/witness-journal-document-service": "workspace:*",
     "@red-cup-engineering/mcp-engineering-services-section": "workspace:*",
     "@red-cup-engineering/computer-content-address-engineering-services-section": "workspace:*",
-    "@red-cup-engineering/javascript-file-services-section": "workspace:*"
+    "@red-cup-engineering/javascript-file-services-section": "workspace:*",
+    "@red-cup-engineering/animating": "workspace:*"
   },
   "engines": {
     "node": ">=22"

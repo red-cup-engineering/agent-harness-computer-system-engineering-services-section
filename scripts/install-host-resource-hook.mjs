@@ -19,7 +19,7 @@
  * VS Code server, the machine setting `claudeCode.claudeProcessWrapper` naming that launcher, so
  * every session VS Code starts runs inside the slice. `--no-containment` leaves all three alone.
  */
-import { chmodSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -83,7 +83,7 @@ const HOOK_FILE = "host-resource-hook.mjs";
 export function installHostResourceHook({ settings, provider = "claude", environment = process.env, dryRun = false, containment = false, vscodeSettings, reload } = {}) {
   if (!["claude", "codex"].includes(provider)) throw new TypeError(`provider is claude or codex, not ${provider}`);
   const home = environment.HOME ?? homedir();
-  const hookPath = hostResourceControl({ node: home, codex: provider === "codex" }).source;
+  const hookPath = hostResourceControl({ node: home }).source;
   const retiredHook = path.join(environment.XDG_DATA_HOME || path.join(home, ".local", "share"), "agent-harness", HOOK_FILE);
   const settingsPath = path.resolve(settings ?? (provider === "codex"
     ? path.join(environment.CODEX_HOME || path.join(home, ".codex"), "hooks.json")
@@ -108,7 +108,11 @@ export function installHostResourceHook({ settings, provider = "claude", environ
   const changed = text !== before;
   if (text !== before) {
     if ((existsSync(settingsPath) ? readFileSync(settingsPath, "utf8") : undefined) !== before) throw new Error("host-resource settings changed before projection");
-    if (!dryRun) writeIfChanged(settingsPath, text, { mode: 0o600 });
+    if (!dryRun) {
+      const keep = `${settingsPath}.before-host-resource-hook`;
+      if (before !== undefined && !existsSync(keep)) copyFileSync(settingsPath, keep);
+      writeIfChanged(settingsPath, text, { mode: 0o600 });
+    }
   }
   return Object.freeze({ hook: hookPath, settings: settingsPath, provider, changed: changed || contained?.changed === true, sourceReferenced: true, activeSessionGuarded: false, ...(contained ? { containment: contained } : {}) });
 }
