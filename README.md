@@ -23,8 +23,9 @@ harness engineering beneath an inference provider.
   `git status`/`log --all`/`ls-files`/`submodule update` in a large repository) and runs the disk-
   and CPU-heavy ones one at a time under a host-wide `flock`, at `nice 10` and idle I/O class. It
   fails open and never waits itself. The node projection (`claude-harness-project`) writes it into
-  `.claude/` and `.codex/`; `scripts/install-host-resource-hook.mjs` installs it for one user where
-  no projection runs.
+  `.claude/` and `.codex/`; `scripts/install-host-resource-hook.mjs` installs a reference to the
+  same owning source for one user where no projection runs. `--settings` selects the configuration;
+  the former copied-hook `--dest` is retired. Unrelated handlers in shared groups are retained.
 - `codex-harness-services-section` owns the Codex dialect (`codex exec`), the
   Codex node's durable task rail and the Codex runtime projection.
 - `claude-code-harness-services-section` owns the Claude Code dialect
