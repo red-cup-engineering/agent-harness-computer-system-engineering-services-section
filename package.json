@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/agent-harness-computer-system-engineering-services-section",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
   "license": "UNLICENSED",
@@ -121,5 +121,10 @@
   "devDependencies": {
     "@red-cup-engineering/animating": "0.2.4"
   },
-  "private": false
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/red-cup-engineering/computer-engineering-services-section.git",
+    "directory": "services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section"
+  }
 }
