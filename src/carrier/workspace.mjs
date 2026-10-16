@@ -20,11 +20,11 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, st
 import { createHash } from "node:crypto";
 import { canonicalJson } from "@red-cup-engineering/json-services-section";
 import { workSourceTaskContract } from "@red-cup-engineering/organizing/work/schema";
-import { prepareSourceResultWorktree, prepareSourceClosureWorktree } from "@red-cup-engineering/computer-code-development-engine/workspace/source-closure";
+import { prepareSourceResultWorktree, prepareSourceClosureWorktree } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/source-closure";
 import { homedir } from "node:os";
 import path from "node:path";
 
-import { assertSourceClosureWorktreeOwners, sourceOnlyPackagePreparation, finishBoundWorktree, removeBoundWorktree, assertWorktreeOwner, commitWorktree, integrateWorktree, prepareWorktree, removeWorktree, worktreeChanges, worktreeDirty, worktreeHead } from "@red-cup-engineering/computer-code-development-engine/workspace/worktree";
+import { assertSourceClosureWorktreeOwners, sourceOnlyPackagePreparation, finishBoundWorktree, removeBoundWorktree, assertWorktreeOwner, commitWorktree, integrateWorktree, prepareWorktree, removeWorktree, worktreeChanges, worktreeDirty, worktreeHead } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/worktree";
 
 function taskCopies(sourceBinding, workspace) {
   const copies = [];

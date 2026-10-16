@@ -8,7 +8,7 @@
 // at that package's last commit), adapted only in its own imports: the type
 // declarations go through @red-cup-engineering/computer-system-engine/type-system
 // now that computer-data-engine has dissolved into computer-system-engine.
-import { admit, defineType } from "@red-cup-engineering/computer-data-engineering-services-section/type-system";
+import { admit, defineType } from "@red-cup-engineering/signcell/type-system";
 import eventSchema from "../data/records/schema/agent-lifecycle-event.schema.json" with { type: "json" };
 import responseSchema from "../data/records/schema/agent-lifecycle-response.schema.json" with { type: "json" };
 
