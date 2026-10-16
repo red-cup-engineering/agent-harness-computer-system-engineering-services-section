@@ -399,7 +399,7 @@ export function codexTaskOperations(spec = {}) {
         const requestedMessage = input?.message;
         if (requestedMessage !== undefined && (typeof requestedMessage !== "string" || requestedMessage.trim() === "")) throw new TypeError("codex-task-integrate: message must be non-empty when supplied");
         const { dataRoot, cwd, integrateBranch } = node();
-        const integrate = integrateBranch ?? (await import("@red-cup-engineering/computer-code-development-engine/git/operations")).integrateGitBranch;
+        const integrate = integrateBranch ?? (await import("@red-cup-engineering/computer-systems-fabrication-engineering-services-section/git/operations")).integrateGitBranch;
         const result = await integrate({ packageRoot: cwd, dataRoot }, {
           branch: task.branch,
           message: requestedMessage?.trim() ?? `Integrate Codex task ${task.id}: ${task.assignment.responsibility}`,
