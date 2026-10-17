@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { hookSource, hostResourceControl } from "../src/host-resource-hook.mjs";
+import { hookEntries, hostResourceControl, shellQuote } from "../src/host-resource-hook.mjs";
 
 let projection;
 try {
@@ -30,31 +30,29 @@ process.on("exit", () => { for (const dir of roots) rmSync(dir, { recursive: tru
 
 // What projectClaudeHarness yields for an agency that seats no one: only the node's controller.
 const projectionAt = (node, hostResource = true) => {
-  const control = hostResource ? hostResourceControl({ node }) : { files: new Map(), hooks: {} };
+  const control = hostResource ? hostResourceControl({ node, codex: false }) : { files: new Map(), hooks: {} };
   return Object.freeze({ kind: "claude-harness.projection", node, settlementRoot: node, files: new Map(control.files), hooks: control.hooks,
     env: Object.freeze({ BASH_MAX_OUTPUT_LENGTH: "20000" }), deny: Object.freeze([]), mcpServers: {}, counts: {}, obstructions: Object.freeze([]) });
 };
 
-test("writing the projection puts the hook beside the settings that name it and keeps the settings it does not own", { skip }, () => {
+test("writing the projection references the owning hook source from the settings and keeps the settings it does not own", { skip }, () => {
   const node = nodeDir();
   mkdirSync(path.join(node, ".claude"), { recursive: true });
   writeFileSync(path.join(node, ".claude", "settings.local.json"), JSON.stringify({ disabledMcpjsonServers: ["metroplat"], permissions: { allow: ["Bash(git commit:*)"] }, env: { KEEP: "1" } }));
 
   const written = projection.writeClaudeHarness(projectionAt(node));
-  assert.ok(written.written >= 3);
-  assert.equal(readFileSync(path.join(node, ".claude", "hooks", "host-resource-hook.mjs"), "utf8"), hookSource());
-  assert.equal(readFileSync(path.join(node, ".codex", "hooks", "host-resource-hook.mjs"), "utf8"), hookSource());
+  assert.equal(written.written, 0, "the Claude projection yields no file for the controller; its settings name the source");
+  const { source } = hostResourceControl({ node });
+  assert.equal(existsSync(path.join(node, ".claude", "hooks")), false, "no hook body is copied beside the settings");
+  assert.equal(existsSync(path.join(node, ".codex", "hooks")), false);
   const settings = JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8"));
   assert.deepEqual(settings.disabledMcpjsonServers, ["metroplat"]);
   assert.deepEqual(settings.permissions.allow, ["Bash(git commit:*)"]);
   assert.equal(settings.env.KEEP, "1");
   assert.equal(settings.hooks.PreToolUse.length, 1);
   assert.equal(settings.hooks.PreToolUse[0].matcher, "Bash|Monitor");
-  assert.equal(settings.hooks.PreToolUse[0].hooks[0].command, `node '${path.join(node, ".claude", "hooks", "host-resource-hook.mjs")}'`);
-  const codex = JSON.parse(readFileSync(path.join(node, ".codex", "hooks.json"), "utf8"));
-  assert.equal(codex.hooks.PreToolUse[0].hooks[0].command, `node '${path.join(node, ".codex", "hooks", "host-resource-hook.mjs")}' --provider codex`);
-  const manifest = readFileSync(path.join(node, ".claude", ".claude-harness-manifest"), "utf8").split("\n");
-  for (const relative of [".claude/hooks/host-resource-hook.mjs", ".codex/hooks.json", ".codex/hooks/host-resource-hook.mjs"]) assert.ok(manifest.includes(relative), relative);
+  assert.equal(settings.hooks.PreToolUse[0].hooks[0].command, `${shellQuote(process.execPath)} ${shellQuote(source)}`);
+  assert.equal(existsSync(path.join(node, ".codex")), false, "Codex is not this projection's to write");
 });
 
 test("the command the settings name is the hook, and it answers a runaway find with a deny", { skip }, () => {
@@ -67,15 +65,10 @@ test("the command the settings name is the hook, and it answers a runaway find w
   assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
 });
 
-test("a check reports the hook as current, then as drifted when its file or settings change", { skip }, () => {
+test("a check reports the hook as current, then as drifted when its settings change", { skip }, () => {
   const node = nodeDir();
   projection.writeClaudeHarness(projectionAt(node));
   assert.equal(projection.checkClaudeHarness(projectionAt(node)).current, true);
-  writeFileSync(path.join(node, ".claude", "hooks", "host-resource-hook.mjs"), "// edited\n");
-  const drifted = projection.checkClaudeHarness(projectionAt(node));
-  assert.equal(drifted.current, false);
-  assert.deepEqual(drifted.drift.map((entry) => entry.path), [".claude/hooks/host-resource-hook.mjs"]);
-  projection.writeClaudeHarness(projectionAt(node));
   const settingsFile = path.join(node, ".claude", "settings.local.json");
   const settings = JSON.parse(readFileSync(settingsFile, "utf8"));
   delete settings.hooks;
@@ -83,11 +76,10 @@ test("a check reports the hook as current, then as drifted when its file or sett
   assert.deepEqual(projection.checkClaudeHarness(projectionAt(node)).drift.map((entry) => entry.reason), ["hooks differ"]);
 });
 
-test("a projection that no longer yields the controller retracts its files and hooks", { skip }, () => {
+test("a projection that no longer yields the controller retracts its hooks", { skip }, () => {
   const node = nodeDir();
   projection.writeClaudeHarness(projectionAt(node));
-  const retracted = projection.writeClaudeHarness(projectionAt(node, false));
-  assert.deepEqual(retracted.removed.sort(), [".claude/hooks/host-resource-hook.mjs", ".codex/hooks.json", ".codex/hooks/host-resource-hook.mjs"]);
-  for (const relative of retracted.removed) assert.equal(existsSync(path.join(node, relative)), false, relative);
-  assert.deepEqual(JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8")).hooks, {});
+  assert.equal(JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8")).hooks.PreToolUse.length, 1);
+  projection.writeClaudeHarness(projectionAt(node, false));
+  assert.deepEqual(JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8")).hooks, { PreToolUse: [] }, "the controller's group is gone");
 });

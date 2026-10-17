@@ -25,7 +25,8 @@ test("a briefing carries the principal's office, its duties with their notes, po
   const briefing = projectAgentBriefing({ agencyRoot: root, holder: "password:pat", principal: "Pat", instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } });
   assert.deepEqual(briefing.obstructions, []);
   assert.deepEqual(briefing.offices, ["owner"]);
-  for (const expected of ["The shop sells bound books.", "The owner answers for the shop.", "Answer every letter.", "No letter waits a week.", "Received by: the letter writer", "Evidence: the sent reply.", "Limits: no promise of refunds.", "CEO and Board: The board receives the monthly count.", "shop-services-section/notes/mail.md", "`work-item`", "Read the mail first.", "https://ops.shop.test/mcp"]) {
+  assert.ok(!briefing.markdown.includes("Read the mail first."), "a skill is named by reference, its body is not inlined");
+  for (const expected of ["The shop sells bound books.", "The owner answers for the shop.", "Answer every letter.", "No letter waits a week.", "Received by: the letter writer", "Evidence: the sent reply.", "Limits: no promise of refunds.", "CEO and Board: The board receives the monthly count.", "shop-services-section/notes/mail.md", "`work-item`", "**running-the-shop** — Run the shop.", "Load: `read shop-services-section#running-the-shop` or `shop-services-section/lib/agency/skills/running-the-shop/SKILL.md`", "https://ops.shop.test/mcp"]) {
     assert.ok(briefing.markdown.includes(expected), `briefing lacks ${expected}`);
   }
 });
