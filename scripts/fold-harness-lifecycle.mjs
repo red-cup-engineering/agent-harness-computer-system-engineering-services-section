@@ -6,6 +6,7 @@
 // fields, so a re-fold appends nothing new.
 // Run: node scripts/fold-harness-lifecycle.mjs [tracePath] (defaults below; overridable by argv/env).
 
+import { findRepoRoot } from "../src/world-roots.mjs";
 import { existsSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -15,20 +16,6 @@ import { readEavtEntries } from "@red-cup-engineering/eavt-services-section/read
 import { ADMITTED_HARNESS_ACTORS, assertHarnessLifecycleEvent, lifecycleEventsAt, SKILL_SELECTED_CATEGORY, PROVIDER_COMMISSIONED_CATEGORY } from "../src/harness-lifecycle.mjs";
 import * as lagoonWorld from "@red-cup-engineering/flatfile-resource-graph-service/lagoon-world";
 
-// findRepoRoot, folded local to this script. LAGOON's own scripts/seed-world.mjs (the only prior
-// owner) is being dissolved along with the rest of lagoon's flatfile JS seeders as LAGOON moves to
-// Guile; this walk is self-contained (no imports of its own), so it becomes this script's own
-// rather than a cross-package import onto a package that no longer carries it.
-function findRepoRoot(startDir) {
-  let dir = startDir;
-  for (;;) {
-    if (existsSync(path.join(dir, ".git"))) return dir;
-    const parent = path.dirname(dir);
-    if (parent === dir) throw new Error("fold-harness-lifecycle: could not find repo root (no .git above " + startDir + ")");
-    dir = parent;
-  }
-}
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = findRepoRoot(__dirname);
 
@@ -36,7 +23,8 @@ const repoRoot = findRepoRoot(__dirname);
 // this script's own (now HARN) directory, and not LAGOON's former apps/lagoon (dissolved).
 const DEPLOYMENT_ENGINE_APP_PATH =
   "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-operating-system-services-section/apps/computer-deployment-engine";
-const DEFAULT_TRACE_PATH = path.join(repoRoot, DEPLOYMENT_ENGINE_APP_PATH, "data/state/world.eavt");
+// The path look.scm reads (data/state/world-state/world.eavt); null when run from an installed package with no tree.
+const DEFAULT_TRACE_PATH = repoRoot === null ? null : path.join(repoRoot, DEPLOYMENT_ENGINE_APP_PATH, "data/state/world-state/world.eavt");
 const HARNESS_SECTIONS_PREFIX =
   "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services";
 
@@ -45,7 +33,7 @@ const HARNESS_SECTIONS_PREFIX =
  *
  * @type {string[]}
  */
-export const DEFAULT_JOURNAL_ROOTS = [
+export const DEFAULT_JOURNAL_ROOTS = repoRoot === null ? [] : [
   path.join(repoRoot, HARNESS_SECTIONS_PREFIX, "bare-cedar-fog-claude-services-section"),
   path.join(repoRoot, HARNESS_SECTIONS_PREFIX, "bare-cedar-fog-codex-services-section"),
 ];
@@ -154,6 +142,7 @@ export function fold(roots, tracePath) {
 // Only run when invoked directly (so tests can import readLifecycleEvents/fold without side effects).
 if (import.meta.url === `file://${process.argv[1]}`) {
   const tracePath = process.argv[2] || process.env.LAGOON_WORLD_TRACE_PATH || DEFAULT_TRACE_PATH;
+  if (!tracePath) { console.error("fold-harness-lifecycle: no tree found; give a trace path or set LAGOON_WORLD_TRACE_PATH"); process.exit(2); }
   const results = fold(DEFAULT_JOURNAL_ROOTS, tracePath);
   for (const { kind, skipped, detail } of results) {
     console.log(`${skipped ? "skip (already folded)" : "appended"}: ${kind} ${detail}`);

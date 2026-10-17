@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/agent-harness-computer-system-engineering-services-section",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
   "license": "UNLICENSED",
@@ -59,7 +59,9 @@
     "./agent-briefing": "./src/agent-briefing.mjs",
     "./scripts/project-agent-briefing.mjs": "./scripts/project-agent-briefing.mjs",
     "./host-resource-hook": "./src/host-resource-hook.mjs",
-    "./connector-call-evidence": "./src/connector-call-evidence.mjs"
+    "./connector-call-evidence": "./src/connector-call-evidence.mjs",
+    "./harness-world-verbs": "./src/harness-world-verbs.mjs",
+    "./world-roots": "./src/world-roots.mjs"
   },
   "bin": {
     "record-harness-skill-selection": "scripts/record-harness-skill-selection.mjs",
@@ -86,7 +88,7 @@
     "!services/codex-harness-services-section/services/codex-home-service/**"
   ],
   "scripts": {
-    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs",
+    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
@@ -101,7 +103,7 @@
     "@red-cup-engineering/metrologic": "0.4.0",
     "@red-cup-engineering/computer-content-address-engineering-services-section": "0.2.0",
     "@red-cup-engineering/signcell": "0.2.0",
-    "@red-cup-engineering/flatfile-resource-graph-service": "0.1.1",
+    "@red-cup-engineering/flatfile-resource-graph-service": "0.1.6",
     "@red-cup-engineering/javascript-node-services-section": "0.3.2",
     "@red-cup-engineering/node-process-services-section": "0.2.2",
     "@red-cup-engineering/witness-journal-document-service": "0.1.2",

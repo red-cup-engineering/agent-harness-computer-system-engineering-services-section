@@ -5,6 +5,7 @@
 // deterministic t, read-back dedupe before every append.
 // Run: node scripts/seed-offices.mjs [tracePath] (defaults below; overridable by argv/env).
 
+import { findRepoRoot } from "../src/world-roots.mjs";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -12,17 +13,6 @@ import { constitute } from "@red-cup-engineering/eavt-services-section/constitut
 import { appendEavtRow } from "@red-cup-engineering/eavt-services-section/append-eavt-row";
 import { readEavtEntries } from "@red-cup-engineering/eavt-services-section/read-eavt-entries";
 import * as lagoonWorld from "@red-cup-engineering/flatfile-resource-graph-service/lagoon-world";
-
-// findRepoRoot, folded local to this script — see fold-harness-lifecycle.mjs's own copy for why.
-function findRepoRoot(startDir) {
-  let dir = startDir;
-  for (;;) {
-    if (existsSync(path.join(dir, ".git"))) return dir;
-    const parent = path.dirname(dir);
-    if (parent === dir) throw new Error("seed-offices: could not find repo root (no .git above " + startDir + ")");
-    dir = parent;
-  }
-}
 
 // The verification direction of constitute()'s own <kind>:<digest> address law (eavt's own
 // monolith carried this as entityAddress before its decomposition into single-function
@@ -40,7 +30,9 @@ const repoRoot = findRepoRoot(__dirname);
 // this script's own (now HARN) directory, and not LAGOON's former apps/lagoon (dissolved).
 const DEPLOYMENT_ENGINE_APP_PATH =
   "lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/computer-operating-system-services-section/apps/computer-deployment-engine";
-const DEFAULT_TRACE_PATH = path.join(repoRoot, DEPLOYMENT_ENGINE_APP_PATH, "data/state/world.eavt");
+// The path look.scm reads (data/state/world-state/world.eavt); null when run from an installed package with no tree.
+const DEFAULT_TRACE_PATH = repoRoot === null ? null : path.join(repoRoot, DEPLOYMENT_ENGINE_APP_PATH, "data/state/world-state/world.eavt");
+const inTree = (...parts) => (repoRoot === null ? null : path.join(repoRoot, ...parts));
 const DEFAULT_MACHINE_NAME = "bare-cedar-fog";
 
 // The office-founding's own fixed witness time (2026-09-01: the founder's "an office as a place
@@ -48,17 +40,14 @@ const DEFAULT_MACHINE_NAME = "bare-cedar-fog";
 // seed-world.mjs's own record-derived baseT.
 const DEFAULT_MEASURED_AT = "2026-09-01T00:00:00Z";
 
-const CLAUDE_GENESIS_PATH = path.join(
-  repoRoot,
+const CLAUDE_GENESIS_PATH = inTree(
   "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/harness/actor-genesis.json",
 );
-const CODEX_GENESIS_PATH = path.join(
-  repoRoot,
+const CODEX_GENESIS_PATH = inTree(
   "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/actor-genesis.json",
 );
-const CLAUDE_MCP_CONFIG_PATH = path.join(repoRoot, ".mcp.json");
-const CODEX_AGENT_HARNESS_PATH = path.join(
-  repoRoot,
+const CLAUDE_MCP_CONFIG_PATH = inTree(".mcp.json");
+const CODEX_AGENT_HARNESS_PATH = inTree(
   "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/codex-agent-harness.json",
 );
 
@@ -68,7 +57,7 @@ const CODEX_AGENT_HARNESS_PATH = path.join(
  *
  * @type {Array<{harness: string, officeName: string, genesisPath: string, mcpServersPath: string}>}
  */
-export const DEFAULT_HARNESS_SOURCES = [
+export const DEFAULT_HARNESS_SOURCES = repoRoot === null ? [] : [
   { harness: "claude", officeName: "claude-chief-of-staff-office", genesisPath: CLAUDE_GENESIS_PATH, mcpServersPath: CLAUDE_MCP_CONFIG_PATH },
   { harness: "codex", officeName: "codex-chief-of-staff-office", genesisPath: CODEX_GENESIS_PATH, mcpServersPath: CODEX_AGENT_HARNESS_PATH },
 ];
@@ -236,6 +225,7 @@ export function seed(seeds, tracePath, { measuredAt = DEFAULT_MEASURED_AT, machi
 // Only run when invoked directly (so tests can import deriveOfficeSeeds/seed without side effects).
 if (import.meta.url === `file://${process.argv[1]}`) {
   const tracePath = process.argv[2] || process.env.LAGOON_WORLD_TRACE_PATH || DEFAULT_TRACE_PATH;
+  if (!tracePath) { console.error("seed-offices: no tree found; give a trace path or set LAGOON_WORLD_TRACE_PATH"); process.exit(2); }
   const results = seed(deriveOfficeSeeds(), tracePath);
   for (const { kind, skipped, detail } of results) {
     console.log(`${skipped ? "skip (already present)" : "appended"}: ${kind} ${detail}`);
