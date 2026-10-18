@@ -82,3 +82,22 @@ packaging rule. Run the direct `check` and `test` commands and `npm pack
 --ignore-scripts` before receiving the package into a consumer. Source
 publication, package verification and actual consumer receiving are separate
 acceptance conditions.
+
+## Source-positioned harness utterances (2026-10-18)
+
+`./utterances` now places one observed session-and-time token before its
+prompt-text claim in each source-addressed utterance. Repeating the same text
+in a session at a different observed time creates a different address rather
+than silently erasing the second instruction, while matching complete source
+coordinates across carriers may still deduplicate. Unknown source timestamps
+refuse instead of creating a spurious common identity. Time-zone-aware
+chronology is numeric, not lexical collation. This is a technological
+source-position readout derived from Obsmetrologia's positional Mark law,
+**not** an independently witnessed inter-carrier identity proof.
+
+The previous text/session-only NI values are historical v1 addresses;
+v2 values must be received as new IDs, not silently substituted in prior
+attestations or learning records. Raw carrier caches store source prompts
+and rederive their identities on read. Same-instant collisions and sources
+whose timestamp differs between carriers remain explicit limits until a
+native event-occurrence token or independently admitted relation is carried.

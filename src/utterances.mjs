@@ -10,9 +10,11 @@
  * Claude harness work order, 2026-09-04) — system-reminder and IDE-selection spans stripped, house
  * noise dropped, a closed [since, until] window never widened, ascending by time.
  *
- * An utterance's address is the content address of its session and text, so the same prompt read
- * from either carrier is one utterance. Those addresses are what articulations cite and what
- * `knowing` consolidates (knowing/learning); nothing here interprets what was said.
+ * An utterance's token records its session and observed source-occurrence time, while its
+ * claim preserves the prompt text. Repeating the same text at a different time must NOT become
+ * the same utterance: Mark presentation equality is not occurrence identity. Different carriers
+ * can agree on the same source coordinates, but no content digest proves their sources equal.
+ * These occurrence-aware addresses are what articulations cite and what `knowing` consumes.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -40,9 +42,16 @@ export function utteranceText(raw) {
   return text === "" || NOISE.some((pattern) => pattern.test(text)) ? null : text;
 }
 
-/** One utterance: its address, the session and time it was said in, the carrier that heard it. */
+/** One source-positioned utterance: the token names the recorded occurrence, the claim the text.
+ * This source coordinate is a technological readout, NOT a `Quot.sound` proof across carriers. */
 export function utterance({ session, at, text, carrier }) {
-  return Object.freeze({ address: semanticId({ kind: "utterance", session, text }), session, at, text, carrier });
+  if (typeof session !== "string" || session.trim() === "") throw new TypeError("utterance requires a source session");
+  if (typeof at !== "string" || !Number.isFinite(Date.parse(at))) throw new TypeError("utterance requires a source occurrence timestamp");
+  if (typeof text !== "string" || text.trim() === "") throw new TypeError("utterance requires a nonempty claim text");
+  return Object.freeze({
+    address: semanticId({ kind: "utterance", version: 2, token: { session, at }, claim: text }),
+    session, at, text, carrier,
+  });
 }
 
 /** Pure: the utterances among prompt records `{ session, at, text, carrier }` in the closed window
@@ -52,11 +61,11 @@ export function deriveUtterances(prompts, { since, until } = {}) {
   const from = since === undefined ? -Infinity : Date.parse(since);
   const to = until === undefined ? Infinity : Date.parse(until);
   const byAddress = new Map();
-  for (const prompt of [...prompts].sort((a, b) => String(a.at).localeCompare(String(b.at)))) {
+  for (const prompt of [...prompts].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
     const at = Date.parse(prompt.at);
     if (!(at >= from && at <= to)) continue;
     const text = utteranceText(prompt.text);
-    if (text === null || typeof prompt.session !== "string") continue;
+    if (text === null || typeof prompt.session !== "string" || prompt.session.trim() === "") continue;
     const said = utterance({ session: prompt.session, at: prompt.at, text, carrier: prompt.carrier });
     if (!byAddress.has(said.address)) byAddress.set(said.address, said);
   }
@@ -172,6 +181,8 @@ export async function readUtterances({ root, transcripts = [], codex = [], since
   if (root !== undefined) prompts.push(...await readPromptArrivals(root, datesOf(since ?? arrivalsSince, end), { ...options, cache: cache?.(root) }));
   for (const directory of transcripts) prompts.push(...await readTranscriptPrompts(directory, { since, cache: cache?.(directory) }));
   if (codex.length > 0) prompts.push(...await readCodexPrompts(codex, { cache: cache?.(path.dirname(codex[0])) }));
-  const untyped = new Set(prompts.filter((p) => p.typed === false).map((p) => utterance(p).address));
+  const untyped = new Set(prompts.filter((p) => p.typed === false && typeof p.session === "string"
+    && p.session.trim() !== "" && typeof p.at === "string" && Number.isFinite(Date.parse(p.at))
+    && utteranceText(p.text) !== null).map((p) => utterance({ ...p, text: utteranceText(p.text) }).address));
   return deriveUtterances(prompts, { since, until: end }).filter((u) => !untyped.has(u.address));
 }
