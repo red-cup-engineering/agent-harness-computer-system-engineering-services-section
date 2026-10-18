@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUSY_EXIT_CODE, CONTAINMENT_SLICE, WORK_SLICE, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
+import { BUSY_EXIT_CODE, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
 
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
@@ -276,9 +276,10 @@ for (const [command, cwd, action, reason] of TABLE) {
   });
 }
 
-test("a command already under the heavy lock, or run inside it, is not wrapped again", () => {
+test("a command run inside a held slot is not wrapped again; one hand-wrapped on the heavy lock is admitted through the slots", () => {
   assert.equal(verdict(`flock ${lock} du -sh .`).locked, true);
-  assert.equal(decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: `flock -w 5 ${lock} tar xf a.tar` } }, { env, home }), undefined);
+  const hand = decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: `flock -w 5 ${lock} tar xf a.tar` } }, { env, home });
+  assert.ok(hand.updatedInput.command.includes("tar xf a.tar") && !hand.updatedInput.command.startsWith("flock"));
   assert.equal(decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: "tar xf a.tar" } }, { env: { ...env, AGENT_HEAVY_LOCK_HELD: "1" }, home }), undefined);
 });
 
@@ -751,4 +752,16 @@ test("tar and du confined to scratch are light; elsewhere they are heavy", () =>
   assert.equal(classify(`du -sb ${scratchpad}`, { cwd: dirs.plain, env, home, scratchpad }).action, "allow");
   assert.equal(classify(`tar czf ${scratchpad}/a.tgz ${dirs.plain}`, { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
   assert.equal(classify("du -sh .", { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
+});
+
+test("a command an agent wrapped in flock on the heavy lock by hand is admitted through the slots, not pinned to the first", () => {
+  assert.deepEqual(handWrappedHeavy(`flock ${lock} du -sh .`, lock), { prefix: "", inner: "du -sh .", wait: undefined });
+  assert.deepEqual(handWrappedHeavy(`cd /x && flock -w 3000 ${lock} sh -c 'npm install; npm test'`, lock), { prefix: "cd /x && ", inner: "sh -c 'npm install; npm test'", wait: 3000 });
+  assert.equal(handWrappedHeavy(`flock /run/other.lock du -sh .`, lock), undefined, "another lock is the agent's own business");
+  assert.equal(handWrappedHeavy(`flock ${lock} -c 'du -sh .'`, lock), undefined);
+  const slots = { ...env, AGENT_HEAVY_SLOTS: "3" };
+  const output = decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: `flock -w 900 ${lock} du -sh .`, timeout: 120000 } }, { env: slots, home });
+  assert.ok(output.updatedInput.command.includes(`${lock}.2`), "every slot is offered");
+  assert.match(output.updatedInput.command, /flock -w 900 -E 75 /u, "the longer wait the agent asked for is kept");
+  assert.ok(!output.updatedInput.command.startsWith("flock"), "the hand-written lock is gone");
 });

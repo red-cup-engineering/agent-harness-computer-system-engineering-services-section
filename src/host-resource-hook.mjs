@@ -973,6 +973,22 @@ export function containedCommand(original, { slice = WORK_SLICE } = {}) {
   ].join("; ");
 }
 
+/**
+ * A command an agent wrapped by hand in `flock <the heavy lock> …` (optionally after one `cd <dir> &&`): its
+ * prefix, the command inside, and the wait it asked for. Such a command is admitted through the slots like any
+ * other heavy command, so hand-wrapping never pins it to the first slot. Anything else: undefined.
+ */
+export function handWrappedHeavy(command, lock) {
+  const match = /^(\s*cd\s+[^;&|<>`$]+?\s*&&\s*)?flock((?:\s+(?:-[nxs]|-[wE]\s*\d+|--(?:nonblock|exclusive|shared)|--(?:wait|timeout|conflict-exit-code)(?:=|\s+)\d+))*)\s+(\S+)\s+(.+)$/su.exec(command);
+  if (!match) return undefined;
+  const [, prefix = "", options, file, inner] = match;
+  const named = file.replace(/^['"]|['"]$/gu, "");
+  if (named !== lock && path.basename(named) !== path.basename(lock)) return undefined;
+  if (/(^|\s)(-c|--command)(\s|$)/u.test(options) || /^(-c|--command)\s/u.test(inner)) return undefined;
+  const wait = Number(/(?:-w|--wait|--timeout)(?:=|\s*)(\d+)/u.exec(options)?.[1]);
+  return { prefix, inner, wait: Number.isFinite(wait) ? wait : undefined };
+}
+
 const SHELL_TOOLS = /^(Bash|shell|exec_command|local_shell|container\.exec)$/u;
 /** Claude Code's Monitor runs a shell command for as long as it watches: contained, never serialized, since a watch would hold the heavy slot for its whole life. */
 const WATCH_TOOLS = /^Monitor$/u;
@@ -1003,9 +1019,11 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   // against the rewritten command, which no allowed pattern matches: it is denied there, never rewritten.
   if (input.permission_mode === "dontAsk") return undefined;
   let wrapped;
-  if (!watch && verdict.action === "serialize" && !verdict.locked && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
+  const hand = verdict.action === "serialize" && verdict.locked ? handWrappedHeavy(command, lock) : undefined;
+  if (!watch && verdict.action === "serialize" && (!verdict.locked || hand) && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
     const locks = slotLocks(lock, heavySlots({ env })).filter((file, i) => i === 0 || ensureLockFile(file));
-    wrapped = serializedCommand(command, { lock, locks, wait: waitSeconds(toolInput, env), nice: onPath("nice", env), ionice: onPath("ionice", env) });
+    const wait = Math.min(LIMITS.maxWaitSeconds * 4, Math.max(waitSeconds(toolInput, env), hand?.wait ?? 0));
+    wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
   }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
   const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
