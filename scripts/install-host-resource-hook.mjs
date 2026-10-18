@@ -14,7 +14,8 @@
  * Settings are validated before effects; unrelated handlers remain in their groups.
  *
  * For Claude Code it also installs the containment that holds every session to a share of the host
- * (`installContainment`): the `agent-claude.slice` user unit, reloaded into the user manager; the
+ * (`installContainment`): the `agent-claude.slice` unit for the sessions and the `agent-work.slice` unit
+ * for their commands, reloaded into the user manager; the
  * launcher `claude-contained` in the user's agent-harness data directory; and, on a machine with a
  * VS Code server, the machine setting `claudeCode.claudeProcessWrapper` naming that launcher, so
  * every session VS Code starts runs inside the slice. `--no-containment` leaves all three alone.
@@ -25,7 +26,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CONTAINMENT_SLICE, hookEntries, hostResourceControl, mergeHostResourceHooks, launcherScript, sliceUnit } from "../src/host-resource-hook.mjs";
+import { CONTAINMENT_SLICE, WORK_SLICE, containmentLimits, hookEntries, hostResourceControl, mergeHostResourceHooks, launcherScript, sessionLimits, sliceUnit } from "../src/host-resource-hook.mjs";
 
 const LAUNCHER_FILE = "claude-contained";
 const WRAPPER_SETTING = "claudeCode.claudeProcessWrapper";
@@ -45,17 +46,21 @@ function writeIfChanged(file, text, { dryRun, mode } = {}) {
 const reloadUserManager = () => spawnSync("systemctl", ["--user", "daemon-reload"], { stdio: "ignore", timeout: 30_000 }).status === 0;
 
 /**
- * Install the containment for one user: `{ unit, launcher, vscodeSettings, vscode, reloaded, changed }`.
+ * Install the containment for one user: `{ unit, workUnit, launcher, vscodeSettings, vscode, reloaded, changed }`.
  * `vscode` is "set", "unchanged", "absent" (no VS Code server here) or "left alone" (its settings
  * are not plain JSON); `reloaded` is whether the user manager took a changed unit.
  */
 export function installContainment({ environment = process.env, vscodeSettings, dryRun = false, reload = reloadUserManager } = {}) {
   const home = environment.HOME ?? homedir();
-  const unit = path.join(environment.XDG_CONFIG_HOME || path.join(home, ".config"), "systemd", "user", CONTAINMENT_SLICE);
+  const units = path.join(environment.XDG_CONFIG_HOME || path.join(home, ".config"), "systemd", "user");
+  const unit = path.join(units, CONTAINMENT_SLICE), workUnit = path.join(units, WORK_SLICE);
   const launcher = path.join(environment.XDG_DATA_HOME || path.join(home, ".local", "share"), "agent-harness", LAUNCHER_FILE);
   const machineSettings = vscodeSettings ?? path.join(home, ".vscode-server", "data", "Machine", "settings.json");
 
-  const unitChanged = writeIfChanged(unit, sliceUnit(), { dryRun });
+  const unitChanged = [
+    writeIfChanged(unit, sliceUnit(sessionLimits(), { description: "Every Claude Code session, protected so its commands' pressure never starves it" }), { dryRun }),
+    writeIfChanged(workUnit, sliceUnit(containmentLimits()), { dryRun }),
+  ].some(Boolean);
   const launcherChanged = writeIfChanged(launcher, launcherScript(), { dryRun, mode: 0o755 });
   const reloaded = unitChanged && !dryRun ? reload() : false;
 
@@ -71,7 +76,7 @@ export function installContainment({ environment = process.env, vscodeSettings, 
       writeIfChanged(machineSettings, `${JSON.stringify({ ...current, [WRAPPER_SETTING]: launcher }, null, 2)}\n`, { dryRun });
     }
   }
-  return Object.freeze({ unit, launcher, vscodeSettings: machineSettings, vscode, reloaded, changed: unitChanged || launcherChanged || vscode === "set" });
+  return Object.freeze({ unit, workUnit, launcher, vscodeSettings: machineSettings, vscode, reloaded, changed: unitChanged || launcherChanged || vscode === "set" });
 }
 
 const HOOK_FILE = "host-resource-hook.mjs";

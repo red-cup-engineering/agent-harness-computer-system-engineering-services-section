@@ -53,7 +53,7 @@ test("original deny, provider rewrite, malformed event and containment contracts
   const event = { tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } };
   assert.equal(decide(event, { env }).permissionDecision, "deny");
   assert.equal(decide(event, { env, provider: "codex" }).permissionDecision, "deny");
-  const allowed = decide({ ...event, tool_input: { command: "tar --version", description: "keep" } }, { env, provider: "codex" });
+  const allowed = decide({ ...event, tool_input: { command: "npm install", description: "keep" } }, { env, provider: "codex" });
   assert.equal(allowed.permissionDecision, "allow"); assert.equal(allowed.updatedInput.description, "keep");
   assert.ok(allowed.updatedInput.command.includes(env.AGENT_HEAVY_LOCK));
   assert.equal(run("malformed", { env }), undefined);
@@ -102,7 +102,9 @@ test("actual Codex office CLI projects the configured resource consumer without 
   const result = JSON.parse(received.stdout);
   assert.equal(result.resources.codexTrustRequired, true); assert.equal(result.resources.activeSessionGuarded, false);
   const hook = JSON.parse(readFileSync(join(root, ".codex/hooks.json"))).hooks.PreToolUse[0].hooks[0];
-  assert.ok(hook.command.includes(source)); assert.match(readFileSync(join(root, ".codex/config.toml"), "utf8"), /hooks = true/);
+  // The projection names the guard its script resolves (this source in a linked checkout, the installed package elsewhere): a real hook file, run by node.
+  const named = /'([^']*\/src\/host-resource-hook\.mjs)'/u.exec(hook.command)?.[1];
+  assert.ok(named !== undefined && existsSync(named), hook.command); assert.match(readFileSync(join(root, ".codex/config.toml"), "utf8"), /hooks = true/);
   const denied = spawnSync("bash", ["-c", hook.command], { input: JSON.stringify({ tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } }), encoding: "utf8", timeout: 3000 });
   assert.equal(denied.status, 0); assert.equal(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecision, "deny");
 });

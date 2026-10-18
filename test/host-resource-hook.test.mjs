@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUSY_EXIT_CODE, CONTAINMENT_SLICE, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
+import { BUSY_EXIT_CODE, CONTAINMENT_SLICE, WORK_SLICE, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
 
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
@@ -61,7 +61,8 @@ truncateSync(path.join(root, "gitdirs", "linked", "index"), 6 * MiB);
 writeFileSync(path.join(dirs.linked, ".git"), `gitdir: ${path.join(root, "gitdirs", "linked")}\n`);
 
 const lock = path.join(root, "run", "agent-heavy.lock");
-const env = { HOME: home, PATH: process.env.PATH, AGENT_HEAVY_LOCK: lock };
+// One slot and no pressure gate, so the serialization contracts below hold on any host; the slot tests set their own.
+const env = { HOME: home, PATH: process.env.PATH, AGENT_HEAVY_LOCK: lock, AGENT_HEAVY_SLOTS: "1", AGENT_HEAVY_PRESSURE: "1000" };
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 
 const verdict = (command, cwd = "plain") => classify(command, { cwd: dirs[cwd] ?? cwd, env, home });
@@ -342,7 +343,8 @@ test("a heavy command is rewritten with every other tool input field carried ove
   assert.match(updatedInput.command, /flock -w 290 -E 75 /u);
   assert.match(updatedInput.command, /nice -n 10 \$_ah_io flock /u);
   assert.match(updatedInput.command, /_ah_io='ionice -c3'/u);
-  assert.ok(updatedInput.command.includes(shellQuote("du -sh .")));
+  assert.ok(updatedInput.command.includes("du -sh ."), "the command is carried verbatim");
+  assert.ok(updatedInput.command.includes('_AH_RAN'), "with the marker that keeps it from running twice");
   assert.ok(existsSync(lock), "the hook created the lock file");
 });
 
@@ -532,7 +534,7 @@ test("a busy slot ends the waiting command with exit 75 and says why, and it doe
     assert.ok(await until(lockHeld), "the holder took the lock");
     const { code, stderr } = await exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
     assert.equal(code, BUSY_EXIT_CODE);
-    assert.match(stderr, /^agent-heavy: waited 1s for the host's single heavy-command slot/u);
+    assert.match(stderr, /^agent-heavy: waited 1s for one of the host's 1 heavy-command slot \(/u);
     assert.equal(existsSync(log), false);
   } finally { killGroup(holder); }
 });
@@ -632,6 +634,7 @@ writeFileSync(path.join(fakeBin, "systemd-run"), [
 ].join("\n"), { mode: 0o755 });
 const OUTSIDE = "0::/non-systemd\n";
 const INSIDE = `0::/user.slice/user-1000.slice/user@1000.service/agent.slice/${CONTAINMENT_SLICE}/run-r1.scope\n`;
+const IN_WORK = `0::/user.slice/user-1000.slice/user@1000.service/agent.slice/${WORK_SLICE}/run-r2.scope\n`;
 const shellEvent = (command, permission_mode, tool_name = "Bash") => ({ hook_event_name: "PreToolUse", cwd: dirs.plain, tool_name, permission_mode, tool_input: { command, description: "d" } });
 
 async function withBus(work) {
@@ -641,19 +644,20 @@ async function withBus(work) {
   try { return await work(runtime); } finally { await new Promise((resolve) => server.close(resolve)); }
 }
 
-test("the slice takes a quarter of the processors and at most 40% of memory, with no swap", () => {
-  const limits = containmentLimits({ cpus: 16, memory: 7748 * MiB });
-  assert.deepEqual(limits, { CPUQuota: "400%", CPUWeight: 20, MemoryHigh: "2324M", MemoryMax: "3099M", MemorySwapMax: 0, TasksMax: 768 });
-  assert.equal(containmentLimits({ cpus: 2, memory: 1024 * MiB }).CPUQuota, "100%");
+test("the work slice yields the CPU by weight, not a quota, is reclaimed above 45% of memory and killed above 60%, with no swap; the sessions' slice is protected", () => {
+  const limits = containmentLimits({ memory: 7748 * MiB });
+  assert.deepEqual(limits, { CPUWeight: 20, MemoryHigh: "3486M", MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
+  assert.deepEqual(sessionLimits({ memory: 7748 * MiB }), { CPUWeight: 50, MemoryLow: "774M" });
+  assert.deepEqual(sessionLimits({ memory: 64 * 1024 * MiB }), { CPUWeight: 50, MemoryLow: "1536M" });
   const unit = sliceUnit(limits);
   assert.match(unit, /^\[Unit\]\nDescription=.+\n\n\[Slice\]\n/u);
   for (const [key, value] of Object.entries(limits)) assert.ok(unit.includes(`\n${key}=${value}\n`), key);
 });
 
-test("a session outside the slice has its commands placed in it; one inside is left alone", { skip: !haveFlock }, async () => {
+test("commands go to the work slice, from a session outside the slices or inside its own; a command already there is left alone", { skip: !haveFlock }, async () => {
   await withBus(async (runtime) => {
     const live = { ...env, XDG_RUNTIME_DIR: runtime, PATH: `${fakeBin}:${env.PATH}` };
-    const slice = `--slice=${CONTAINMENT_SLICE} --`;
+    const slice = `--slice=${WORK_SLICE} --`;
     const answer = (input, cgroup = OUTSIDE, provider = "claude") => decide(input, { env: live, provider, cgroup })?.updatedInput?.command;
     // Without permission rules, every command is contained.
     assert.ok(answer(shellEvent("ls -la", "bypassPermissions")).includes(slice));
@@ -664,9 +668,11 @@ test("a session outside the slice has its commands placed in it; one inside is l
     // A watch is contained but never takes the heavy slot.
     const watch = answer(shellEvent("git fetch origin; sleep 60", "default", "Monitor"));
     assert.ok(watch.includes(slice) && !watch.includes("flock"));
-    // Already inside the slice: serialization only.
-    assert.equal(answer(shellEvent("ls -la", "bypassPermissions"), INSIDE), undefined);
-    assert.ok(!answer(shellEvent("git fetch origin", "bypassPermissions"), INSIDE).includes("systemd-run"));
+    // A session inside its own slice still sends its commands to the work slice, so a command's memory never counts against it.
+    assert.ok(answer(shellEvent("git fetch origin", "default"), INSIDE).includes(slice));
+    // Already inside the work slice: serialization only.
+    assert.equal(answer(shellEvent("ls -la", "bypassPermissions"), IN_WORK), undefined);
+    assert.ok(!answer(shellEvent("git fetch origin", "bypassPermissions"), IN_WORK).includes("systemd-run"));
     // Never for an allow-list session, for Codex, or when switched off; a denial still wins.
     assert.equal(answer(shellEvent("git fetch origin", "dontAsk")), undefined);
     assert.ok(!answer(shellEvent("git fetch origin", "bypassPermissions"), OUTSIDE, "codex").includes("systemd-run"));
@@ -684,7 +690,7 @@ test("a contained command keeps its output, exit status and the directory it end
   const script = `cd ${shellQuote(dirs.plain)}; ${containedCommand(`printf '%s\\n' "it's inside"; cd /; exit 3`)}; echo "rc=$? dir=$(pwd)"`;
   const result = spawnSync("bash", ["-c", script], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, FAKE_SYSTEMD_RUN_LOG: log } });
   assert.equal(result.stdout, "it's inside\nrc=3 dir=/\n", result.stderr);
-  assert.match(readFileSync(log, "utf8"), new RegExp(`^--user --scope --quiet --collect --slice=${CONTAINMENT_SLICE} -- bash -c `, "u"));
+  assert.match(readFileSync(log, "utf8"), new RegExp(`^--user --scope --quiet --collect --slice=${WORK_SLICE} -- bash -c `, "u"));
   assert.deepEqual(readdirSync(runtime), [], "the directory record is removed");
 });
 
@@ -704,4 +710,45 @@ test("the launcher starts the executable it is handed inside the slice, or direc
   const bare = spawnSync(launcher, ["/bin/echo", "ok"], { encoding: "utf8", env: { ...process.env, XDG_RUNTIME_DIR: path.join(root, "no-runtime") } });
   assert.equal(bare.stdout, "ok\n");
   if (!inside) assert.match(bare.stderr, /runs uncontained/u);
+});
+
+test("the host admits a quarter of its processors' worth of heavy commands, one under memory pressure", () => {
+  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0 }), 4);
+  assert.equal(heavySlots({ env: {}, cpus: 2, pressure: undefined }), 1);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2 }), 6);
+  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 10 }), 1, "every task stalled on memory a tenth of the time");
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10 }), 4);
+  assert.equal(memoryPressure(() => "some avg10=5.10 avg60=2.82 avg300=14.13 total=1\nfull avg10=4.99 avg60=2.70 avg300=13.45 total=1\n"), 4.99);
+  assert.equal(memoryPressure(() => { throw new Error("no PSI"); }), undefined);
+  assert.deepEqual(slotLocks("/run/l", 3), ["/run/l", "/run/l.1", "/run/l.2"]);
+});
+
+test("with two slots, three heavy commands started together run at most two at a time", { skip: !haveFlock, timeout: 120_000 }, async () => {
+  const log = path.join(root, "two-slots.log"), locks = slotLocks(path.join(root, "run", "two.lock"), 2);
+  writeFileSync(log, ""); for (const file of locks) writeFileSync(file, "");
+  const wrapped = serializedCommand(`echo "start $$" >> ${shellQuote(log)}; sleep 0.6; echo "end $$" >> ${shellQuote(log)}`, { locks, wait: 60, nice: false, ionice: false });
+  const results = await Promise.all([1, 2, 3].map(() => exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }))));
+  assert.deepEqual(results.map((result) => result.code), [0, 0, 0], results.map((result) => result.stderr).join());
+  let running = 0, most = 0;
+  for (const line of readFileSync(log, "utf8").trim().split("\n")) { running += line.startsWith("start") ? 1 : -1; most = Math.max(most, running); }
+  assert.equal(most, 2, "two ran together, never three");
+});
+
+test("a command that itself exits 75 runs once: a later slot never runs it again", { skip: !haveFlock }, () => {
+  const log = path.join(root, "once.log"), locks = slotLocks(path.join(root, "run", "once.lock"), 3);
+  for (const file of locks) writeFileSync(file, "");
+  const wrapped = serializedCommand(`echo ran >> ${shellQuote(log)}; exit 75`, { locks, wait: 5, nice: false, ionice: false });
+  const result = spawnSync("bash", ["-c", wrapped], { env, encoding: "utf8" });
+  assert.equal(result.status, 75);
+  assert.equal(readFileSync(log, "utf8"), "ran\n");
+  assert.doesNotMatch(result.stderr, /did not run/u);
+});
+
+test("tar and du confined to scratch are light; elsewhere they are heavy", () => {
+  const scratchpad = path.join(root, "pad");
+  assert.equal(classify("tar xzf pkg.tgz && grep -n x package/a.mjs", { cwd: scratchpad, env, home, scratchpad }).action, "allow");
+  assert.equal(classify(`tar -C ${scratchpad}/out -xzf ${scratchpad}/a.tgz`, { cwd: dirs.plain, env, home, scratchpad }).action, "allow");
+  assert.equal(classify(`du -sb ${scratchpad}`, { cwd: dirs.plain, env, home, scratchpad }).action, "allow");
+  assert.equal(classify(`tar czf ${scratchpad}/a.tgz ${dirs.plain}`, { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
+  assert.equal(classify("du -sh .", { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
 });

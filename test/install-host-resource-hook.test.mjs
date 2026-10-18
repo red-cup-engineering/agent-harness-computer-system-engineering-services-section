@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CONTAINMENT_SLICE, launcherScript, shellQuote, sliceUnit } from "../src/host-resource-hook.mjs";
+import { CONTAINMENT_SLICE, WORK_SLICE, containmentLimits, launcherScript, sessionLimits, shellQuote, sliceUnit } from "../src/host-resource-hook.mjs";
 import { installContainment, installHostResourceHook } from "../scripts/install-host-resource-hook.mjs";
 
 const SCRIPT = fileURLToPath(new URL("../scripts/install-host-resource-hook.mjs", import.meta.url));
@@ -119,7 +119,9 @@ test("containment installs the slice unit, the launcher and VS Code's wrapper se
   const reload = () => { reloads += 1; return true; };
   const first = installContainment({ environment, vscodeSettings, reload });
   assert.equal(first.unit, path.join(root, "contain-config", "systemd", "user", CONTAINMENT_SLICE));
-  assert.equal(readFileSync(first.unit, "utf8"), sliceUnit());
+  assert.equal(readFileSync(first.unit, "utf8"), sliceUnit(sessionLimits(), { description: "Every Claude Code session, protected so its commands' pressure never starves it" }));
+  assert.equal(first.workUnit, path.join(root, "contain-config", "systemd", "user", WORK_SLICE));
+  assert.equal(readFileSync(first.workUnit, "utf8"), sliceUnit(containmentLimits()));
   assert.equal(first.launcher, path.join(root, "contain-data", "agent-harness", "claude-contained"));
   assert.equal(readFileSync(first.launcher, "utf8"), launcherScript());
   assert.equal(statSync(first.launcher).mode & 0o777, 0o755);
