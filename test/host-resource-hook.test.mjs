@@ -765,3 +765,15 @@ test("a command an agent wrapped in flock on the heavy lock by hand is admitted 
   assert.match(output.updatedInput.command, /flock -w 900 -E 75 /u, "the longer wait the agent asked for is kept");
   assert.ok(!output.updatedInput.command.startsWith("flock"), "the hand-written lock is gone");
 });
+
+test("the run-once marker sits beside the slot locks, so a missing XDG_RUNTIME_DIR does not disable it", { skip: !haveFlock }, () => {
+  const dir = path.join(root, "run", "marker"); mkdirSync(dir, { recursive: true });
+  const locks = slotLocks(path.join(dir, "heavy.lock"), 2), log = path.join(root, "marker.log");
+  for (const file of locks) writeFileSync(file, "");
+  const wrapped = serializedCommand(`echo ran >> ${shellQuote(log)}; exit 75`, { locks, wait: 5, nice: false, ionice: false });
+  assert.ok(wrapped.includes(shellQuote(dir)));
+  const result = spawnSync("bash", ["-c", wrapped], { env: { ...env, XDG_RUNTIME_DIR: path.join(root, "not-there") }, encoding: "utf8" });
+  assert.equal(result.status, 75);
+  assert.equal(readFileSync(log, "utf8"), "ran\n", "ran once although XDG_RUNTIME_DIR does not exist");
+  assert.doesNotMatch(result.stderr, /No such file or directory/u);
+});
