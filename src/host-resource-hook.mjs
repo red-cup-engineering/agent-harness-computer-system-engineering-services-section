@@ -857,7 +857,10 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
   return [
     `_ah_c=${shellQuote(`: >"$_AH_RAN"; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
-    '_AH_RAN="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-ran.$$.$RANDOM"; export _AH_RAN; rm -f "$_AH_RAN"',
+    // The marker sits beside the slot locks, whose directory the hook has just made sure exists: XDG_RUNTIME_DIR can
+    // name a directory that is not there yet (a host still booting has no /run/user/<uid>), and then the marker could
+    // not be written and a command that itself exits 75 could run again in the next slot.
+    `_AH_RAN=${shellQuote(path.dirname(locks[0]))}/agent-ran.$.$RANDOM; export _AH_RAN; rm -f "$_AH_RAN"`,
     `_ah_rc=${BUSY_EXIT_CODE}`,
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ -r "$_ah_l" ] || continue; ${runner("-n", '"$_ah_l"')}; _ah_rc=$?; { [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}; } || break; done`,
     `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
