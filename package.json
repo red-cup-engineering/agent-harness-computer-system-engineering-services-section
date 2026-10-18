@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/agent-harness-computer-system-engineering-services-section",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
   "license": "UNLICENSED",
@@ -57,7 +57,6 @@
     "./carrier/inference-receiving-carrier": "./src/carrier/inference-receiving-carrier.mjs",
     "./carrier/workspace": "./src/carrier/workspace.mjs",
     "./agent-briefing": "./src/agent-briefing.mjs",
-    "./scripts/project-agent-briefing.mjs": "./scripts/project-agent-briefing.mjs",
     "./host-resource-hook": "./src/host-resource-hook.mjs",
     "./connector-call-evidence": "./src/connector-call-evidence.mjs",
     "./harness-world-verbs": "./src/harness-world-verbs.mjs",
@@ -77,7 +76,8 @@
     "character-hook": "./services/claude-code-harness-services-section/scripts/character-hook.mjs",
     "character-store-mcp": "./services/claude-code-harness-services-section/scripts/character-store-mcp.mjs",
     "character-store-log": "./services/claude-code-harness-services-section/scripts/character-store-log.mjs",
-    "install-host-resource-hook": "scripts/install-host-resource-hook.mjs"
+    "install-host-resource-hook": "scripts/install-host-resource-hook.mjs",
+    "project-agent-briefing": "scripts/project-agent-briefing.mjs"
   },
   "files": [
     "src",
