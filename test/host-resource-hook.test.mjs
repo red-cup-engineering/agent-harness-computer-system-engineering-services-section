@@ -627,6 +627,8 @@ mkdirSync(fakeBin, { recursive: true });
 writeFileSync(path.join(fakeBin, "systemd-run"), [
   "#!/bin/sh",
   '[ -z "$FAKE_SYSTEMD_RUN_LOG" ] || printf \'%s\\n\' "$*" >> "$FAKE_SYSTEMD_RUN_LOG"',
+  // A user manager that has died behind its bus socket refuses the scope before running anything.
+  '[ -z "$FAKE_SYSTEMD_RUN_FAIL" ] || { echo "Failed to start transient scope unit: Transport endpoint is not connected" >&2; exit 1; }',
   'while [ $# -gt 0 ] && [ "$1" != "--" ]; do shift; done',
   '[ $# -gt 0 ] || exit 0',
   "shift",
@@ -693,6 +695,23 @@ test("a contained command keeps its output, exit status and the directory it end
   assert.equal(result.stdout, "it's inside\nrc=3 dir=/\n", result.stderr);
   assert.match(readFileSync(log, "utf8"), new RegExp(`^--user --scope --quiet --collect --slice=${WORK_SLICE} -- bash -c `, "u"));
   assert.deepEqual(readdirSync(runtime), [], "the directory record is removed");
+});
+
+test("a scope the user manager cannot start still runs the command, once, uncontained", { timeout: 60_000 }, () => {
+  const runtime = mkdtempSync(path.join(root, "contained-down-"));
+  const script = `cd ${shellQuote(dirs.plain)}; ${containedCommand(`printf '%s\\n' "it ran"; cd /; exit 3`)}; echo "rc=$? dir=$(pwd)"`;
+  const result = spawnSync("bash", ["-c", script], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, FAKE_SYSTEMD_RUN_FAIL: "1" } });
+  assert.equal(result.stdout, "it ran\nrc=3 dir=/\n", result.stderr);
+  assert.match(result.stderr, /Failed to start transient scope unit/u, "the refusal is still shown");
+  assert.deepEqual(readdirSync(runtime), [], "the directory record and the start marker are removed");
+});
+
+test("a command killed inside its scope is not run a second time", { timeout: 60_000 }, () => {
+  const runtime = mkdtempSync(path.join(root, "contained-killed-"));
+  const script = `${containedCommand(`printf '%s\\n' once; kill -9 $$`)}; echo "rc=$?"`;
+  const result = spawnSync("bash", ["-c", script], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime } });
+  assert.equal(result.stdout, "once\nrc=137\n", result.stderr);
+  assert.deepEqual(readdirSync(runtime), []);
 });
 
 test("the launcher starts the executable it is handed inside the slice, or directly where it cannot", { skip: !existsSync("/proc/self/cgroup"), timeout: 60_000 }, async () => {

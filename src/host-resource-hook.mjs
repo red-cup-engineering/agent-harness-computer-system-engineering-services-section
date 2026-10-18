@@ -963,14 +963,21 @@ function canContain(env) {
  * `original` run in a transient scope of the work slice, in this shell's environment, keeping its exit
  * status and the directory it ends in (the harness reads the shell's directory after the command,
  * so a `cd` inside the scope must carry back out of it).
+ *
+ * The scope fails open like the rest of the hook. `canContain` sees only that the user manager's bus
+ * socket exists; a manager that has died behind it ("Failed to start transient scope unit: Transport
+ * endpoint is not connected") refuses every scope, and the command would never run. The command's
+ * first act is to mark that it started, so a scope that never started runs the command here,
+ * uncontained, while one that started and was killed in the slice is not run a second time.
  */
 export function containedCommand(original, { slice = WORK_SLICE } = {}) {
-  const inner = `trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
+  const inner = `: >"$_AH_DIR.ran"; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
   return [
-    '_ah_dir=$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-dir.XXXXXX")',
+    '_ah_dir=$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-dir.XXXXXX" 2>/dev/null || mktemp)',
     `_AH_DIR="$_ah_dir" systemd-run --user --scope --quiet --collect --slice=${slice} -- bash -c ${shellQuote(inner)}`,
     "_ah_rc=$?",
-    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); rm -f "$_ah_dir"',
+    `[ -e "$_ah_dir.ran" ] || { _AH_DIR="$_ah_dir" bash -c ${shellQuote(inner)}; _ah_rc=$?; }`,
+    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); rm -f "$_ah_dir" "$_ah_dir.ran"',
     '[ -z "$_ah_to" ] || cd "$_ah_to"',
     '(exit "$_ah_rc")',
   ].join("; ");
