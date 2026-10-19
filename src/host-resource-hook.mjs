@@ -41,7 +41,8 @@
  * exits 0, and the command runs as if the hook were absent. A hook is a guardrail on a cooperative
  * agent, not a security boundary, and it must never be the reason work stops. It never waits on
  * anything: the lock is taken by the rewritten command, not by the hook, and a 200 ms timer ends the
- * process if stdin never closes.
+ * process if stdin never closes. The one exception is the mass-deletion guard (`gh pr merge`, `git commit -a`):
+ * it asks gh and git, within a ten-second budget, and allows the command when it cannot find out.
  *
  * Zero dependencies: projections reference this one owning source file and the verified Node
  * executable that runs the projecting harness. It reads a handful of stat results and no repository state, so it adds only node's
@@ -50,6 +51,7 @@
  * commands outside the slice; AGENT_HEAVY_LOCK, AGENT_HEAVY_WAIT_SECONDS, AGENT_HEAVY_LARGE_REPO_FILES
  * and AGENT_HEAVY_LARGE_REPO_INDEX_BYTES tune it.
  */
+import { spawnSync } from "node:child_process";
 import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { availableParallelism, homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
@@ -75,6 +77,25 @@ export const LIMITS = Object.freeze({
   /** The parser gives up (and the hook allows the command) after this many milliseconds, and the whole process after `guardMilliseconds`. */
   parseMilliseconds: 100,
   guardMilliseconds: 200,
+  /**
+   * Mass deletion: what makes a merge, or a `commit -a`, remove too much of a repository to proceed unseen.
+   * Derived from a measurement, not chosen: see content/requirements/the-agent-harness-refuses-mass-deletion.json
+   * (the sample, the distribution and the derivation). A change is a mass deletion when it removes at least
+   * `minFiles` files AND at least `share` of the files its base holds.
+   */
+  massDeletion: Object.freeze({
+    share: 0.5,
+    minFiles: 10,
+    /** Files of a PR read to estimate its removals (pages of 100): the removed fraction of these is projected over `changedFiles`. */
+    sampleFiles: 300,
+    /** The whole merge check, and one gh call, are bounded well inside the hook's 15 s timeout; past either the merge is allowed (fail open). */
+    budgetMilliseconds: 10_000,
+    callMilliseconds: 4_000,
+    /** `git config` and `git ls-files --deleted` over the working tree are bounded the same way. */
+    worktreeMilliseconds: 2_500,
+    /** The PR-body line that states a mass deletion is intended, with a reason. */
+    marker: "mass-deletion-intended",
+  }),
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -287,7 +308,16 @@ function makeContext(input, env, options = {}) {
     largeRepoFiles: positive(env.AGENT_HEAVY_LARGE_REPO_FILES, LIMITS.largeRepoFiles),
     largeRepoIndexBytes: positive(env.AGENT_HEAVY_LARGE_REPO_INDEX_BYTES, LIMITS.largeRepoIndexBytes),
     repos: new Map(),
+    run: options.run ?? boundedRun,
   };
+}
+
+/** One bounded child process: `{ status, stdout, truncated }`; status is null when it could not run, timed out or was killed. Never throws. */
+function boundedRun(command, args, { cwd, timeout, maxBuffer = 16 * 1024 * 1024, env = process.env } = {}) {
+  try {
+    const result = spawnSync(command, args, { cwd, timeout, maxBuffer, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], env: { ...env, GIT_OPTIONAL_LOCKS: "0", GH_PROMPT_DISABLED: "1", GIT_TERMINAL_PROMPT: "0" } });
+    return { status: result.status, stdout: result.stdout ?? "", truncated: result.error?.code === "ENOBUFS" };
+  } catch { return { status: null, stdout: "", truncated: false }; }
 }
 
 /** The number of entries a git index records (its header: "DIRC", a version, then the count), or undefined when it cannot be read. */
@@ -500,6 +530,54 @@ const GIT_ALWAYS_HEAVY = new Set(["fetch", "push", "pull", "gc", "repack", "arch
 const GIT_WORKTREE_WIDE = new Set(["stash", "checkout", "switch", "reset", "clean", "merge", "rebase", "cherry-pick", "revert"]);
 const CLONE_VALUE_OPTIONS = ["-b", "--branch", "--depth", "--filter", "-o", "--origin", "--reference", "--reference-if-able", "-c", "--config", "-j", "--jobs", "--template", "--separate-git-dir", "-u", "--upload-pack", "--server-option", "--shallow-since", "--shallow-exclude", "--bundle-uri", "--ref-format", "--revision"];
 
+// ---------------------------------------------------------------------------------------------
+// Mass deletion: a merge or a `commit -a` that removes most of a repository.
+// 2026-10-19: repair PRs made by `git commit -am` in a `--no-checkout` clone (every tracked file absent from the
+// worktree staged as a deletion) were merged unseen and emptied ten repositories.
+// ---------------------------------------------------------------------------------------------
+
+/** Whether removing `removed` of the `total` files a base holds is a mass deletion (see LIMITS.massDeletion). */
+export function isMassDeletion(removed, total, limits = LIMITS.massDeletion) {
+  return removed >= limits.minFiles && removed >= limits.share * Math.max(total, 1);
+}
+
+/** A commit's short options, read properly: `-a` bundled (`-am`, `-qam`) counts, but not the `a` inside a value (`-m"fix a"`, `-Fnotes`). */
+function commitAll(args) {
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--") return false;
+    if (arg === "--all") return true;
+    if (!arg.startsWith("-") || arg.startsWith("--") || arg.length < 2) continue;
+    for (let k = 1; k < arg.length; k += 1) {
+      if (arg[k] === "a") return true;
+      if ("mFCctSu".includes(arg[k])) { if (k === arg.length - 1 && "mFCct".includes(arg[k])) i += 1; break; }
+    }
+  }
+  return false;
+}
+
+/**
+ * Why `git commit -a` / `git add -A|-u` at `top` would stage a partial worktree's absence as deletions, or undefined.
+ * Partial means `core.sparseCheckout` is set, or tracked files are missing from the worktree in numbers that make a mass
+ * deletion. Cheap and bounded: one `git config` and one `git ls-files --deleted` (a stat of each tracked file, no content),
+ * each killed at `worktreeMilliseconds`; whatever cannot be determined in time is allowed.
+ */
+function partialWorktree(top, entries, ctx) {
+  const timeout = LIMITS.massDeletion.worktreeMilliseconds;
+  const sparse = ctx.run("git", ["-C", top, "config", "--bool", "--get", "core.sparseCheckout"], { cwd: top, timeout, env: ctx.env });
+  if (sparse.status === 0 && sparse.stdout.trim() === "true") return "core.sparseCheckout is set, so this working tree holds only part of the repository";
+  const missing = ctx.run("git", ["-C", top, "ls-files", "--deleted", "-z"], { cwd: top, timeout, maxBuffer: 4 * 1024 * 1024, env: ctx.env });
+  if (missing.status !== 0 && !missing.truncated) return undefined;
+  const count = missing.stdout.split("\0").filter(Boolean).length;
+  if (count === 0) return undefined;
+  const total = Math.max(entries ?? 0, count);
+  // a truncated list is more than the buffer held: a mass of absent files whatever the minimum
+  if (missing.truncated || isMassDeletion(count, total)) return `${missing.truncated ? "very many" : count} of ${entries ?? "its"} tracked files are missing from this working tree`;
+  return undefined;
+}
+
+const partialReason = (what, why) => `${what} in a partial working tree stages every tracked file that is absent from it as a deletion (${why}): this is how ten repositories were emptied on 2026-10-19. Stage the paths you changed (git add -- <path>...), then git commit without -a; check git diff --cached --name-status before pushing.`;
+
 function git(argv, state, ctx, report) {
   const rest = argv.slice(1);
   let i = 0;
@@ -515,6 +593,10 @@ function git(argv, state, ctx, report) {
   const repo = cwd === undefined ? undefined : repoOf(cwd, ctx);
   const size = repo === undefined ? "" : ` (${describe(repo)})`;
 
+  if (repo !== undefined && ((sub === "commit" && commitAll(args)) || (sub === "add" && hasFlag(args, "Au", ["--all", "--update"]) && positionals(args).every((spec) => path.resolve(cwd, spec) === repo.top)))) {
+    const why = partialWorktree(repo.top, repo.entries, ctx);
+    if (why !== undefined) { report.deny(partialReason(sub === "commit" ? "git commit -a" : "git add -A/-u", why)); return; }
+  }
   if (sub === "worktree") {
     if (args[0] === "add") report.deny("git worktree add checks out a full working tree on disk: use a blobless sparse clone in the scratchpad instead (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>, then git sparse-checkout set <dirs>).");
     return;
@@ -565,7 +647,7 @@ function git(argv, state, ctx, report) {
   } else if (sub === "add") {
     if (hasFlag(args, "Au", ["--all", "--update"]) || (positionals(args).length > 0 && limiting(args).length === 0)) report.heavy("git add over a large working tree");
   } else if (sub === "commit") {
-    if (hasFlag(args, "a", ["--all"])) report.heavy("git commit -a over a large working tree");
+    if (commitAll(args)) report.heavy("git commit -a over a large working tree");
   } else if (sub === "restore") {
     if (limiting(args).length === 0) report.heavy("git restore over a large working tree");
   } else if (GIT_WORKTREE_WIDE.has(sub)) {
@@ -623,11 +705,77 @@ function indexLock(argv, state, ctx, report) {
 const GH_LOCAL = { pr: new Set(["create", "checkout", "status", "diff"]), repo: new Set(["sync", "fork"]) };
 const GH_VALUE = ["-R", "--repo", "-B", "--base", "-H", "--head", "-t", "--title", "-b", "--body", "-F", "--body-file", "-a", "--assignee", "-l", "--label", "-m", "--milestone", "-p", "--project", "-r", "--reviewer", "-q", "--jq", "--template", "-b", "--branch"];
 
+const GH_MERGE_VALUE = ["-R", "--repo", "-A", "--author-email", "--match-head-commit", "-t", "--subject", "-b", "--body", "-F", "--body-file"];
+
+/** The reason given on the `mass-deletion-intended: <reason>` line of a PR body, or undefined: a reason is required. */
+export const massDeletionMarker = (body, marker = LIMITS.massDeletion.marker) => new RegExp(`^[\\s>*_-]*${marker}\\s*:[\\s*_]*(\\S.*)$`, "imu").exec(String(body ?? ""))?.[1]?.trim();
+
+/**
+ * Refuses to merge a pull request that removes a mass of its repository, unless its body says so
+ * (`mass-deletion-intended: <reason>`). Reads `gh pr view` (changedFiles, body), then, only when the PR changes at
+ * least `minFiles` files, the status of the first `sampleFiles` changed files and the base tree's file count.
+ * Every failure to know (no gh, no network, a timeout, an unreadable answer) allows the merge.
+ */
+function guardMerge({ selector, repository, cwd }, ctx, report) {
+  const limits = LIMITS.massDeletion;
+  const deadline = Date.now() + limits.budgetMilliseconds;
+  const call = (args) => {
+    const left = deadline - Date.now();
+    if (left < 250) return undefined;
+    const result = ctx.run("gh", args, { cwd, timeout: Math.min(left, limits.callMilliseconds), env: ctx.env });
+    return result.status === 0 ? result.stdout : undefined;
+  };
+  try {
+    const where = repository ? ["-R", repository] : [];
+    const view = JSON.parse(call(["pr", "view", ...(selector ? [selector] : []), ...where, "--json", "number,url,state,baseRefName,changedFiles,deletions,body"]) ?? "null");
+    if (view === null || view.state !== "OPEN" || !(view.changedFiles >= limits.minFiles)) return;
+    if (massDeletionMarker(view.body, limits.marker) !== undefined) return;
+    const slug = /^https?:\/\/[^/]+\/([^/]+\/[^/]+)\/pull\/\d+/u.exec(view.url ?? "")?.[1];
+    if (slug === undefined) return;
+    let seen = 0;
+    let removedSeen = 0;
+    for (let page = 1; seen < Math.min(view.changedFiles, limits.sampleFiles); page += 1) {
+      const statuses = call(["api", `repos/${slug}/pulls/${view.number}/files?per_page=100&page=${page}`, "--jq", ".[].status"]);
+      if (statuses === undefined) return;
+      const rows = statuses.split("\n").filter(Boolean);
+      if (rows.length === 0) break;
+      seen += rows.length;
+      removedSeen += rows.filter((status) => status === "removed").length;
+    }
+    if (seen === 0) return;
+    const removed = seen >= view.changedFiles ? removedSeen : Math.round((removedSeen / seen) * view.changedFiles);
+    if (removed < limits.minFiles) return;
+    const tree = call(["api", `repos/${slug}/git/trees/${encodeURIComponent(view.baseRefName)}?recursive=1`, "--jq", '[(.tree | map(select(.type != "tree")) | length), .truncated] | @tsv']);
+    const total = Number(tree?.split("\t")[0]);
+    if (!Number.isFinite(total) || total <= 0 || !isMassDeletion(removed, total)) return;
+    const estimated = seen < view.changedFiles ? "about " : "";
+    report.deny(`${slug}#${view.number} removes ${estimated}${removed} of the ${total} files in ${view.baseRefName} (${Math.round((removed / total) * 100)}%; ${view.changedFiles} files changed, ${view.deletions} lines deleted): a repair or extraction that emptied a repository looks like this. Read the removals (gh pr diff ${view.number} --name-only); if they are intended, add a line \`${limits.marker}: <reason>\` to the PR body (gh pr edit ${view.number} --body-file ...) and merge again. Merged unseen, the 2026-10-19 repair PRs deleted 31,084 files from one repository.`);
+  } catch { /* fail open */ }
+}
+
+/** `gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge`: the same merge by the REST door. */
+function apiMerge(args) {
+  const method = optionValue(args, ["-X", "--method"]);
+  const target = positionals(args, ["-X", "--method", "-H", "--header", "-f", "--raw-field", "-F", "--field", "--jq", "-q", "--template", "-t", "--input", "--cache", "--hostname"]).find((word) => /\/pulls\/\d+\/merge$/u.test(word));
+  if (target === undefined || String(method).toUpperCase() !== "PUT") return undefined;
+  const found = /(?:^|\/)repos\/([^/]+\/[^/]+)\/pulls\/(\d+)\/merge$/u.exec(target);
+  return found === null ? undefined : { repository: found[1], selector: found[2] };
+}
+
 function github(argv, state, ctx, report) {
   const args = argv.slice(1);
   const cut = args.indexOf("--");
   const [group, action, ...rest] = positionals(cut < 0 ? args : args.slice(0, cut), GH_VALUE);
   if (group === "repo" && action === "clone") { clone(rest, state, ctx, report); return; }
+  if (ctx.env.AGENT_MERGE_GUARD !== "off") {
+    if (group === "pr" && action === "merge") {
+      const operands = positionals(cut < 0 ? args : args.slice(0, cut), GH_MERGE_VALUE).slice(2);
+      if (operands.every((word) => !/[$`]/u.test(word))) guardMerge({ selector: operands[0], repository: optionValue(args, ["-R", "--repo"]), cwd: state.cwd }, ctx, report);
+    } else if (group === "api") {
+      const target = apiMerge(args.slice(1));
+      if (target !== undefined) guardMerge({ ...target, cwd: state.cwd }, ctx, report);
+    }
+  }
   if (!(Object.hasOwn(GH_LOCAL, group) && GH_LOCAL[group].has(action))) return;
   if (args.some((word) => word === "-R" || word === "--repo" || word.startsWith("--repo=") || /^-R./u.test(word))) return;
   const repo = state.cwd === undefined ? undefined : repoOf(state.cwd, ctx);
@@ -761,8 +909,8 @@ function walk(source, cwd, state, ctx, report, depth, lock) {
 }
 
 /** `{ action: "deny", reason } | { action: "serialize", heavy, locked } | { action: "allow" }` for a command line run in `cwd`. */
-export function classify(command, { cwd, env = process.env, home, scratchpad, lock = lockPath(env) } = {}) {
-  const ctx = makeContext({ cwd, scratchpad_dir: scratchpad }, env, { home });
+export function classify(command, { cwd, env = process.env, home, scratchpad, lock = lockPath(env), run } = {}) {
+  const ctx = makeContext({ cwd, scratchpad_dir: scratchpad }, env, { home, run });
   const denied = [];
   const heavy = [];
   const state = { locked: false };
@@ -1028,7 +1176,7 @@ const WATCH_TOOLS = /^Monitor$/u;
  * without permission rules (`bypassPermissions`), and otherwise the heavy commands and watches,
  * which are already rewritten, so no command an allow rule admits starts asking because of it.
  */
-export function decide(input, { env = process.env, provider = "claude", home, cgroup = ownCgroup() } = {}) {
+export function decide(input, { env = process.env, provider = "claude", home, cgroup = ownCgroup(), run: runner } = {}) {
   if (env.AGENT_HOST_GUARD === "off") return undefined;
   const toolInput = input?.tool_input;
   const tool = String(input?.tool_name);
@@ -1037,7 +1185,7 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   const command = toolInput.command;
   if (command.trim() === "" || command.length > LIMITS.maxCommandLength) return undefined;
   const lock = lockPath(env);
-  const verdict = classify(command, { cwd: input.cwd, env, home, scratchpad: input.scratchpad_dir, lock });
+  const verdict = classify(command, { cwd: input.cwd, env, home, scratchpad: input.scratchpad_dir, lock, run: runner });
   if (verdict.action === "deny") {
     return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: `host-resource guard: ${verdict.reason}` };
   }
@@ -1173,6 +1321,9 @@ function main() {
   process.stdin.on("data", (chunk) => chunks.push(chunk));
   process.stdin.on("error", () => process.exit(0));
   process.stdin.on("end", () => {
+    // stdin closed: the 200 ms timer has done its job. What follows is bounded by the decision itself
+    // (a merge check holds a ten-second budget inside the hook's 15 s timeout), so the timer must not cut it short.
+    clearTimeout(guard);
     try {
       const at = process.argv.indexOf("--provider");
       const output = run(Buffer.concat(chunks).toString("utf8"), { provider: at < 0 ? "claude" : process.argv[at + 1] });
