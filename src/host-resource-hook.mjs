@@ -978,15 +978,22 @@ function canContain(env) {
  * endpoint is not connected") refuses every scope, and the command would never run. The command's
  * first act is to mark that it started, so a scope that never started runs the command here,
  * uncontained, while one that started and was killed in the slice is not run a second time.
+ *
+ * What systemd-run says when it cannot start the scope is kept, not discarded: its standard error goes to a file beside the
+ * directory record (the command's own standard error is restored from file descriptor 3 as its first act, so the command
+ * never writes there), and when no scope started that text is shown, then handed with the exit status to `recorder`
+ * (`{ node, script }`, the scope-failure record entry), which keeps it with the user manager's state in an OTLP record.
+ * The recorder is optional, time-bounded and never the reason the command does not run.
  */
-export function containedCommand(original, { slice = WORK_SLICE } = {}) {
-  const inner = `: >"$_AH_DIR.ran"; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
+export function containedCommand(original, { slice = WORK_SLICE, recorder = null } = {}) {
+  const inner = `: >"$_AH_DIR.ran"; exec 2>&3 3>&-; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
+  const record = recorder ? `; { timeout 30 ${shellQuote(recorder.node)} ${shellQuote(recorder.script)} "$_ah_dir.err" "$_ah_rc" >/dev/null 2>&1 || true; }` : "";
   return [
     '_ah_dir=$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-dir.XXXXXX" 2>/dev/null || mktemp)',
-    `_AH_DIR="$_ah_dir" systemd-run --user --scope --quiet --collect --slice=${slice} -- bash -c ${shellQuote(inner)}`,
+    `_AH_DIR="$_ah_dir" systemd-run --user --scope --quiet --collect --slice=${slice} -- bash -c ${shellQuote(inner)} 3>&2 2>"$_ah_dir.err"`,
     "_ah_rc=$?",
-    `[ -e "$_ah_dir.ran" ] || { _AH_DIR="$_ah_dir" bash -c ${shellQuote(inner)}; _ah_rc=$?; }`,
-    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); unlink -- "$_ah_dir"; if [ -e "$_ah_dir.ran" ]; then unlink -- "$_ah_dir.ran"; fi',
+    `[ -e "$_ah_dir.ran" ] || { cat "$_ah_dir.err" >&2 2>/dev/null${record}; _AH_DIR="$_ah_dir" bash -c ${shellQuote(inner)} 3>&2; _ah_rc=$?; }`,
+    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); unlink -- "$_ah_dir"; if [ -e "$_ah_dir.ran" ]; then unlink -- "$_ah_dir.ran"; fi; unlink -- "$_ah_dir.err" 2>/dev/null',
     '[ -z "$_ah_to" ] || cd "$_ah_to"',
     '(exit "$_ah_rc")',
   ].join("; ");
@@ -1046,7 +1053,7 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
   const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
-  if (contain) wrapped = containedCommand(wrapped ?? command);
+  if (contain) wrapped = containedCommand(wrapped ?? command, { recorder: { node: process.execPath, script: fileURLToPath(new URL("./scope-failure-record.mjs", import.meta.url)) } });
   if (wrapped === undefined) return undefined;
   const output = { hookEventName: "PreToolUse", updatedInput: { ...toolInput, command: wrapped } };
   if (provider === "codex") {
