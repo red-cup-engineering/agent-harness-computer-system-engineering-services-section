@@ -857,18 +857,27 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
   return [
     `_ah_c=${shellQuote(`: >"$_AH_RAN"; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
+    // With no readable slot, preserve the existing once-only unconfined path before requiring
+    // storage beside the locks. A failed allocation for a readable slot never takes this path.
+    '_ah_readable=',
+    `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ ! -r "$_ah_l" ] || _ah_readable=1; done`,
     // The marker sits beside the slot locks, whose directory the hook has just made sure exists: XDG_RUNTIME_DIR can
     // name a directory that is not there yet (a host still booting has no /run/user/<uid>), and then the marker could
     // not be written and a command that itself exits 75 could run again in the next slot.
-    `_AH_RAN=${shellQuote(path.dirname(locks[0]))}/agent-ran.$.$RANDOM; export _AH_RAN; rm -f "$_AH_RAN"`,
+    // Allocate an exclusive private directory: the child marker starts absent without deleting
+    // a guessed pathname. Only our own file and the empty allocation are removed afterwards.
+    `if [ -z "$_ah_readable" ]; then bash -c ${shellQuote(original)}; else _AH_RAN_DIR=$(mktemp -d ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { _AH_RAN="$_AH_RAN_DIR/ran"; export _AH_RAN`,
     `_ah_rc=${BUSY_EXIT_CODE}`,
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ -r "$_ah_l" ] || continue; ${runner("-n", '"$_ah_l"')}; _ah_rc=$?; { [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}; } || break; done`,
     `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
     `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; else bash -c "$_ah_c"; _ah_rc=$?; fi`,
     "fi",
     `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || printf '%s\\n' ${shellQuote(busy)} >&2`,
-    'rm -f "$_AH_RAN"',
+    'if [ -e "$_AH_RAN" ]; then unlink -- "$_AH_RAN"; fi',
+    'rmdir -- "$_AH_RAN_DIR"',
     '(exit "$_ah_rc")',
+    '}',
+    'fi',
   ].join("; ");
 }
 
@@ -977,7 +986,7 @@ export function containedCommand(original, { slice = WORK_SLICE } = {}) {
     `_AH_DIR="$_ah_dir" systemd-run --user --scope --quiet --collect --slice=${slice} -- bash -c ${shellQuote(inner)}`,
     "_ah_rc=$?",
     `[ -e "$_ah_dir.ran" ] || { _AH_DIR="$_ah_dir" bash -c ${shellQuote(inner)}; _ah_rc=$?; }`,
-    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); rm -f "$_ah_dir" "$_ah_dir.ran"',
+    '_ah_to=$(cat "$_ah_dir" 2>/dev/null); unlink -- "$_ah_dir"; if [ -e "$_ah_dir.ran" ]; then unlink -- "$_ah_dir.ran"; fi',
     '[ -z "$_ah_to" ] || cd "$_ah_to"',
     '(exit "$_ah_rc")',
   ].join("; ");
