@@ -796,3 +796,37 @@ test("the run-once marker sits beside the slot locks, so a missing XDG_RUNTIME_D
   assert.equal(readFileSync(log, "utf8"), "ran\n", "ran once although XDG_RUNTIME_DIR does not exist");
   assert.doesNotMatch(result.stderr, /No such file or directory/u);
 });
+
+test("concurrent commands own distinct run-once markers and remove only their allocations", { skip: !haveFlock, timeout: 15_000 }, async () => {
+  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir);
+  const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
+  for (const file of locks) writeFileSync(file, "");
+  const before = readdirSync(dir).sort();
+  const wrapped = serializedCommand('printf "%s\\n" "$_AH_RAN"; sleep 0.1; exit 75', { locks, wait: 5, nice: false, ionice: false });
+  const results = await Promise.all([1, 2, 3].map(() => new Promise((resolve, reject) => {
+    const child = spawn("bash", ["-c", wrapped], { env });
+    let stdout = "", stderr = "";
+    child.stdout.on("data", data => { stdout += data; }); child.stderr.on("data", data => { stderr += data; });
+    child.on("error", reject); child.on("close", code => resolve({ code, stdout, stderr }));
+  })));
+  assert.deepEqual(results.map(result => result.code), [75, 75, 75]);
+  const markers = results.map(result => result.stdout.trim());
+  assert.equal(new Set(markers).size, 3);
+  for (const marker of markers) assert.equal(path.dirname(path.dirname(marker)), dir);
+  assert.deepEqual(readdirSync(dir).sort(), before, "locks survive and every private marker allocation is gone");
+  for (const result of results) assert.equal(result.stderr, "");
+});
+
+test("an unavailable marker allocator cannot execute or retry the original command", { skip: !haveFlock }, () => {
+  const dir = path.join(root, "run", "marker-refusal"); mkdirSync(dir);
+  const markerBin = path.join(dir, "bin"); mkdirSync(markerBin);
+  writeFileSync(path.join(markerBin, "mktemp"), "#!/bin/sh\nexit 1\n", { mode: 0o755 });
+  const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
+  for (const file of locks) writeFileSync(file, "");
+  const log = path.join(dir, "executed");
+  const wrapped = serializedCommand(`printf ran > ${shellQuote(log)}`, { locks, wait: 0, nice: false, ionice: false });
+  const result = spawnSync("bash", ["-c", wrapped], { env: { ...env, PATH: `${markerBin}:${env.PATH}` }, encoding: "utf8", timeout: 3000 });
+  assert.equal(result.status, 1);
+  assert.equal(existsSync(log), false);
+  assert.deepEqual(readdirSync(dir).sort(), ["bin", "heavy.lock", "heavy.lock.1"]);
+});
