@@ -1,0 +1,8 @@
+[submodule "codex-home-service"]
+	path = services/codex-harness-services-section/services/codex-home-service
+	url = https://github.com/red-cup-engineering/codex-home-service.git
+	branch = main
+[submodule "codex-harness-projection-service"]
+	path = services/codex-harness-services-section/services/codex-harness-projection-service
+	url = https://github.com/red-cup-engineering/codex-harness-projection-service.git
+	branch = main
