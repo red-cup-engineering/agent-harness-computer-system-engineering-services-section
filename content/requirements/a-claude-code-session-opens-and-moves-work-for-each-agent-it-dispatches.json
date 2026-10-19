@@ -1,0 +1,43 @@
+{
+  "id": "a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches",
+  "name": "A Claude Code session records each agent assignment as a Work item, with outcome and cost",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "I'd love to see you the ringleader use-and-improve our agentic technologies for helping you ringlead, and your agents work more efficiently with less token cost, more tracked costs, etc.",
+  "met-when": [
+    {
+      "cell": "a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches:held",
+      "target": "held",
+      "command": "test -f lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/requirements/a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches.json",
+      "expected-exit": 0
+    },
+    {
+      "cell": "a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches:handoff-record-tested",
+      "target": "handoff",
+      "command": "node --test lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/test/agent-handoff.test.mjs",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "operational",
+  "status": "open: the Work board is not reachable from a Claude Code session on Bare Cedar Fog today",
+  "measured": {
+    "on": "2026-10-19",
+    "what-a-session-can-call-today": [
+      "the cost ledger and the per-Work roll-up (computer-inference-system-services-section, inference-expense-ledger-services-section scripts): local files, no node needed",
+      "the agent assignment journal (record-agent-assignment.mjs): assigned and outcome events keyed by Work id, session and agent, so cost attaches to Work now"
+    ],
+    "missing": [
+      "no MetroPlat or FeltOS node process is running on the host: work-board, work-open and work-move (feltos src/work/work-board.mjs, generated work-arena descriptors) have nothing to answer them",
+      "the project .mcp.json declares no mcpServers, so a Claude Code session has no tool named work-open or work-move; metroplat exposes them through its MCP surface (src/mcp-surface.mjs) and the agent-hook operation (harness=mcp)",
+      "work-board moves refuse an anonymous invocation (feltos src/server/work-arena-operations.mjs): the session needs an authenticated subject recognised as holding an office, and none is provisioned for the lead",
+      "the session's hooks do not reach a node: only the PreToolUse host-resource hook is installed, so SubagentStop and SessionEnd never admit token-usage rows through metroplat's agent-hook operation (which also skips transcripts over 128 MiB)",
+      "no bridge replays assignment journal events as work-open (a report or aim) and work-move (outcome) once a node is reachable"
+    ],
+    "to-build": "A node endpoint the lead can reach (MetroPlat on Bare Cedar Fog with its MCP surface declared in the project .mcp.json), an office allocation and authenticated subject for the lead, and a replay command that reads the assignment journal and plays work-open for each new Work id and work-move for each outcome, attaching the per-Work cost roll-up as evidence."
+  },
+  "x-provenance": {
+    "recorded-by": "ringleader agent of the 561 Group",
+    "recorded-on": "2026-10-19",
+    "basis": "Read of agent-harness carrier/session.mjs and hooks/service.mjs, feltos work/work-board.mjs and server/work-arena-operations.mjs, the host's listening processes, the user hook keys and the project .mcp.json."
+  }
+}
