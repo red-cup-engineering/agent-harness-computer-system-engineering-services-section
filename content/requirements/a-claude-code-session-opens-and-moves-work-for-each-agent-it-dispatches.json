@@ -19,25 +19,30 @@
     }
   ],
   "tier": "operational",
-  "status": "open: the Work board is not reachable from a Claude Code session on Bare Cedar Fog today",
+  "status": "open: the node and its Work operations exist and are reachable on loopback, but a Claude Code session holds no authenticated tool for them",
   "measured": {
     "on": "2026-10-19",
     "what-a-session-can-call-today": [
-      "the cost ledger and the per-Work roll-up (computer-inference-system-services-section, inference-expense-ledger-services-section scripts): local files, no node needed",
-      "the agent assignment journal (record-agent-assignment.mjs): assigned and outcome events keyed by Work id, session and agent, so cost attaches to Work now"
+      "the cost ledger and per-Work roll-up (computer-inference-system-services-section, inference-expense-ledger-services-section scripts): local files, no node needed",
+      "record-agent-assignment.mjs derive: assignments and outcomes derived from the lead transcript's Agent tool calls and task-notification statuses, appended to the assignment journal idempotently; report-work-cost.mjs prices each"
     ],
+    "node-reach": {
+      "node": "bare-cedar-fog-561-group.service (user unit, FeltOS/MetroPlat node, running; feltos.mjs)",
+      "endpoint": "HTTP on 127.0.0.1:18807, routed by Host header (bare-cedar-fog.561.group; any other Host answers 421). Operations are served on POST /mcp (MCP surface); /healthz, /oauth/* and /mcp are the self-admitting paths.",
+      "authentication": "/mcp answers 401 invalid_token without an OAuth bearer token. Principals on the node include emsenn, emsenn.claude and hai-jian (human accounts); client credentials sit under /run/user/1000/561-group-credentials and were not read.",
+      "binding": "computer-system-engine src/rpc/binding.mjs is the filesystem effect binding for a node serving one data root (host fs, Claude and Codex session roots, injected resolveActorSubject); it carries no listener, socket or credential, so it is not how a local process reaches operations."
+    },
+    "office-subject": "An office for the Claude lead exists: the Bare Cedar Fog Claude character, given name Hai Jian, holds senior-engineer with incumbency bare-cedar-fog-claude-as-senior-engineer (2026-10-09 notes in this section). Sessions already act as Hai Jian. work-open and work-move play as the office the authenticated account holds, so the missing link is a token for that account, not an office.",
     "missing": [
-      "no MetroPlat or FeltOS node process is running on the host: work-board, work-open and work-move (feltos src/work/work-board.mjs, generated work-arena descriptors) have nothing to answer them",
-      "the project .mcp.json declares no mcpServers, so a Claude Code session has no tool named work-open or work-move; metroplat exposes them through its MCP surface (src/mcp-surface.mjs) and the agent-hook operation (harness=mcp)",
-      "work-board moves refuse an anonymous invocation (feltos src/server/work-arena-operations.mjs): the session needs an authenticated subject recognised as holding an office, and none is provisioned for the lead",
-      "the session's hooks do not reach a node: only the PreToolUse host-resource hook is installed, so SubagentStop and SessionEnd never admit token-usage rows through metroplat's agent-hook operation (which also skips transcripts over 128 MiB)",
-      "no bridge replays assignment journal events as work-open (a report or aim) and work-move (outcome) once a node is reachable"
+      "the project .mcp.json declares no mcpServers, so a Claude Code session has no tool named work-open or work-move, and no command here holds a bearer token for the hai-jian/emsenn.claude account",
+      "the session's hooks do not reach the node: only the PreToolUse host-resource hook is installed, so SubagentStop and SessionEnd never admit token-usage rows through metroplat's agent-hook operation (which also skips transcripts over 128 MiB)",
+      "no replay command plays the derived assignment journal into the node: work-open for each new Work id and work-move for each outcome, attaching the per-Work cost roll-up as evidence"
     ],
-    "to-build": "A node endpoint the lead can reach (MetroPlat on Bare Cedar Fog with its MCP surface declared in the project .mcp.json), an office allocation and authenticated subject for the lead, and a replay command that reads the assignment journal and plays work-open for each new Work id and work-move for each outcome, attaching the per-Work cost roll-up as evidence."
+    "to-build": "Declare the node's /mcp endpoint (http://127.0.0.1:18807 with Host bare-cedar-fog.561.group) in the project .mcp.json for the Hai Jian account with an OAuth token supplied from the credentials directory by the host, not by a script; then a replay command that plays work-open (report or aim) per derived assignment and work-move per outcome, idempotent on the Work id."
   },
   "x-provenance": {
     "recorded-by": "ringleader agent of the 561 Group",
     "recorded-on": "2026-10-19",
-    "basis": "Read of agent-harness carrier/session.mjs and hooks/service.mjs, feltos work/work-board.mjs and server/work-arena-operations.mjs, the host's listening processes, the user hook keys and the project .mcp.json."
+    "basis": "Read of feltos server/entrance.mjs and work-arena-operations.mjs, computer-system-engine src/rpc/binding.mjs, the node's listening sockets, an unauthenticated probe of /mcp, principal account names, and the 2026-10-09 office notes; no credential was read."
   }
 }
