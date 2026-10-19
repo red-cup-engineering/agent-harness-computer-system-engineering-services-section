@@ -1,9 +1,0 @@
-{
-  "type": "BareCedarFogCodexInVsCodeConfiguration",
-  "actor": "urn:ame:bare-cedar-fog-codex",
-  "surface": "vscode-codex",
-  "projection": {
-    "template": "projection",
-    "files": ["config.toml", "hooks.json"]
-  }
-}
