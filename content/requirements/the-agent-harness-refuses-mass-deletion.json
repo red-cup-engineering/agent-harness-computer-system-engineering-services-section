@@ -1,0 +1,55 @@
+{
+  "id": "the-agent-harness-refuses-mass-deletion",
+  "name": "The agent harness refuses a merge or a commit that deletes most of a repository unseen",
+  "kind": "requirement",
+  "raised-by": "emsenn",
+  "asks": "Fix a tooling hazard that just deleted almost all content from 10 repositories. Every one has been restored by revert. Fix the tools so it cannot happen again.",
+  "met-when": [
+    {
+      "cell": "the-agent-harness-refuses-mass-deletion:tests",
+      "target": "held",
+      "command": "node --test test/host-resource-hook.test.mjs",
+      "expected-exit": 0
+    }
+  ],
+  "tier": "operational",
+  "requirements": [
+    {
+      "id": "R1",
+      "says": "When a Bash tool call runs `gh pr merge` (or `gh api -X PUT .../pulls/N/merge`) on an open pull request that removes at least 10 files and at least 50% of the files its base branch holds, and the pull request body has no line `mass-deletion-intended: <reason>` with a reason, the host-resource hook shall deny the call and name the removed count, the base count and the override.",
+      "class": "functional",
+      "moscow": "must"
+    },
+    {
+      "id": "R2",
+      "says": "When a Bash tool call runs `git commit -a` or `git add -A|-u` at the top of a working tree that is partial (`core.sparseCheckout` is set, or at least 10 tracked files and at least 50% of the tracked files are absent from it), the hook shall deny the call and name the safe form (`git add -- <path>`, then `git commit` without -a).",
+      "class": "functional",
+      "moscow": "must"
+    },
+    {
+      "id": "R3",
+      "says": "If gh or git is unavailable, answers garbage or does not answer within the hook's budget (ten seconds for a merge check, 2.5 s per git call), the hook shall allow the command; it shall add no dependency.",
+      "class": "constraint",
+      "moscow": "must"
+    }
+  ],
+  "x-provenance": {
+    "recorded-by": "agent session 375048ba (guard work), 2026-10-19",
+    "recorded-on": "2026-10-19",
+    "incident": "content/handoffs/frankenstein-disassembly/tools/repair-closure.sh (red-cup-engineering/computer-systems-fabrication-engineering-services-section #61) cloned with --no-checkout, ran git read-tree HEAD, checked out only package.json files and ran git commit -qam. -a staged every absent tracked file as a deletion; the repair PRs were merged with gh pr merge without reading the diff. eavt-services-section#8 left only package.json; science-services-section#193 deleted 31,084 files; 561-group-services-section#190 (24,342 files) was closed unmerged.",
+    "measurement": {
+      "what": "The share of the files in a pull request's base that the pull request removes (status 'removed' in pulls/N/files), for pull requests merged in red-cup-engineering, 561-group, lenticule-science and coesite-operations.",
+      "sampled-on": "2026-10-19",
+      "data": "data/records/measurements/2026-10-19-pr-removed-file-share/pull-requests.jsonl (one row per PR: key, changed, removed, baseFiles at the PR's own base commit); scripts beside it reproduce the sample (sample-recent-merged-prs.mjs, sample-subtree-removal-prs.mjs, count-base-trees.mjs) and the distribution (derive.mjs).",
+      "sample": "300 distinct merged PRs. Sample 1: the 50 most recently merged PRs of each org drawn from its 12 most recently pushed repositories plus 6 random older ones, 15 PRs read per repository (coesite-operations had only 21 candidates): 171 PRs. Sample 2: PRs whose title says extract, remove, retire, submodule or move (the legitimate whole-subtree removals, which sample 1 under-represents), up to 20 per org per word: 129 more. Removed files were counted exactly up to 300 files read per PR, and projected from the first 300 files over changedFiles beyond that (3 PRs). The base is the tree at the PR's base commit, not the current one: repositories shrink after extractions.",
+      "incident-controls": "7 of the 10 incident PRs fall in the sample (titled \"Publish only the package's own files\"). They are controls, excluded from the legitimate population: removed/base = 0.9231 (12/13), 0.9583 (23/24), 0.9638 (532/552), 0.9796 (6728/6868), 0.9953 (212/213), 1.0000 (39/39), 1.3864 (31084/22421 projected).",
+      "legitimate-population": "293 PRs. 238 remove no file. By removed share: p50 0.0000, p90 0.0018, p95 0.0164, p97 0.0603, p99 0.5000. By removed files: p50 0, p90 3, p95 8, p97 25, p99 200. Only 4 legitimate PRs remove half or more of the base: 561-group/561-group#65 (18,925 of 19,055; remove content filed outside its owners), 561-group/bare-cedar-fog#315 (10,089 of 13,267; move Koios.News execution to its own repository), and two removals of 2 of 4 files (second mounts). Below them the next highest share is 0.2000 (1 of 5 files), then 0.1333 (4 of 30), 0.1098 (9 of 82), 0.0621 (32 of 515)."
+    },
+    "derivation": {
+      "share": "0.5. The incident's lowest share is 0.9231 and the legitimate population has no PR between 0.2000 and 0.7605 (apart from the two tiny ones the count excludes). 0.5 lies in that gap, catches all 7 control incidents with a margin of 1.85x over the smallest (so a projection error or a base count that is somewhat off cannot let one through), and flags 2 of 293 legitimate PRs (0.7%), both whole-subtree extractions that deserve one line of stated intent. 0.9 would have passed bare-cedar-fog#315, which removed 76% of its repository without a word in its body.",
+      "minFiles": "10. The 2 legitimate PRs at or above the share with few files remove 2 files; the smallest incident removes 12; p95 of removals in legitimate PRs is 8. A count in (8, 12] separates the noise of small repositories from the incident; 10 is the integer midpoint of 8 and 12.",
+      "partial-worktree": "The same pair of parameters applies to tracked files absent from a working tree, because `git commit -a` would turn each into a deletion in the commit a merge later applies. core.sparseCheckout is refused outright. One deleted file, or a dozen in a large repository, is ordinary work and passes.",
+      "limits": "The sample is of our own organizations on one day; the base is counted at the base commit, with trees over 100,000 entries truncated (none in the sample). The merge check cannot see a selector held in a shell variable (`gh pr merge \"$url\"`) and allows it; the REST door `gh api -X PUT .../merge` is covered. A rerun of the scripts re-derives both numbers; they are LIMITS.massDeletion in src/host-resource-hook.mjs."
+    }
+  }
+}

@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUSY_EXIT_CODE, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
+import { BUSY_EXIT_CODE, LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
 
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
@@ -829,4 +829,176 @@ test("an unavailable marker allocator cannot execute or retry the original comma
   assert.equal(result.status, 1);
   assert.equal(existsSync(log), false);
   assert.deepEqual(readdirSync(dir).sort(), ["bin", "heavy.lock", "heavy.lock.1"]);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Mass deletion (2026-10-19): `gh pr merge` of a PR that removes most of a repository, and `git commit -a`
+// in a partial working tree, are refused. Parameters: LIMITS.massDeletion, derived in
+// content/requirements/the-agent-harness-refuses-mass-deletion.json.
+// ---------------------------------------------------------------------------------------------
+
+/** A fake `gh`: answers `pr view`, `api .../pulls/N/files` (statuses) and `api .../git/trees/...` from `pr`; records the calls. */
+function fakeGh({ changedFiles = 3, removed = 0, baseFiles = 100, body = "", state = "OPEN", number = 7, slug = "example/repo", fail = false, garbage = false } = {}) {
+  const calls = [];
+  const run = (command, args) => {
+    calls.push([command, ...args]);
+    if (fail) return { status: null, stdout: "" };
+    if (garbage) return { status: 0, stdout: "<<not json>>" };
+    if (command !== "gh") return { status: 1, stdout: "" };
+    if (args[0] === "pr" && args[1] === "view") return { status: 0, stdout: JSON.stringify({ number, url: `https://github.com/${slug}/pull/${number}`, state, baseRefName: "main", changedFiles, deletions: removed * 10, body }) };
+    const files = /pulls\/\d+\/files\?per_page=100&page=(\d+)/u.exec(args[1] ?? "");
+    if (files) {
+      const page = Number(files[1]);
+      const first = (page - 1) * 100;
+      const statuses = Array.from({ length: Math.max(0, Math.min(100, changedFiles - first)) }, (_, k) => (first + k < removed ? "removed" : "modified"));
+      return { status: 0, stdout: statuses.length ? `${statuses.join("\n")}\n` : "" };
+    }
+    if (/git\/trees\//u.test(args[1] ?? "")) return { status: 0, stdout: `${baseFiles}\tfalse\n` };
+    return { status: 1, stdout: "" };
+  };
+  return { run, calls };
+}
+const merge = (command, gh, extraEnv = {}) => classify(command, { cwd: dirs.plain, env: { ...env, ...extraEnv }, home, run: gh.run });
+
+test("the mass-deletion parameters are the measured ones, and the rule needs both a count and a share", () => {
+  assert.deepEqual({ share: LIMITS.massDeletion.share, minFiles: LIMITS.massDeletion.minFiles }, { share: 0.5, minFiles: 10 });
+  assert.equal(isMassDeletion(12, 13), true);   // the smallest incident: a 13-file repository
+  assert.equal(isMassDeletion(2, 4), false);    // a legitimate tiny removal
+  assert.equal(isMassDeletion(200, 3474), false); // a legitimate 6% retirement
+  assert.equal(isMassDeletion(31084, 22421), true);
+  assert.equal(massDeletionMarker("body\nmass-deletion-intended: extraction of the x subtree\n"), "extraction of the x subtree");
+  assert.equal(massDeletionMarker("> **Mass-Deletion-Intended:** moved"), "moved");
+  assert.equal(massDeletionMarker("mass-deletion-intended:   \n"), undefined);
+  assert.equal(massDeletionMarker("- mass-deletion-intended: moved"), "moved");
+});
+
+test("gh pr merge of a PR that deletes most of its repository is denied, with the way out in the reason", () => {
+  const gh = fakeGh({ changedFiles: 136, removed: 135, baseFiles: 136 });
+  const verdict = merge("gh pr merge 8 --squash", gh);
+  assert.equal(verdict.action, "deny");
+  assert.match(verdict.reason, /example\/repo#7 removes 135 of the 136 files/u);
+  assert.match(verdict.reason, /mass-deletion-intended: <reason>/u);
+  assert.deepEqual(gh.calls[0].slice(0, 4), ["gh", "pr", "view", "8"]);
+});
+
+test("a very large PR is judged from a sample of its files, projected over changedFiles", () => {
+  const gh = fakeGh({ changedFiles: 31_084, removed: 31_084, baseFiles: 22_421 });
+  const verdict = merge("gh pr merge https://github.com/example/repo/pull/7", gh);
+  assert.equal(verdict.action, "deny");
+  assert.match(verdict.reason, /removes about 31084 of the 22421 files/u);
+  assert.equal(gh.calls.filter((call) => /\/files\?/u.test(call[2] ?? "")).length, 3, "300 files are read, not 31,084");
+});
+
+test("an ordinary PR is allowed after one gh call; a PR changing few files is never read further", () => {
+  const small = fakeGh({ changedFiles: 9, removed: 9, baseFiles: 9 });
+  assert.equal(merge("gh pr merge 7", small).action, "allow");
+  assert.equal(small.calls.length, 1);
+  const ordinary = fakeGh({ changedFiles: 400, removed: 20, baseFiles: 5_000 });
+  assert.equal(merge("gh pr merge 7 --squash --delete-branch", ordinary).action, "allow");
+  const big = fakeGh({ changedFiles: 400, removed: 20, baseFiles: 30 });
+  assert.equal(merge("gh pr merge 7", big).action, "deny", "20 of 30 files is a mass of the repository however few files it is");
+});
+
+test("a mass-deletion-intended marker with a reason in the PR body allows the merge without reading the files", () => {
+  const gh = fakeGh({ changedFiles: 500, removed: 500, baseFiles: 500, body: "Extracts the subtree.\n\nmass-deletion-intended: the subtree moved to its own repository (extract-submodule --land)\n" });
+  assert.equal(merge("gh pr merge 7 --squash", gh).action, "allow");
+  assert.equal(gh.calls.length, 1);
+  assert.equal(merge("gh pr merge 7", fakeGh({ changedFiles: 500, removed: 500, baseFiles: 500, body: "mass-deletion-intended:" })).action, "deny");
+});
+
+test("the merge guard fails open: no gh, a timeout, garbage, a closed PR, an unknown selector, or switched off", () => {
+  assert.equal(merge("gh pr merge 7", fakeGh({ fail: true })).action, "allow");
+  assert.equal(merge("gh pr merge 7", fakeGh({ garbage: true })).action, "allow");
+  assert.equal(merge("gh pr merge 7", fakeGh({ changedFiles: 500, removed: 500, baseFiles: 500, state: "MERGED" })).action, "allow");
+  const dynamic = fakeGh({ changedFiles: 500, removed: 500, baseFiles: 500 });
+  assert.equal(merge('gh pr merge "$url"', dynamic).action, "allow");
+  assert.equal(dynamic.calls.length, 0);
+  assert.equal(merge("gh pr merge 7", fakeGh({ changedFiles: 500, removed: 500, baseFiles: 500 }), { AGENT_MERGE_GUARD: "off" }).action, "allow");
+  // the real runner with no gh on PATH
+  assert.equal(classify("gh pr merge 7", { cwd: dirs.plain, env: { ...env, PATH: "/nonexistent" }, home }).action, "allow");
+});
+
+test("repository and selector forms are read as gh reads them: -R, a URL, flags with values, gh api PUT .../merge", () => {
+  const withRepo = fakeGh({ changedFiles: 50, removed: 50, baseFiles: 50 });
+  assert.equal(merge("gh pr merge -R example/repo --squash --subject 'Fix a thing' 7", withRepo).action, "deny");
+  assert.deepEqual(withRepo.calls[0].slice(0, 6), ["gh", "pr", "view", "7", "-R", "example/repo"]);
+  const viaApi = fakeGh({ changedFiles: 50, removed: 50, baseFiles: 50, number: 7 });
+  assert.equal(merge("gh api -X PUT repos/example/repo/pulls/7/merge -f merge_method=squash", viaApi).action, "deny");
+  assert.equal(merge("gh api repos/example/repo/pulls/7", fakeGh({ changedFiles: 50, removed: 50, baseFiles: 50 })).action, "allow");
+  assert.equal(merge("cd /tmp && gh pr merge 7 && echo done", fakeGh({ changedFiles: 50, removed: 50, baseFiles: 50 })).action, "deny");
+});
+
+test("the real runner reads the answer through gh within the hook's budget", { skip: spawnSync("sh", ["-c", "command -v gh"]).status !== 0 }, () => {
+  const bin = path.join(root, "bin-gh");
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(path.join(bin, "gh"), `#!/bin/sh
+case "$1 $2" in
+  "pr view") echo '{"number":7,"url":"https://github.com/example/repo/pull/7","state":"OPEN","baseRefName":"main","changedFiles":40,"deletions":900,"body":""}' ;;
+  "api repos/example/repo/pulls/7/files?per_page=100&page=1") i=0; while [ $i -lt 40 ]; do echo removed; i=$((i+1)); done ;;
+  api*) case "$2" in *git/trees*) printf '40\\tfalse\\n' ;; *) exit 1 ;; esac ;;
+esac
+`, { mode: 0o755 });
+  const started = Date.now();
+  const output = run(JSON.stringify({ tool_name: "Bash", tool_input: { command: "gh pr merge 7" }, cwd: dirs.plain }), { env: { ...env, PATH: `${bin}:${env.PATH}` } });
+  assert.match(JSON.parse(output).hookSpecificOutput.permissionDecisionReason, /removes 40 of the 40 files/u);
+  assert.ok(Date.now() - started < LIMITS.massDeletion.budgetMilliseconds);
+});
+
+// A real repository for the partial-working-tree cases.
+const gitIdentity = { ...process.env, GIT_AUTHOR_NAME: "Fixture", GIT_AUTHOR_EMAIL: "f@example.invalid", GIT_COMMITTER_NAME: "Fixture", GIT_COMMITTER_EMAIL: "f@example.invalid", GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null" };
+const sh = (cwd, ...args) => { const r = spawnSync("git", args, { cwd, encoding: "utf8", env: gitIdentity }); assert.equal(r.status, 0, r.stderr); return r.stdout; };
+function sourceRepository(name, files = 20) {
+  const dir = path.join(root, "partial", name);
+  mkdirSync(dir, { recursive: true });
+  sh(dir, "init", "-q", "--initial-branch=main");
+  for (let i = 0; i < files; i += 1) { mkdirSync(path.join(dir, "src"), { recursive: true }); writeFileSync(path.join(dir, "src", `m${i}.mjs`), `export const n = ${i};\n`); }
+  writeFileSync(path.join(dir, "package.json"), "{}\n");
+  sh(dir, "add", "--all"); sh(dir, "commit", "-qm", "base");
+  return dir;
+}
+const partial = (command, dir) => classify(command, { cwd: dir, env, home });
+
+test("git commit -a and git add -A|-u are denied in a --no-checkout clone where tracked files are absent", () => {
+  const origin = sourceRepository("origin");
+  const dir = path.join(root, "partial", "clone");
+  sh(root, "clone", "-q", "--no-checkout", origin, dir);
+  sh(dir, "read-tree", "HEAD");
+  sh(dir, "checkout-index", "-f", "--", "package.json");
+  for (const command of ["git commit -am wip", "git commit -qam 'repair'", "git commit --all -m x", "git add -A", "git add -u", "git add --all", "git add -u .", "git -C . commit -a -m x"]) {
+    const verdict = partial(command, dir);
+    assert.equal(verdict.action, "deny", command);
+    assert.match(verdict.reason, /20 of 21 tracked files are missing/u);
+    assert.match(verdict.reason, /git add -- <path>/u);
+  }
+  // what the incident should have done, and anything that does not stage absences
+  for (const command of ["git add -- package.json", "git add package.json", "git commit -m wip", "git commit -qm 'fix a thing'", "git add -u -- src", "git status -- package.json", "git commit -m'-a'"]) {
+    assert.equal(partial(command, dir).action, "allow", command);
+  }
+});
+
+test("git commit -a is denied when core.sparseCheckout is set, and allowed in a complete working tree, even after a deletion", () => {
+  const sparse = sourceRepository("sparse");
+  sh(sparse, "config", "core.sparseCheckout", "true");
+  const verdict = partial("git commit -am wip", sparse);
+  assert.equal(verdict.action, "deny");
+  assert.match(verdict.reason, /core\.sparseCheckout is set/u);
+  const whole = sourceRepository("whole");
+  assert.equal(partial("git commit -am wip", whole).action, "allow");
+  assert.equal(partial("git add -A", whole).action, "allow");
+  rmSync(path.join(whole, "src", "m0.mjs"));
+  assert.equal(partial("git commit -am 'remove one file'", whole).action, "allow", "one deleted file is not a mass");
+  for (let i = 0; i < 12; i += 1) rmSync(path.join(whole, "src", `m${i + 1}.mjs`));
+  assert.equal(partial("git commit -am 'remove thirteen files'", whole).action, "deny", "13 of 21 tracked files absent is more than half of the repository");
+});
+
+test("the partial-worktree check is bounded: where git cannot answer in time the commit is allowed", () => {
+  const dir = sourceRepository("slow");
+  const calls = [];
+  const never = (command, args) => { calls.push([command, ...args]); return { status: null, stdout: "", truncated: false }; };
+  assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: never }).action, "allow");
+  assert.ok(calls.length >= 1 && calls.every((call) => call[0] === "git"));
+  // a deleted list longer than the buffer is a mass whatever its length
+  const overflow = (command, args) => (args.includes("config") ? { status: 1, stdout: "" } : { status: null, stdout: "a\0b\0", truncated: true });
+  assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: overflow }).action, "deny");
+  assert.ok(LIMITS.massDeletion.worktreeMilliseconds + LIMITS.massDeletion.worktreeMilliseconds < 15_000);
 });
