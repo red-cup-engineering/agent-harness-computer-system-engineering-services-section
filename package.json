@@ -126,7 +126,6 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/red-cup-engineering/computer-engineering-services-section.git",
-    "directory": "services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section"
+    "url": "git+https://github.com/red-cup-engineering/agent-harness-computer-system-engineering-services-section.git"
   }
 }
