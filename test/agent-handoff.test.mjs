@@ -147,3 +147,29 @@ test("unknown or invalid context usage never becomes a zero-token or stale measu
   "a later incomplete request must not inherit an earlier, dangerously smaller context reading");
   assert.equal(contextOfClaudeTranscript(row("<synthetic>", { input_tokens: 700 })), null);
 });
+
+test("CLI handoff selects actual transcript meter and current occurrence over stale draft values", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "handoff-meter-"));
+  const draft = input();
+  draft.from = { sessionId: "old-s", agentId: "old-a", model: "guessed-model", contextTokens: 1 };
+  const inputFile = path.join(dir, "draft.json");
+  const transcript = path.join(dir, "observed.jsonl");
+  writeFileSync(inputFile, JSON.stringify(draft));
+  writeFileSync(transcript, JSON.stringify({ type: "assistant",
+    message: { model: "real-model", usage: { input_tokens: 7, cache_read_input_tokens: 15_000 } } }) + "\n");
+  const result = JSON.parse(execFileSync("node", [script, "--input", inputFile,
+    "--out", dir, "--transcript", transcript, "--session", "actual-s", "--agent", "actual-a"], { encoding: "utf8" }));
+  assert.equal(result.contextTokens, 15_007);
+  let record = JSON.parse(readFileSync(result.file, "utf8"));
+  assert.deepEqual(record.from, { sessionId: "actual-s", agentId: "actual-a", model: "real-model", contextTokens: 15_007 });
+  // An incomplete newer provider record cannot be concealed with yesterday's
+  // manual estimate: preserve unknown capacity for the next actor.
+  writeFileSync(transcript, JSON.stringify({ type: "assistant",
+    message: { model: "real-model", usage: { cache_read_input_tokens: 15_000 } } }) + "\n");
+  const next = JSON.parse(execFileSync("node", [script, "--input", inputFile,
+    "--out", dir, "--transcript", transcript, "--session", "actual-s", "--agent", "actual-a"], { encoding: "utf8" }));
+  assert.equal(next.contextTokens, null);
+  record = JSON.parse(readFileSync(next.file, "utf8"));
+  assert.equal(record.from.contextTokens, null);
+  assert.equal(record.from.model, "real-model");
+});
