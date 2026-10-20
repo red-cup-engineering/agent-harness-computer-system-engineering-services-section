@@ -73,7 +73,7 @@ test("a scheduled Actor hand can begin with one native World journal read withou
     instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" },
   });
   for (const fragment of [
-    "`metroplat_world_command` with `{\\\"line\\\":\\\"journal\\\"}`",
+    "`metroplat_world_command` with `{\"line\":\"journal\"}`",
     "one-external-call entry",
     "authenticated Actor's current Work journal",
     "A journal read is not Work acceptance",
