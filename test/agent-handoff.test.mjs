@@ -79,3 +79,39 @@ test("the command writes the record to its address and prints the successor prom
   const refused = spawnSync("node", [script, "--input", path.join(dir, "missing.json")], { encoding: "utf8" });
   assert.equal(refused.status, 2);
 });
+
+test("real original message references and receiving receipts survive the existing durable handoff", () => {
+  const value = input();
+  value.evidence.messages = [
+    { source: "fixture:chat-turn:1", channel: "chat", sourceAuthority: "not-a-signed-actor-message" },
+    { source: "fixture:chat-turn:2", channel: "chat", sourceAuthority: "not-a-signed-actor-message" },
+  ];
+  value.evidence.receipts = [
+    { ref: "fixture:pr-review:1", stage: "source-review-only" },
+    { ref: "fixture:consumer:unknown", stage: "independent-receiving-not-yet-observed" },
+  ];
+  const record = formHandoffRecord(value, { now: new Date("2026-10-20T15:40:00Z") });
+  assert.deepEqual(record.evidence.messages, value.evidence.messages,
+    "two occurrences remain distinct even when their texts concern the same work");
+  assert.deepEqual(record.evidence.receipts, value.evidence.receipts,
+    "a source review receipt stays separate from an unobserved consumer");
+  const prompt = renderHandoffPrompt(record);
+  assert.match(prompt, /## Source messages\n- source: fixture:chat-turn:1/u);
+  assert.match(prompt, /source: fixture:chat-turn:2/u);
+  assert.match(prompt, /## Receiving and effect receipts\n- ref: fixture:pr-review:1/u);
+  assert.match(prompt, /not independently accepted Work/u);
+  assert.match(prompt, /receiver|receiving/u);
+  const legacy = formHandoffRecord(input(), { now: new Date("2026-10-20T15:40:00Z") });
+  assert.deepEqual(legacy.evidence.messages, [], "existing handoffs without message references remain readable");
+  assert.deepEqual(legacy.evidence.receipts, []);
+  assert.doesNotMatch(renderHandoffPrompt(legacy), /## Source messages/u);
+});
+
+test("message and receiving evidence retain the existing secret refusal boundary", () => {
+  const bad = input();
+  bad.evidence.messages = [{ source: "chat-turn", instruction: "password=hunter2hunter2" }];
+  assert.throws(() => formHandoffRecord(bad), /never secrets/u);
+  const alsoBad = input();
+  alsoBad.evidence.receipts = [{ token: "ghp_abcdefghijklmnopqrstuvwxyz0123456789" }];
+  assert.throws(() => formHandoffRecord(alsoBad), /never secrets/u);
+});
