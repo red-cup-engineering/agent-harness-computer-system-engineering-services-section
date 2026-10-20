@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { contextOfClaudeTranscript, DEFAULT_MAX_BYTES, formHandoffRecord, renderHandoffPrompt } from "../src/agent-handoff.mjs";
 
 const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "../scripts/write-agent-handoff.mjs");
@@ -172,4 +172,39 @@ test("CLI handoff selects actual transcript meter and current occurrence over st
   record = JSON.parse(readFileSync(next.file, "utf8"));
   assert.equal(record.from.contextTokens, null);
   assert.equal(record.from.model, "real-model");
+});
+
+
+test("the original CLI atomically publishes immutable addressed handoff records across repeated Session writes", (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), "handoff-immutable-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const inputFile = path.join(dir, "in.json");
+  writeFileSync(inputFile, JSON.stringify(input()));
+  // Fix the observed test clock in a child process, not in the real host:
+  // two independent processes must produce the SAME canonical handoff ID.
+  const code = [
+    "const RealDate=Date;",
+    "globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:['2026-10-20T00:00:00.000Z']));}};",
+    `process.argv=[process.execPath,${JSON.stringify(script)},"--input",${JSON.stringify(inputFile)},"--out",${JSON.stringify(dir)}];`,
+    `await import(${JSON.stringify(pathToFileURL(script).href)});`,
+  ].join("\n");
+  const write = () => spawnSync(process.execPath, ["--input-type=module", "--eval", code], { encoding: "utf8" });
+  const first = write();
+  assert.equal(first.status, 0, first.stderr);
+  const one = JSON.parse(first.stdout);
+  const bytes = readFileSync(one.file, "utf8");
+  const second = write();
+  assert.equal(second.status, 0, second.stderr);
+  assert.equal(JSON.parse(second.stdout).id, one.id);
+  assert.equal(readFileSync(one.file, "utf8"), bytes, "duplicate publication cannot replace the original addressed record");
+  assert.equal(readdirSync(dir).filter(name => name.endsWith(".tmp")).length, 0,
+    "neither attempt retains an in-flight staging file");
+  // If custody is corrupted, a later attempt must refuse, never truncate or
+  // silently repair a distinct, potentially externally witnessed artifact.
+  writeFileSync(one.file, '{"broken":true}\n');
+  const denied = write();
+  assert.equal(denied.status, 2);
+  assert.match(denied.stderr, /existing handoff at the same content address has different bytes/u);
+  assert.equal(readFileSync(one.file, "utf8"), '{"broken":true}\n');
+  assert.equal(readdirSync(dir).filter(name => name.endsWith(".tmp")).length, 0);
 });
