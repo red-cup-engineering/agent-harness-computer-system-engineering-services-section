@@ -77,7 +77,11 @@ export function formHandoffRecord(input, { now = new Date(), maxBytes = DEFAULT_
     work: { id: text(input.work?.id, "work.id", { max: 200 }), title: text(input.work?.title, "work.title", { optional: true, max: 200 }) ?? null },
     goal: text(input.goal, "goal"),
     state: Object.fromEntries(LIST_FIELDS.map((field) => [field, list(state[field], `state.${field}`)])),
-    evidence: Object.fromEntries(["commits", "prs", "files", "commands", "messages", "receipts"].map((field) => [field, list(evidence[field], `evidence.${field}`)])),
+    evidence: {
+      ...Object.fromEntries(["commits", "prs", "files", "commands"].map((field) => [field, list(evidence[field], `evidence.${field}`)])),
+      ...(evidence.messages === undefined ? {} : { messages: list(evidence.messages, "evidence.messages") }),
+      ...(evidence.receipts === undefined ? {} : { receipts: list(evidence.receipts, "evidence.receipts") }),
+    },
   };
   if (body.state.nextSteps.length === 0) throw new TypeError("state.nextSteps is required: a handoff with no next step is a report, not a handoff");
   const credential = credentialIn(body);
