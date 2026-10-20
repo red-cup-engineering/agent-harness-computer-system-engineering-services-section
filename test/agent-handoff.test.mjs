@@ -115,3 +115,35 @@ test("message and receiving evidence retain the existing secret refusal boundary
   alsoBad.evidence.receipts = [{ token: "ghp_abcdefghijklmnopqrstuvwxyz0123456789" }];
   assert.throws(() => formHandoffRecord(alsoBad), /never secrets/u);
 });
+
+test("unknown or invalid context usage never becomes a zero-token or stale measured Session budget", () => {
+  const row = (model, usage) => JSON.stringify({ type: "assistant", message: { model, usage } });
+  const normal = contextOfClaudeTranscript(row("claude-sonnet", { input_tokens: 10 }));
+  assert.deepEqual(normal, { model: "claude-sonnet", contextTokens: 10 }, "absent optional cache counters are zero");
+  const complete = contextOfClaudeTranscript(row("claude-sonnet", {
+    input_tokens: 2, cache_read_input_tokens: 15_000, cache_creation_input_tokens: 4_000,
+  }));
+  assert.equal(complete.contextTokens, 19_002);
+  for (const bad of [
+    { cache_read_input_tokens: 10 },
+    { input_tokens: "100" },
+    { input_tokens: 10, cache_read_input_tokens: -1 },
+    { input_tokens: 10, cache_creation_input_tokens: "400" },
+    { input_tokens: Number.MAX_SAFE_INTEGER, cache_read_input_tokens: 1 },
+  ]) {
+    const reading = contextOfClaudeTranscript(row("claude-sonnet", bad));
+    assert.deepEqual(reading, { model: "claude-sonnet", contextTokens: null },
+      "missing/malformed context is unmeasured, never inferred to be zero");
+    const handoff = input();
+    handoff.from = reading;
+    const saved = formHandoffRecord(handoff, { now: new Date("2026-10-20T18:00:00Z") });
+    assert.equal(saved.from.contextTokens, null,
+      "a successor's actual original handoff does not claim an unknown usage measurement");
+  }
+  assert.deepEqual(contextOfClaudeTranscript([
+    row("earlier", { input_tokens: 800 }),
+    row("latest", { input_tokens: 30, cache_read_input_tokens: -1 }),
+  ].join("\n")), { model: "latest", contextTokens: null },
+  "a later incomplete request must not inherit an earlier, dangerously smaller context reading");
+  assert.equal(contextOfClaudeTranscript(row("<synthetic>", { input_tokens: 700 })), null);
+});
