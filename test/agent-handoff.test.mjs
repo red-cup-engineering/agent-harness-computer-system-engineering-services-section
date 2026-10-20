@@ -102,8 +102,8 @@ test("real original message references and receiving receipts survive the existi
   assert.match(prompt, /not independently accepted Work/u);
   assert.match(prompt, /receiver|receiving/u);
   const legacy = formHandoffRecord(input(), { now: new Date("2026-10-20T15:40:00Z") });
-  assert.deepEqual(legacy.evidence.messages, [], "existing handoffs without message references remain readable");
-  assert.deepEqual(legacy.evidence.receipts, []);
+  assert.equal(Object.hasOwn(legacy.evidence, "messages"), false, "historical v1 handoff payloads must not acquire new empty fields and change their content address");
+  assert.equal(Object.hasOwn(legacy.evidence, "receipts"), false, "historical v1 handoff payloads must keep the old canonical form");
   assert.doesNotMatch(renderHandoffPrompt(legacy), /## Source messages/u);
 });
 
