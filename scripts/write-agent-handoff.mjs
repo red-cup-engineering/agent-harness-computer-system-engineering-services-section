@@ -16,7 +16,15 @@ try {
   const input = JSON.parse(readFileSync(inputPath === "-" ? 0 : inputPath, "utf8"));
   const transcript = one("--transcript");
   const measured = transcript === undefined ? null : contextOfClaudeTranscript(readFileSync(transcript, "utf8"));
-  input.from = { ...(measured ?? {}), ...(one("--session") ? { sessionId: one("--session") } : {}), ...(one("--agent") ? { agentId: one("--agent") } : {}), ...input.from };
+  // Actual transcript testimony outranks caller-authored handoff estimates. A
+  // supplied but unreadable transcript has unknown usage, not the caller's
+  // previous estimate. Explicit CLI occurrence binding outranks an old draft.
+  input.from = {
+    ...(input.from ?? {}),
+    ...(transcript === undefined ? {} : measured ?? { model: null, contextTokens: null }),
+    ...(one("--session") ? { sessionId: one("--session") } : {}),
+    ...(one("--agent") ? { agentId: one("--agent") } : {}),
+  };
   const record = formHandoffRecord(input);
   const dir = one("--out") ?? process.env.AGENT_HANDOFF_DIR ?? path.join(process.cwd(), "data/state/agent-handoffs");
   mkdirSync(dir, { recursive: true });
