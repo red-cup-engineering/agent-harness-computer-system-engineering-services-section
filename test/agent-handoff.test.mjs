@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { contextOfClaudeTranscript, DEFAULT_MAX_BYTES, formHandoffRecord, renderHandoffPrompt } from "../src/agent-handoff.mjs";
 
 const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "../scripts/write-agent-handoff.mjs");
@@ -78,4 +78,133 @@ test("the command writes the record to its address and prints the successor prom
   assert.match(prompt, /You continue Work work:ledger/u);
   const refused = spawnSync("node", [script, "--input", path.join(dir, "missing.json")], { encoding: "utf8" });
   assert.equal(refused.status, 2);
+});
+
+test("real original message references and receiving receipts survive the existing durable handoff", () => {
+  const value = input();
+  value.evidence.messages = [
+    { source: "fixture:chat-turn:1", channel: "chat", sourceAuthority: "not-a-signed-actor-message" },
+    { source: "fixture:chat-turn:2", channel: "chat", sourceAuthority: "not-a-signed-actor-message" },
+  ];
+  value.evidence.receipts = [
+    { ref: "fixture:pr-review:1", stage: "source-review-only" },
+    { ref: "fixture:consumer:unknown", stage: "independent-receiving-not-yet-observed" },
+  ];
+  const record = formHandoffRecord(value, { now: new Date("2026-10-20T15:40:00Z") });
+  assert.deepEqual(record.evidence.messages, value.evidence.messages,
+    "two occurrences remain distinct even when their texts concern the same work");
+  assert.deepEqual(record.evidence.receipts, value.evidence.receipts,
+    "a source review receipt stays separate from an unobserved consumer");
+  const prompt = renderHandoffPrompt(record);
+  assert.match(prompt, /## Source messages\n- source: fixture:chat-turn:1/u);
+  assert.match(prompt, /source: fixture:chat-turn:2/u);
+  assert.match(prompt, /## Receiving and effect receipts\n- ref: fixture:pr-review:1/u);
+  assert.match(prompt, /not independently accepted Work/u);
+  assert.match(prompt, /receiver|receiving/u);
+  const legacy = formHandoffRecord(input(), { now: new Date("2026-10-20T15:40:00Z") });
+  assert.equal(Object.hasOwn(legacy.evidence, "messages"), false, "historical v1 handoff payloads must not acquire new empty fields and change their content address");
+  assert.equal(Object.hasOwn(legacy.evidence, "receipts"), false, "historical v1 handoff payloads must keep the old canonical form");
+  assert.doesNotMatch(renderHandoffPrompt(legacy), /## Source messages/u);
+});
+
+test("message and receiving evidence retain the existing secret refusal boundary", () => {
+  const bad = input();
+  bad.evidence.messages = [{ source: "chat-turn", instruction: "password=hunter2hunter2" }];
+  assert.throws(() => formHandoffRecord(bad), /never secrets/u);
+  const alsoBad = input();
+  alsoBad.evidence.receipts = [{ token: "ghp_abcdefghijklmnopqrstuvwxyz0123456789" }];
+  assert.throws(() => formHandoffRecord(alsoBad), /never secrets/u);
+});
+
+test("unknown or invalid context usage never becomes a zero-token or stale measured Session budget", () => {
+  const row = (model, usage) => JSON.stringify({ type: "assistant", message: { model, usage } });
+  const normal = contextOfClaudeTranscript(row("claude-sonnet", { input_tokens: 10 }));
+  assert.deepEqual(normal, { model: "claude-sonnet", contextTokens: 10 }, "absent optional cache counters are zero");
+  const complete = contextOfClaudeTranscript(row("claude-sonnet", {
+    input_tokens: 2, cache_read_input_tokens: 15_000, cache_creation_input_tokens: 4_000,
+  }));
+  assert.equal(complete.contextTokens, 19_002);
+  for (const bad of [
+    { cache_read_input_tokens: 10 },
+    { input_tokens: "100" },
+    { input_tokens: 10, cache_read_input_tokens: -1 },
+    { input_tokens: 10, cache_creation_input_tokens: "400" },
+    { input_tokens: Number.MAX_SAFE_INTEGER, cache_read_input_tokens: 1 },
+  ]) {
+    const reading = contextOfClaudeTranscript(row("claude-sonnet", bad));
+    assert.deepEqual(reading, { model: "claude-sonnet", contextTokens: null },
+      "missing/malformed context is unmeasured, never inferred to be zero");
+    const handoff = input();
+    handoff.from = reading;
+    const saved = formHandoffRecord(handoff, { now: new Date("2026-10-20T18:00:00Z") });
+    assert.equal(saved.from.contextTokens, null,
+      "a successor's actual original handoff does not claim an unknown usage measurement");
+  }
+  assert.deepEqual(contextOfClaudeTranscript([
+    row("earlier", { input_tokens: 800 }),
+    row("latest", { input_tokens: 30, cache_read_input_tokens: -1 }),
+  ].join("\n")), { model: "latest", contextTokens: null },
+  "a later incomplete request must not inherit an earlier, dangerously smaller context reading");
+  assert.equal(contextOfClaudeTranscript(row("<synthetic>", { input_tokens: 700 })), null);
+});
+
+test("CLI handoff selects actual transcript meter and current occurrence over stale draft values", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "handoff-meter-"));
+  const draft = input();
+  draft.from = { sessionId: "old-s", agentId: "old-a", model: "guessed-model", contextTokens: 1 };
+  const inputFile = path.join(dir, "draft.json");
+  const transcript = path.join(dir, "observed.jsonl");
+  writeFileSync(inputFile, JSON.stringify(draft));
+  writeFileSync(transcript, JSON.stringify({ type: "assistant",
+    message: { model: "real-model", usage: { input_tokens: 7, cache_read_input_tokens: 15_000 } } }) + "\n");
+  const result = JSON.parse(execFileSync("node", [script, "--input", inputFile,
+    "--out", dir, "--transcript", transcript, "--session", "actual-s", "--agent", "actual-a"], { encoding: "utf8" }));
+  assert.equal(result.contextTokens, 15_007);
+  let record = JSON.parse(readFileSync(result.file, "utf8"));
+  assert.deepEqual(record.from, { sessionId: "actual-s", agentId: "actual-a", model: "real-model", contextTokens: 15_007 });
+  // An incomplete newer provider record cannot be concealed with yesterday's
+  // manual estimate: preserve unknown capacity for the next actor.
+  writeFileSync(transcript, JSON.stringify({ type: "assistant",
+    message: { model: "real-model", usage: { cache_read_input_tokens: 15_000 } } }) + "\n");
+  const next = JSON.parse(execFileSync("node", [script, "--input", inputFile,
+    "--out", dir, "--transcript", transcript, "--session", "actual-s", "--agent", "actual-a"], { encoding: "utf8" }));
+  assert.equal(next.contextTokens, null);
+  record = JSON.parse(readFileSync(next.file, "utf8"));
+  assert.equal(record.from.contextTokens, null);
+  assert.equal(record.from.model, "real-model");
+});
+
+
+test("the original CLI atomically publishes immutable addressed handoff records across repeated Session writes", (t) => {
+  const dir = mkdtempSync(path.join(tmpdir(), "handoff-immutable-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const inputFile = path.join(dir, "in.json");
+  writeFileSync(inputFile, JSON.stringify(input()));
+  // Fix the observed test clock in a child process, not in the real host:
+  // two independent processes must produce the SAME canonical handoff ID.
+  const code = [
+    "const RealDate=Date;",
+    "globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:['2026-10-20T00:00:00.000Z']));}};",
+    `process.argv=[process.execPath,${JSON.stringify(script)},"--input",${JSON.stringify(inputFile)},"--out",${JSON.stringify(dir)}];`,
+    `await import(${JSON.stringify(pathToFileURL(script).href)});`,
+  ].join("\n");
+  const write = () => spawnSync(process.execPath, ["--input-type=module", "--eval", code], { encoding: "utf8" });
+  const first = write();
+  assert.equal(first.status, 0, first.stderr);
+  const one = JSON.parse(first.stdout);
+  const bytes = readFileSync(one.file, "utf8");
+  const second = write();
+  assert.equal(second.status, 0, second.stderr);
+  assert.equal(JSON.parse(second.stdout).id, one.id);
+  assert.equal(readFileSync(one.file, "utf8"), bytes, "duplicate publication cannot replace the original addressed record");
+  assert.equal(readdirSync(dir).filter(name => name.endsWith(".tmp")).length, 0,
+    "neither attempt retains an in-flight staging file");
+  // If custody is corrupted, a later attempt must refuse, never truncate or
+  // silently repair a distinct, potentially externally witnessed artifact.
+  writeFileSync(one.file, '{"broken":true}\n');
+  const denied = write();
+  assert.equal(denied.status, 2);
+  assert.match(denied.stderr, /existing handoff at the same content address has different bytes/u);
+  assert.equal(readFileSync(one.file, "utf8"), '{"broken":true}\n');
+  assert.equal(readdirSync(dir).filter(name => name.endsWith(".tmp")).length, 0);
 });

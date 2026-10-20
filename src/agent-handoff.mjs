@@ -56,7 +56,7 @@ export function credentialIn(value) {
 /**
  * Validate and form a handoff record.
  * @param {object} input `{ work: {id, title?}, goal, state?: {done, decisions, openQuestions, nextSteps, blockers, doNotRedo},
- *   evidence?: {commits, prs, files, commands}, from?: {sessionId, agentId, model, contextTokens} }`
+ *   evidence?: {commits, prs, files, commands, messages, receipts}, from?: {sessionId, agentId, model, contextTokens} }`
  * @param {{now?: Date, maxBytes?: number}} [options]
  */
 export function formHandoffRecord(input, { now = new Date(), maxBytes = DEFAULT_MAX_BYTES } = {}) {
@@ -77,7 +77,11 @@ export function formHandoffRecord(input, { now = new Date(), maxBytes = DEFAULT_
     work: { id: text(input.work?.id, "work.id", { max: 200 }), title: text(input.work?.title, "work.title", { optional: true, max: 200 }) ?? null },
     goal: text(input.goal, "goal"),
     state: Object.fromEntries(LIST_FIELDS.map((field) => [field, list(state[field], `state.${field}`)])),
-    evidence: Object.fromEntries(["commits", "prs", "files", "commands"].map((field) => [field, list(evidence[field], `evidence.${field}`)])),
+    evidence: {
+      ...Object.fromEntries(["commits", "prs", "files", "commands"].map((field) => [field, list(evidence[field], `evidence.${field}`)])),
+      ...(evidence.messages === undefined ? {} : { messages: list(evidence.messages, "evidence.messages") }),
+      ...(evidence.receipts === undefined ? {} : { receipts: list(evidence.receipts, "evidence.receipts") }),
+    },
   };
   if (body.state.nextSteps.length === 0) throw new TypeError("state.nextSteps is required: a handoff with no next step is a report, not a handoff");
   const credential = credentialIn(body);
@@ -106,21 +110,34 @@ export function renderHandoffPrompt(record) {
     ...section("Pull requests", record.evidence.prs),
     ...section("Files", record.evidence.files),
     ...section("Commands that ran", record.evidence.commands),
+    ...section("Source messages", record.evidence.messages ?? []),
+    ...section("Receiving and effect receipts", record.evidence.receipts ?? []),
+    "The predecessor\x27s reported Done is not independently accepted Work. Preserve original Actor message provenance, inspect current receiving conditions, and distinguish source change, submission, integration, installation and independently received effects before declaring closure.",
     `Handoff record ${record.id}. When you end, record the outcome against Work ${record.work.id}.`,
   ].join("\n");
 }
 
-/** Context size and model of the last billable request in a Claude Code transcript's text, reading usage fields only. */
+/** The last billable Claude request's reported context and model, from provider usage only.
+ * An absent required input-token count, malformed present cache count or unsafe
+ * sum is UNKNOWN, not zero. A later partial response replaces an earlier count:
+ * retaining yesterday's smaller context reading would under-budget a successor.
+ * Cache counters are optional usage fields; absence means no reported cache use.
+ */
 export function contextOfClaudeTranscript(content) {
   let last = null;
+  const tokens = (value) => Number.isSafeInteger(value) && value >= 0 ? value : null;
   for (const line of content.split("\n")) {
     if (!line.includes('"usage"')) continue;
     let row;
     try { row = JSON.parse(line); } catch { continue; }
     const usage = row?.message?.usage;
-    if (row?.type !== "assistant" || usage === undefined || usage === null || row.message.model === "<synthetic>") continue;
-    const n = (value) => (Number.isSafeInteger(value) && value >= 0 ? value : 0);
-    last = { model: row.message.model, contextTokens: n(usage.input_tokens) + n(usage.cache_read_input_tokens) + n(usage.cache_creation_input_tokens) };
+    if (row?.type !== "assistant" || usage === null || typeof usage !== "object" || Array.isArray(usage)
+      || typeof row.message.model !== "string" || row.message.model.length === 0 || row.message.model === "<synthetic>") continue;
+    const input = tokens(usage.input_tokens);
+    const optional = (name) => Object.hasOwn(usage, name) ? tokens(usage[name]) : 0;
+    const read = optional("cache_read_input_tokens"), made = optional("cache_creation_input_tokens");
+    const sum = input === null || read === null || made === null ? null : input + read + made;
+    last = { model: row.message.model, contextTokens: sum !== null && Number.isSafeInteger(sum) ? sum : null };
   }
   return last;
 }
