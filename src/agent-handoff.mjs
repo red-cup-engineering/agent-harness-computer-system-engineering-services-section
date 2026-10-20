@@ -117,17 +117,27 @@ export function renderHandoffPrompt(record) {
   ].join("\n");
 }
 
-/** Context size and model of the last billable request in a Claude Code transcript's text, reading usage fields only. */
+/** The last billable Claude request's reported context and model, from provider usage only.
+ * An absent required input-token count, malformed present cache count or unsafe
+ * sum is UNKNOWN, not zero. A later partial response replaces an earlier count:
+ * retaining yesterday's smaller context reading would under-budget a successor.
+ * Cache counters are optional usage fields; absence means no reported cache use.
+ */
 export function contextOfClaudeTranscript(content) {
   let last = null;
+  const tokens = (value) => Number.isSafeInteger(value) && value >= 0 ? value : null;
   for (const line of content.split("\n")) {
     if (!line.includes('"usage"')) continue;
     let row;
     try { row = JSON.parse(line); } catch { continue; }
     const usage = row?.message?.usage;
-    if (row?.type !== "assistant" || usage === undefined || usage === null || row.message.model === "<synthetic>") continue;
-    const n = (value) => (Number.isSafeInteger(value) && value >= 0 ? value : 0);
-    last = { model: row.message.model, contextTokens: n(usage.input_tokens) + n(usage.cache_read_input_tokens) + n(usage.cache_creation_input_tokens) };
+    if (row?.type !== "assistant" || usage === null || typeof usage !== "object" || Array.isArray(usage)
+      || typeof row.message.model !== "string" || row.message.model.length === 0 || row.message.model === "<synthetic>") continue;
+    const input = tokens(usage.input_tokens);
+    const optional = (name) => Object.hasOwn(usage, name) ? tokens(usage[name]) : 0;
+    const read = optional("cache_read_input_tokens"), made = optional("cache_creation_input_tokens");
+    const sum = input === null || read === null || made === null ? null : input + read + made;
+    last = { model: row.message.model, contextTokens: sum !== null && Number.isSafeInteger(sum) ? sum : null };
   }
   return last;
 }
