@@ -64,3 +64,28 @@ test("the generated harness briefing qualifies Actor testimony before Work and r
   assert.doesNotMatch(markdown, /When Pat names something to do, open it on the board/u,
     "a spoken subject must not be upgraded to demand without classification and authorization");
 });
+
+test("a scheduled Actor hand can begin with one native World journal read without fake receipt or L-Space authority", (t) => {
+  const root = agencyFixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const { markdown } = projectAgentBriefing({
+    agencyRoot: root, holder: "password:pat", principal: "Pat",
+    instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" },
+  });
+  for (const fragment of [
+    "`metroplat_world_command` with `{\\\"line\\\":\\\"journal\\\"}`",
+    "one-external-call entry",
+    "authenticated Actor's current Work journal",
+    "A journal read is not Work acceptance",
+    "an assistant does not inherit all of Pat's personal authority",
+    "Check the currently advertised and authorized knowledge-reader operations",
+    "declared directory unavailable",
+    "not proof that the Actor's L-Space is empty",
+    "documented one-external-call failure boundary",
+    "preserve its actual submission reference",
+    "never mark submission as executed Work",
+    "No prompt authorizes evading a host policy refusal",
+  ]) assert.ok(markdown.includes(fragment), `scheduled World-entry contract missing: ${fragment}`);
+  assert.doesNotMatch(markdown, /Enter with `metroplat_world-connect`, then speak/u);
+  assert.doesNotMatch(markdown, /knowledge garden/u);
+});
