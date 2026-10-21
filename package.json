@@ -3,7 +3,7 @@
   "version": "0.2.6",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "exports": {
     ".": "./src/harness-lifecycle.mjs",
     "./harness-lifecycle": "./src/harness-lifecycle.mjs",
@@ -131,5 +131,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/red-cup-engineering/agent-harness-computer-system-engineering-services-section.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
   }
 }
