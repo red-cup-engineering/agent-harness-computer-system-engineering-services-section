@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/agent-harness-computer-system-engineering-services-section",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
   "license": "UNLICENSED",
@@ -62,7 +62,8 @@
     "./connector-call-evidence": "./src/connector-call-evidence.mjs",
     "./harness-world-verbs": "./src/harness-world-verbs.mjs",
     "./world-roots": "./src/world-roots.mjs",
-    "./scope-failure-record": "./src/scope-failure-record.mjs"
+    "./scope-failure-record": "./src/scope-failure-record.mjs",
+    "./session-journal-hook": "./src/session-journal-hook.mjs"
   },
   "bin": {
     "record-harness-skill-selection": "scripts/record-harness-skill-selection.mjs",
@@ -80,7 +81,9 @@
     "character-store-log": "./services/claude-code-harness-services-section/scripts/character-store-log.mjs",
     "install-host-resource-hook": "scripts/install-host-resource-hook.mjs",
     "write-agent-handoff": "scripts/write-agent-handoff.mjs",
-    "project-agent-briefing": "scripts/project-agent-briefing.mjs"
+    "project-agent-briefing": "scripts/project-agent-briefing.mjs",
+    "session-journal-hook": "src/session-journal-hook.mjs",
+    "install-session-journal-hook": "scripts/install-session-journal-hook.mjs"
   },
   "files": [
     "src",
@@ -92,7 +95,7 @@
     "!**/lib/legacy/**"
   ],
   "scripts": {
-    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/agent-handoff.mjs && node --check scripts/write-agent-handoff.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs && node --check src/scope-failure-record.mjs && node --check test/scope-failure-record.test.mjs",
+    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/agent-handoff.mjs && node --check scripts/write-agent-handoff.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs && node --check src/scope-failure-record.mjs && node --check test/scope-failure-record.test.mjs && node --check src/session-journal-hook.mjs && node --check scripts/install-session-journal-hook.mjs && node --check test/session-journal-hook.test.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

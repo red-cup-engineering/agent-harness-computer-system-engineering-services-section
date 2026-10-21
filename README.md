@@ -26,6 +26,15 @@ harness engineering beneath an inference provider.
   `.claude/` and `.codex/`; `scripts/install-host-resource-hook.mjs` installs a reference to the
   same owning source for one user where no projection runs. `--settings` selects the configuration;
   the former copied-hook `--dest` is retired. Unrelated handlers in shared groups are retained.
+- `src/session-journal-hook.mjs` is the session journal: a SessionStart hook that replays the
+  node's work board, read-only, through the work arena and store of the release the node runs (its
+  Guix profile, so a promoted release is read under its own law), and starts every session with
+  what its offices owe, what their enterprises owe, what waits on the Leader, what no
+  micro-enterprise is seated for (`market`) and what has stood still, longest-idle first. A session
+  otherwise starts from its prompt alone, so work recorded only on the board waits until someone
+  names it. It never blocks a session: a board it cannot read is said in the journal.
+  `scripts/install-session-journal-hook.mjs --settings <file> -- <hook arguments>` installs a
+  reference to this owning source, keeping every other hook and replacing an earlier journal entry.
 - `codex-harness-services-section` owns the Codex dialect (`codex exec`), the
   Codex node's durable task rail and the Codex runtime projection.
 - `claude-code-harness-services-section` owns the Claude Code dialect
