@@ -27,6 +27,13 @@ import { shellQuote } from "./host-resource-hook.mjs";
 
 /** The owing party the board names when no micro-enterprise is seated for a thread. */
 export const UNSEATED = "market";
+/**
+ * Unseated demand is pressure to found what takes it, never a question for the Leader (Leader,
+ * 2026-10-21: "there should be autonomus pressure to create offices and services and enterprises").
+ * A micro-enterprise is founded as an enterprise record and an empty root, its lead taken by the
+ * founder's bid against a target (2026-09-30 note on micro-enterprises holding their own work).
+ */
+export const UNSEATED_TITLE = "No micro-enterprise is seated for these: take one with an office you hold, or found the office, service or micro-enterprise that would take it (an enterprise record and an empty root, its lead taken by your bid against a target). None of these waits on the Leader";
 export const DEFAULT_LEADERS = Object.freeze(["emsenn", "urn:leader:emsenn", "leader"]);
 export const DEFAULT_STALE_DAYS = 3;
 export const DEFAULT_LIMIT = 8;
@@ -103,7 +110,7 @@ export function journalText(journal, { host = "this node", limit = DEFAULT_LIMIT
   section("Owed by your offices: carry these to their receiving condition before new work", journal.mine, owing);
   section("Owed by your offices' enterprises", journal.houses, owing);
   section("Waiting on the Leader: say each one to them plainly, once", journal.leader, owing);
-  section(`No micro-enterprise is seated for these`, journal.unseated, () => "");
+  section(UNSEATED_TITLE, journal.unseated, () => "");
   section(`Standing still ${journal.staleDays} days or more`, journal.stale, owing);
   if (journal.mine.length + journal.houses.length + journal.leader.length + journal.unseated.length + journal.stale.length === 0) lines.push("", "Nothing is owed or standing still.");
   return lines.join("\n");
