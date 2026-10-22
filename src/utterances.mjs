@@ -17,6 +17,7 @@
  * These occurrence-aware addresses are what articulations cite and what `knowing` consumes.
  */
 import fs from "node:fs";
+import { attachUtteranceSpeechActs } from "./utterance-speech-acts.mjs";
 import path from "node:path";
 import readline from "node:readline";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
@@ -175,7 +176,7 @@ export const claudeTranscriptDirectory = (cwd, home = process.env.HOME ?? "") =>
  *  them from `arrivalsSince` when no `since` is given); transcripts from `transcripts` directories.
  *  and Codex prompt-history files from `codex`. With `cache` (carrier directory → machine-state
  *  path), each carrier is read through its cache. */
-export async function readUtterances({ root, transcripts = [], codex = [], since, until, arrivalsSince = "2026-09-01", cache }, options = {}) {
+export async function readUtterances({ root, transcripts = [], codex = [], since, until, arrivalsSince = "2026-09-01", cache, speechActProposals, speechActInterpreter }, options = {}) {
   const end = until ?? new Date().toISOString();
   const prompts = [];
   if (root !== undefined) prompts.push(...await readPromptArrivals(root, datesOf(since ?? arrivalsSince, end), { ...options, cache: cache?.(root) }));
@@ -184,5 +185,9 @@ export async function readUtterances({ root, transcripts = [], codex = [], since
   const untyped = new Set(prompts.filter((p) => p.typed === false && typeof p.session === "string"
     && p.session.trim() !== "" && typeof p.at === "string" && Number.isFinite(Date.parse(p.at))
     && utteranceText(p.text) !== null).map((p) => utterance({ ...p, text: utteranceText(p.text) }).address));
-  return deriveUtterances(prompts, { since, until: end }).filter((u) => !untyped.has(u.address));
+  const selected = deriveUtterances(prompts, { since, until: end }).filter((u) => !untyped.has(u.address));
+  // Optional source-bound analyst readout. Never reclassify, drop or promote the
+  // original message automatically; missing proposals mean unassessed evidence.
+  return speechActProposals === undefined ? selected
+    : attachUtteranceSpeechActs(selected, speechActProposals, { interpretedBy: speechActInterpreter });
 }
