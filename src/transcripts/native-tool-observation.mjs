@@ -1,9 +1,8 @@
-// Recovered native tool accounting: bounded read of the source already observed by a CLI carrier.
+// Recovered native tool accounting: bounded read of source observed by the CLI carrier.
+// The full provider-neutral transcript dialects are restored in 561-group/session-transcript-dialects.
 // Only structural counts leave this module, never prompt, arguments, outputs, paths, or call ids.
 import { lstatSync, readFileSync } from "node:fs";
 import { projectCodexToolAccounting } from "./codex-tool-accounting.mjs";
-import { claudeSessionTranscriptDialect } from "./claude-dialect.mjs";
-import { codexSessionTranscriptDialect } from "./codex-dialect.mjs";
 
 export const DEFAULT_ACCOUNTING_MAX_BYTES = 4 * 1024 * 1024;
 export function projectClaudeToolAccounting(rows) {
@@ -12,7 +11,9 @@ export function projectClaudeToolAccounting(rows) {
   let malformedCallRows = 0;
   for (const row of rows) {
     if (row?.isSidechain === true) continue;
-    for (const call of claudeSessionTranscriptDialect.toolCallsOf(row)) {
+    for (const block of row?.type === "assistant" && Array.isArray(row.message?.content) ? row.message.content : []) {
+      if (block?.type !== "tool_use" || typeof block.name !== "string" || block.name.length === 0) continue;
+      const call = { name: block.name, callId: typeof block.id === "string" ? block.id : null };
       if (!call.callId) { malformedCallRows++; continue; }
       if (!calls.has(call.callId)) calls.set(call.callId, { name: call.name, result: false, failed: false, bytes: 0, retry: errorsByName.has(call.name) });
     }
@@ -44,8 +45,8 @@ export function projectClaudeToolAccounting(rows) {
 export function observeNativeToolAccounting({ runtime, evidence, before = Infinity, maxBytes = DEFAULT_ACCOUNTING_MAX_BYTES } = {}) {
   if (runtime !== "claude" && runtime !== "codex") throw new TypeError("unknown transcript dialect");
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new TypeError("maxBytes must be positive");
-  const dialect = runtime === "claude" ? claudeSessionTranscriptDialect : codexSessionTranscriptDialect;
-  const unavailable = (reason, details = {}) => Object.freeze({ type: "NativeToolAccountingObservation", provider: dialect.providerId, status: "unavailable", reason, ...details });
+  const providerId = runtime === "claude" ? "urn:ame:claude-session-activity-provider" : "urn:ame:codex-session-activity-provider";
+  const unavailable = (reason, details = {}) => Object.freeze({ type: "NativeToolAccountingObservation", provider: providerId, status: "unavailable", reason, ...details });
   if (typeof evidence !== "string" || !evidence.includes("#")) return unavailable("missing-observed-source");
   const source = evidence.slice(0, evidence.lastIndexOf("#"));
   if (!source.endsWith(".jsonl")) return unavailable("not-a-native-transcript");
@@ -61,7 +62,7 @@ export function observeNativeToolAccounting({ runtime, evidence, before = Infini
       const at = Date.parse(row?.timestamp);
       if (Number.isFinite(at) && at <= before) rows.push(row);
     }
-    return Object.freeze({ type: "NativeToolAccountingObservation", provider: dialect.providerId, status: "observed",
+    return Object.freeze({ type: "NativeToolAccountingObservation", provider: providerId, status: "observed",
       sourceBytes: st.size, observedRows: rows.length, malformedRows,
       accounting: runtime === "codex" ? projectCodexToolAccounting(rows) : projectClaudeToolAccounting(rows) });
   } catch (error) { return unavailable(error?.code === "ENOENT" ? "missing-native-transcript" : "native-transcript-unreadable"); }
