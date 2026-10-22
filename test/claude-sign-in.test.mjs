@@ -171,3 +171,24 @@ test("headers sign in once, then answer from the cache, naming the session when 
   assert.doesNotMatch(readFileSync(cache.fileOf(input.mcpUrl, CHARACTER.id), "utf8"), /correct horse/u);
   assert.deepEqual(authorizationHeaders("t"), { Authorization: "Bearer t" });
 });
+
+test("a sign-in after the token expired does not read the agency records for the username again", async (t) => {
+  const node = await standInNode();
+  const runtime = mkdtempSync(path.join(tmpdir(), "claude-sign-in-test-"));
+  t.after(() => { node.close(); rmSync(runtime, { recursive: true, force: true }); });
+  let now = 1_000_000;
+  const cache = tokenCache({ runtimeDirectory: runtime, now: () => now });
+  let read = 0;
+  const input = { mcpUrl: `${node.origin}/mcp`, holder: CHARACTER.id, cache, username: () => { read += 1; return "emsenn.claude"; }, password: () => "correct horse" };
+  await headersFor(input);
+  now += 4_000_000;
+  await headersFor(input);
+  assert.equal(read, 1);
+  assert.equal(cache.usernameOf(input.mcpUrl, CHARACTER.id), "emsenn.claude");
+});
+
+test("one sign-in organ that the agency records once per section is still one sign-in", () => {
+  const first = organ({ sectionPath: "emsenn/services/561-group" });
+  assert.equal(signInOf([first, { ...first, sectionPath: "emsenn/services" }, { ...first, sectionPath: "emsenn" }], CHARACTER).username, "emsenn.claude");
+  assert.throws(() => signInOf([first, { ...first, id: "other" }], CHARACTER), /2 metroplat sign-in organs/u);
+});
