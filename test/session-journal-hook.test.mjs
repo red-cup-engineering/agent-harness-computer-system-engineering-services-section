@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
 import { test } from "node:test";
 
-import { DEFAULT_LEADERS, JOURNAL_HOOK_FILE, UNSEATED, journalHookEntry, journalOf, journalText, lastMovedAt, main, mergeJournalHooks, parseArguments, readJournal, sessionStartOutput } from "../src/session-journal-hook.mjs";
+import { DEFAULT_LEADERS, JOURNAL_HOOK_FILE, UNSEATED, UNSEATED_TITLE, journalHookEntry, journalOf, journalText, lastMovedAt, main, mergeJournalHooks, parseArguments, readJournal, sessionStartOutput } from "../src/session-journal-hook.mjs";
 
 const AT = "2026-10-21T12:00:00.000Z";
 const daysBefore = (n) => new Date(Date.parse(AT) - n * 86_400_000).toISOString();
@@ -117,4 +117,13 @@ test("merging keeps every other hook and replaces an earlier journal entry where
   assert.deepEqual(merged.PreToolUse, existing.PreToolUse);
   assert.deepEqual(merged.SessionStart, [{ hooks: [{ type: "command", command: "other-start" }] }, entry]);
   assert.deepEqual(mergeJournalHooks(merged, entry), merged);
+});
+
+test("unseated demand is told as pressure to take or found, never as the Leader's", () => {
+  const journal = journalOf({ threads: [thread("orphan", { owes: [UNSEATED], opened: 15 })] }, { workArena, at: AT });
+  const text = journalText(journal, { host: "node.test" });
+  assert.ok(text.includes(`${UNSEATED_TITLE} (1):`));
+  assert.match(UNSEATED_TITLE, /found the office, service or micro-enterprise/u);
+  assert.match(UNSEATED_TITLE, /None of these waits on the Leader/u);
+  assert.equal(journal.leader.length, 0);
 });
