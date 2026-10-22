@@ -35,6 +35,11 @@ export const UNSEATED = "market";
  */
 export const UNSEATED_TITLE = "No micro-enterprise is seated for these: take one with an office you hold, or found the office, service or micro-enterprise that would take it (an enterprise record and an empty root, its lead taken by your bid against a target). None of these waits on the Leader";
 export const DEFAULT_LEADERS = Object.freeze(["emsenn", "urn:leader:emsenn", "leader"]);
+/**
+ * The Group's standing correction of its own bias, read before any work (Leader, 2026-10-21: "Our
+ * ecosystem has a bias toward 'x not proven, not finishing it'"; the rules it names hold the rest).
+ */
+export const BIAS_CHECK = "Before deciding anything: do not refuse, defer or shrink work because a market is small today, a buyer is unproven, or the earnings look small; size a market by its dated growth, not one snapshot (reason-toward-doing-not-toward-refusing). A check that could not run is unknown: retry it or ask, never decline on it. Carry work to its receiving condition; a stop is a board thread owed by something that runs, never a name in a note (routine-work-is-landed-not-deferred). Work no one holds founds what takes it, without the Leader (unseated-demand-founds-what-takes-it).";
 export const DEFAULT_STALE_DAYS = 3;
 export const DEFAULT_LIMIT = 8;
 const DAY_MS = 86_400_000;
@@ -99,7 +104,7 @@ const clip = (text, size) => { const flat = String(text).replace(/\s+/gu, " ").t
 
 /** The journal as the few lines a session reads before its prompt. */
 export function journalText(journal, { host = "this node", limit = DEFAULT_LIMIT } = {}) {
-  const lines = [`Work board on ${host}: ${journal.open} open of ${journal.threads} threads (read ${journal.at}). Act on a thread by a move on the board (ops_open_work, world-command); this journal is a reading, not an authority.`];
+  const lines = [`Work board on ${host}: ${journal.open} open of ${journal.threads} threads (read ${journal.at}). Act on a thread by a move on the board (ops_open_work, world-command); this journal is a reading, not an authority.`, "", BIAS_CHECK];
   const section = (title, entries, describe) => {
     if (entries.length === 0) return;
     lines.push("", `${title} (${entries.length}):`);

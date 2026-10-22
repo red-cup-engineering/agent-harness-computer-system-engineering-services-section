@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
 import { test } from "node:test";
 
-import { DEFAULT_LEADERS, JOURNAL_HOOK_FILE, UNSEATED, UNSEATED_TITLE, journalHookEntry, journalOf, journalText, lastMovedAt, main, mergeJournalHooks, parseArguments, readJournal, sessionStartOutput } from "../src/session-journal-hook.mjs";
+import { BIAS_CHECK, DEFAULT_LEADERS, JOURNAL_HOOK_FILE, UNSEATED, UNSEATED_TITLE, journalHookEntry, journalOf, journalText, lastMovedAt, main, mergeJournalHooks, parseArguments, readJournal, sessionStartOutput } from "../src/session-journal-hook.mjs";
 
 const AT = "2026-10-21T12:00:00.000Z";
 const daysBefore = (n) => new Date(Date.parse(AT) - n * 86_400_000).toISOString();
@@ -126,4 +126,10 @@ test("unseated demand is told as pressure to take or found, never as the Leader'
   assert.match(UNSEATED_TITLE, /found the office, service or micro-enterprise/u);
   assert.match(UNSEATED_TITLE, /None of these waits on the Leader/u);
   assert.equal(journal.leader.length, 0);
+});
+
+test("every journal opens with the Group's bias check and the rules that hold it", () => {
+  const text = journalText(journalOf({ threads: [] }, { workArena, at: AT }), { host: "node.test" });
+  assert.ok(text.split("\n").slice(0, 3).includes(BIAS_CHECK));
+  for (const rule of ["reason-toward-doing-not-toward-refusing", "routine-work-is-landed-not-deferred", "unseated-demand-founds-what-takes-it"]) assert.ok(BIAS_CHECK.includes(rule));
 });
