@@ -57,6 +57,8 @@ import { availableParallelism, homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { spendVerdict } from "./spend-breaker.mjs";
+
 export const LOCK_FILE = "agent-heavy.lock";
 /** Memory pressure (percent of the last ten seconds every task stalled on memory) at which the host admits one heavy command at a time. */
 export const PRESSURE_PERCENT = 10;
@@ -1184,6 +1186,8 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   if (!(SHELL_TOOLS.test(tool) || watch) || typeof toolInput?.command !== "string") return undefined;
   const command = toolInput.command;
   if (command.trim() === "" || command.length > LIMITS.maxCommandLength) return undefined;
+  const spent = provider === "claude" ? spendVerdict(input, { env }) : undefined;
+  if (spent !== undefined) return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: spent };
   const lock = lockPath(env);
   const verdict = classify(command, { cwd: input.cwd, env, home, scratchpad: input.scratchpad_dir, lock, run: runner });
   if (verdict.action === "deny") {
