@@ -36,9 +36,9 @@ async function main() {
       const { agencyAt } = await import("@red-cup-engineering/organizing/agency/held");
       const { resolve } = await import("@red-cup-engineering/organizing/agency");
       const agency = agencyAt(options["agency-root"]);
-      const character = [...agency.characters.values()].find((c) => c.id === options.character);
+      const character = [...new Set(agency.characters.values())].find((c) => c.id === options.character);
       if (character === undefined) throw new Error(`the agency records no character ${options.character}`);
-      return signInOf(agency.organs.values(), character, {
+      return signInOf([...new Set(agency.organs.values())], character, {
         resolveCharacter: (of, organ) => resolve(agency, "characters", of, organ.sectionPath)?.id,
       }).username;
     },

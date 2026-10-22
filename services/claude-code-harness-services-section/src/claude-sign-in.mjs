@@ -52,7 +52,10 @@ export function parseEnvironmentFile(text) {
  * @param {{ resolveCharacter?: (of: string, organ: object) => (string | undefined) }} [options]
  */
 export function signInOf(organs, character, { resolveCharacter = () => undefined } = {}) {
-  const found = [...organs].filter((organ) => organ.platform === "metroplat" && /^password:[0-9a-f]{64}$/u.test(organ.account ?? "")
+  // The agency records the same organ once per section it is seen from, so one sign-in can arrive many times.
+  const distinct = new Map();
+  for (const organ of organs) distinct.set(JSON.stringify([organ.id, organ.account, organ.of]), organ);
+  const found = [...distinct.values()].filter((organ) => organ.platform === "metroplat" && /^password:[0-9a-f]{64}$/u.test(organ.account ?? "")
     && (organ.of ?? []).some((of) => of === character.id || of === character.name || resolveCharacter(of, organ) === character.id));
   if (found.length === 0) throw new Error(`no metroplat sign-in organ is of ${character.name ?? character.id}`);
   if (found.length > 1) throw new Error(`${found.length} metroplat sign-in organs are of ${character.name ?? character.id}`);
@@ -189,11 +192,15 @@ export function tokenCache({ runtimeDirectory, now = Date.now }) {
     clientOf(mcpUrl, holder) {
       try { const record = JSON.parse(readFileSync(fileOf(mcpUrl, holder), "utf8")); return typeof record.clientId === "string" ? record.clientId : undefined; } catch { return undefined; }
     },
-    write(mcpUrl, holder, { accessToken, expiresInSeconds, clientId }) {
+    /** The username the holder signed in as, kept so a sign-in after expiry need not read the agency records again. */
+    usernameOf(mcpUrl, holder) {
+      try { const record = JSON.parse(readFileSync(fileOf(mcpUrl, holder), "utf8")); return typeof record.username === "string" ? record.username : undefined; } catch { return undefined; }
+    },
+    write(mcpUrl, holder, { accessToken, expiresInSeconds, clientId, username }) {
       mkdirSync(directory, { recursive: true, mode: 0o700 });
       chmodSync(directory, 0o700);
       const file = fileOf(mcpUrl, holder), staging = `${file}.${process.pid}.tmp`;
-      writeFileSync(staging, `${JSON.stringify({ accessToken, clientId, expiresAt: now() + expiresInSeconds * 1000 })}\n`, { mode: 0o600 });
+      writeFileSync(staging, `${JSON.stringify({ accessToken, clientId, username, expiresAt: now() + expiresInSeconds * 1000 })}\n`, { mode: 0o600 });
       chmodSync(staging, 0o600);
       renameSync(staging, file);
     },
@@ -208,18 +215,18 @@ export function authorizationHeaders(accessToken, sessionId) {
 /**
  * The headers for a session: the cached token while it lives, else a fresh sign-in (kept in the cache).
  * `holder` names who the token is kept for (the harness character); `username` and `password` are
- * read only when a sign-in is needed, so a live token answers without reading the agency records.
+ * read only when a sign-in is needed, so a live token answers without reading the agency records, and a username the cache already holds is not read from them again.
  *
  * @param {{ mcpUrl: string, holder: string, username: () => string | Promise<string>, password: () => string | Promise<string>, cache: ReturnType<typeof tokenCache>, sessionId?: string, fetchImpl?: typeof fetch }} input
  */
 export async function headersFor({ mcpUrl, holder, username, password, cache, sessionId, fetchImpl }) {
   const cached = cache.read(mcpUrl, holder);
   if (cached !== undefined) return authorizationHeaders(cached.accessToken, sessionId);
-  const name = await username(), secret = await password();
+  const name = cache.usernameOf(mcpUrl, holder) ?? await username(), secret = await password();
   // A client the node no longer knows is registered again, once.
   const known = cache.clientOf(mcpUrl, holder);
   const signedIn = await signInForToken({ mcpUrl, username: name, password: secret, clientId: known, fetchImpl })
     .catch((error) => { if (known === undefined) throw error; return signInForToken({ mcpUrl, username: name, password: secret, fetchImpl }); });
-  cache.write(mcpUrl, holder, signedIn);
+  cache.write(mcpUrl, holder, { ...signedIn, username: name });
   return authorizationHeaders(signedIn.accessToken, sessionId);
 }
