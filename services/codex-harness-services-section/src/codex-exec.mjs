@@ -8,6 +8,7 @@
  * tests on their existing terms.
  */
 import { closeSync, existsSync, openSync, readdirSync, readSync, statSync } from "node:fs";
+import { observeNativeToolAccounting } from "../../../src/transcripts/native-tool-observation.mjs";
 import { homedir } from "node:os";
 import path from "node:path";
 
@@ -168,7 +169,9 @@ export const codexDialect = Object.freeze({
     const message = rawMessage === undefined || rawMessage.trim() === "" ? undefined : rawMessage.trim();
     const frontier = existsSync(artifact(directory, "exit-code")) ? artifact(directory, "exit-code") : artifact(directory, "events.jsonl");
     const carrier = thread === undefined || !existsSync(frontier) ? undefined : readCodexSessionContext(thread, { before: statSync(frontier).mtimeMs });
-    return { thread, message, usage, errors, ...(carrier === undefined ? {} : { model: carrier.model, reasoningEffort: carrier.reasoningEffort, carrierEvidence: carrier.evidence, ...(carrier.allowance === undefined ? {} : { allowance: carrier.allowance }) }) };
+    const toolAccounting = carrier !== undefined && existsSync(artifact(directory, "exit-code"))
+      ? observeNativeToolAccounting({ runtime: "codex", evidence: carrier.evidence, before: statSync(frontier).mtimeMs }) : undefined;
+    return { thread, message, usage, errors, ...(toolAccounting === undefined ? {} : { toolAccounting }), ...(carrier === undefined ? {} : { model: carrier.model, reasoningEffort: carrier.reasoningEffort, carrierEvidence: carrier.evidence, ...(carrier.allowance === undefined ? {} : { allowance: carrier.allowance }) }) };
   },
   transient: transientCodexFailure,
   startupFailure: requiredMcpStartupFailure,

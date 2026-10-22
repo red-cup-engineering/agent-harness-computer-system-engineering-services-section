@@ -23,6 +23,7 @@
  */
 import { createHash } from "node:crypto";
 import { closeSync, existsSync, openSync, readdirSync, readSync, statSync } from "node:fs";
+import { observeNativeToolAccounting } from "../../../src/transcripts/native-tool-observation.mjs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -187,10 +188,13 @@ export const claudeCodeDialect = Object.freeze({
         : typeof result.result === "string" && result.result.trim() !== "" ? result.result.trim() : undefined;
     const frontier = existsSync(artifact(directory, "exit-code")) ? artifact(directory, "exit-code") : artifact(directory, "events.jsonl");
     const carrier = thread === undefined || !existsSync(frontier) ? undefined : readClaudeSessionContext(thread, { before: statSync(frontier).mtimeMs });
+    const toolAccounting = carrier !== undefined && existsSync(artifact(directory, "exit-code"))
+      ? observeNativeToolAccounting({ runtime: "claude", evidence: carrier.evidence, before: statSync(frontier).mtimeMs }) : undefined;
     const usage = claudeTokenUsage(result?.usage);
     return {
       thread, message, failed, errors,
       ...(usage === undefined ? {} : { usage }),
+      ...(toolAccounting === undefined ? {} : { toolAccounting }),
       ...(allowance === undefined ? {} : { allowance }),
       ...(carrier === undefined ? {} : { model: carrier.model, reasoningEffort: carrier.reasoningEffort, carrierEvidence: carrier.evidence }),
     };
