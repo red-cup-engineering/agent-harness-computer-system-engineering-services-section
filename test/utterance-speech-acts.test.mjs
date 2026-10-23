@@ -100,3 +100,17 @@ test("bad provenance, unknown analyst, duplicate candidates or forged approval f
   assert.throws(() => bindUtteranceSpeechActs(source, [{ ...candidate, authority: "leader" }],
     { interpretedBy: "analyst" }), /exactly/u);
 });
+
+
+test("conflicted arrival identity cannot be given a confident speech-act label", () => {
+  const source = { ...observed(), sourceOccurrence: {
+    status: "ambiguous-distinct-arrival-ids-share-legacy-address",
+    witnessedEventCount: 2,
+  } };
+  assert.throws(() => bindUtteranceSpeechActs(source,
+    [span("Please implement the correction.", "order")], { interpretedBy: "reader" }),
+    /original source disambiguation/u);
+  const unassessed = attachUtteranceSpeechActs([source], {}, { interpretedBy: "reader" });
+  assert.equal(unassessed[0].speechActs, null);
+  assert.equal(source.speechActs, undefined);
+});
