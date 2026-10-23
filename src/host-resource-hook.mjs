@@ -20,8 +20,8 @@
  *              cargo, make, and git or gh operations that stat a large working tree). It is rewritten
  *              (`updatedInput.command`) to run in one of the host's heavy SLOTS, each a kernel lock
  *              (`flock(1)` on a file every process of the user shares), at `nice -n 10` and idle I/O
- *              class. The host has a quarter of its processors' worth of slots (AGENT_HEAVY_SLOTS
- *              overrides), and ONE while memory is under pressure: when every task stalled on memory
+ *              class. The host admits one heavy command by default (AGENT_HEAVY_SLOTS
+ *              explicitly overrides), and ONE while memory or I/O is under pressure: when every task stalled on memory
  *              for at least AGENT_HEAVY_PRESSURE percent (default 10) of the last ten seconds
  *              (/proc/pressure/memory, "full avg10"), admitting more heavy work only deepens the stall.
  *              A command takes the first free slot, else waits on one;
@@ -53,7 +53,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from "node:fs";
-import { availableParallelism, homedir, tmpdir, totalmem } from "node:os";
+import { homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -860,7 +860,9 @@ function heavyTool(name, argv, report, here = {}, ctx = undefined) {
     case "cargo": { const s = sub(); if (s !== undefined && !CARGO_LIGHT.has(s)) report.heavy("cargo"); return; }
     case "lake": if (LAKE_HEAVY.has(sub())) report.heavy("lake"); return;
     case "guix": if (GUIX_HEAVY.has(sub(["-L", "--load-path", "-C", "--cores", "-M", "--max-jobs"]))) report.heavy("guix"); return;
-    case "npm": case "pnpm": case "bun": if (NPM_INSTALL.has(sub(["-C", "--dir", "--prefix", "--filter", "-F", "--workspace", "-w"]))) report.heavy(`${name} install`); return;
+    case "node": case "nodejs": if (args.some(arg => arg === "--test" || arg.startsWith("--test="))) report.heavy("node tests"); return;
+    case "npm": case "pnpm": case "bun": if (NPM_INSTALL.has(sub(["-C", "--dir", "--prefix", "--filter", "-F", "--workspace", "-w"])) || ["run", "run-script", "test", "build", "exec", "x"].includes(sub())) report.heavy(`${name} install or script`); return;
+    case "npx": report.heavy("npx script"); return;
     case "yarn": { const s = sub(["--cwd"]); if (s === undefined || NPM_INSTALL.has(s)) report.heavy("yarn install"); return; }
     case "pip": case "pip3": if (sub() === "install") report.heavy("pip install"); return;
     case "uv": if (["sync", "add", "lock", "pip"].includes(sub())) report.heavy("uv"); return;
@@ -943,13 +945,13 @@ export function memoryPressure(read = () => readFileSync("/proc/pressure/memory"
   } catch { return undefined; }
 }
 
-/** How many heavy commands the host admits at once: a quarter of its processors (at least one), or AGENT_HEAVY_SLOTS; one under memory pressure. */
-export function heavySlots({ env = process.env, cpus = availableParallelism(), pressure = memoryPressure() } = {}) {
+/** CPU count does not measure disk capacity. Parallel admission is explicit; pressure always reduces it to one. */
+export function heavySlots({ env = process.env, pressure = memoryPressure(), ioPressure = memoryPressure(() => readFileSync("/proc/pressure/io", "utf8")) } = {}) {
   const configured = Math.floor(Number(env.AGENT_HEAVY_SLOTS));
-  const slots = Number.isFinite(configured) && configured >= 1 ? configured : Math.max(1, Math.floor(cpus / 4));
+  const slots = Number.isFinite(configured) && configured >= 1 ? configured : 1;
   const threshold = Number(env.AGENT_HEAVY_PRESSURE);
   const limit = env.AGENT_HEAVY_PRESSURE !== undefined && env.AGENT_HEAVY_PRESSURE !== "" && Number.isFinite(threshold) ? threshold : PRESSURE_PERCENT;
-  return pressure !== undefined && pressure >= limit ? 1 : slots;
+  return (pressure !== undefined && pressure >= limit) || (ioPressure !== undefined && ioPressure >= limit) ? 1 : slots;
 }
 
 /** The lock files of `slots` slots: the first is `lock` itself, so a command an agent wraps in `flock <lock>` by hand holds slot one. */
@@ -996,33 +998,32 @@ export function waitSeconds(toolInput, env = process.env) {
  * `waitOn` (one of them; spread at random so waiters do not all queue on the first). A busy host ends
  * the command with exit 75 and a message to the agent. A marker the command touches first tells a slot
  * that was busy from a command that ran and itself exited 75, so a command never runs twice. A lock
- * file the command's sandbox cannot read leaves it to run unlocked rather than fail.
+ * file the command's sandbox cannot read refuses admission; it never runs unlocked.
  */
 export function serializedCommand(original, { lock, locks = [lock], wait, nice = true, ionice = true, waitOn = locks[Math.floor(Math.random() * locks.length)] }) {
   const runner = (flockArgs, file) => ["AGENT_HEAVY_LOCK_HELD=1", nice ? "nice -n 10" : "", ionice ? "$_ah_io" : "", `flock ${flockArgs} -E ${BUSY_EXIT_CODE} ${file} bash -c "$_ah_c"`].filter(Boolean).join(" ");
-  const ran = `[ -e "$_AH_RAN" ]`;
+  const ran = `[ -s "$_AH_RAN" ]`;
   const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
   return [
-    `_ah_c=${shellQuote(`: >"$_AH_RAN"; ${original}`)}`,
+    `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
-    // With no readable slot, preserve the existing once-only unconfined path before requiring
-    // storage beside the locks. A failed allocation for a readable slot never takes this path.
+    // Missing admission infrastructure cannot turn into unbounded work.
     '_ah_readable=',
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ ! -r "$_ah_l" ] || _ah_readable=1; done`,
     // The marker sits beside the slot locks, whose directory the hook has just made sure exists: XDG_RUNTIME_DIR can
     // name a directory that is not there yet (a host still booting has no /run/user/<uid>), and then the marker could
     // not be written and a command that itself exits 75 could run again in the next slot.
-    // Allocate an exclusive private directory: the child marker starts absent without deleting
-    // a guessed pathname. Only our own file and the empty allocation are removed afterwards.
-    `if [ -z "$_ah_readable" ]; then bash -c ${shellQuote(original)}; else _AH_RAN_DIR=$(mktemp -d ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { _AH_RAN="$_AH_RAN_DIR/ran"; export _AH_RAN`,
+    // Allocate an exclusive private marker file: it starts empty and the command's first act makes it non-empty,
+    // so no guessed pathname is deleted. Only our own file is unlinked afterwards; no rm or rmdir appears, which
+    // Claude Code's removal check refuses in a rewritten command.
+    `if [ -z "$_ah_readable" ]; then printf '%s\\n' 'agent-heavy: no readable admission lock; this command did not run' >&2; (exit ${BUSY_EXIT_CODE}); else _AH_RAN=$(mktemp ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { export _AH_RAN`,
     `_ah_rc=${BUSY_EXIT_CODE}`,
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ -r "$_ah_l" ] || continue; ${runner("-n", '"$_ah_l"')}; _ah_rc=$?; { [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}; } || break; done`,
     `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
-    `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; else bash -c "$_ah_c"; _ah_rc=$?; fi`,
+    `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; fi`,
     "fi",
     `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || printf '%s\\n' ${shellQuote(busy)} >&2`,
-    'if [ -e "$_AH_RAN" ]; then unlink -- "$_AH_RAN"; fi',
-    'rmdir -- "$_AH_RAN_DIR"',
+    'unlink -- "$_AH_RAN"',
     '(exit "$_ah_rc")',
     '}',
     'fi',
@@ -1192,6 +1193,9 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   // A session confined to an allow-list (`dontAsk`, the carriers') has its permission rules checked
   // against the rewritten command, which no allowed pattern matches: it is denied there, never rewritten.
   if (input.permission_mode === "dontAsk") return undefined;
+  if (!watch && verdict.action === "serialize" && !env.AGENT_HEAVY_LOCK_HELD && (!onPath("flock", env) || !ensureLockFile(lock))) {
+    return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "host-resource guard: heavy-command admission unavailable (flock or shared lock); this command did not run" };
+  }
   let wrapped;
   const hand = verdict.action === "serialize" && verdict.locked ? handWrappedHeavy(command, lock) : undefined;
   if (!watch && verdict.action === "serialize" && (!verdict.locked || hand) && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
@@ -1276,7 +1280,7 @@ function enabledHooksConfiguration(text) {
 }
 
 /** Actual local projection, never a Codex trust admission or a claim about an already running session. */
-export function writeHostResourceControl({ node, providers = ["claude", "codex"] }) {
+export function writeHostResourceControl({ node, providers = ["claude", "codex"], retiredSources = [], dryRun = false }) {
   node = path.resolve(node);
   if (providers.some(provider => !["claude", "codex"].includes(provider))) throw new TypeError("unknown resource-hook provider");
   const source = fileURLToPath(import.meta.url);
@@ -1292,7 +1296,7 @@ export function writeHostResourceControl({ node, providers = ["claude", "codex"]
   for (const provider of providers) {
     const relative = provider === "claude" ? ".claude/settings.local.json" : ".codex/hooks.json";
     const held = JSON.parse(read(relative) ?? "{}");
-    pending.set(relative, `${JSON.stringify({ ...held, hooks: mergeHostResourceHooks(held.hooks, hookEntries(source, { provider }), node) }, null, 2)}\n`);
+    pending.set(relative, `${JSON.stringify({ ...held, hooks: mergeHostResourceHooks(held.hooks, hookEntries(source, { provider }), node, { retiredSources }) }, null, 2)}\n`);
     if (provider === "codex") pending.set(".codex/config.toml", enabledHooksConfiguration(read(".codex/config.toml") ?? ""));
   }
   // Validate all input before any configuration write; preserve another author's concurrent edit.
@@ -1303,10 +1307,11 @@ export function writeHostResourceControl({ node, providers = ["claude", "codex"]
   }
   for (const [relative, text] of pending) {
     if (expected.get(relative) === text) continue;
+    written.push(relative);
+    if (dryRun) continue;
     const file = path.join(node, relative);
     mkdirSync(path.dirname(file), { recursive: true });
     writeFileSync(file, text, { mode: 0o600 });
-    written.push(relative);
   }
   return Object.freeze({ source, written, codexTrustRequired: providers.includes("codex"), activeSessionGuarded: false });
 }
