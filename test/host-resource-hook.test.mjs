@@ -247,9 +247,9 @@ const TABLE = [
   ["nice -n 5 tar xf a.tar", "plain", "serialize"],
   ["sudo du -sh /", "plain", "serialize"],
   ["time cargo check", "plain", "serialize"],
-  ["npm test", "plain", "allow"],
-  ["npm run build", "plain", "allow"],
-  ["pnpm run test", "plain", "allow"],
+  ["npm test", "plain", "serialize"],
+  ["npm run build", "plain", "serialize"],
+  ["pnpm run test", "plain", "serialize"],
   ["cargo --version", "plain", "allow"],
   ["lake --version", "plain", "allow"],
   ["guix --version", "plain", "allow"],
@@ -258,7 +258,7 @@ const TABLE = [
   ["ls", "plain", "allow"],
   ["cat README.md", "plain", "allow"],
   ["echo hi", "plain", "allow"],
-  ["node --test test/a.test.mjs", "plain", "allow"],
+  ["node --test test/a.test.mjs", "plain", "serialize"],
   ['echo "find / -name x"', "plain", "allow"],
   ['grep "find /" notes.txt', "plain", "allow"],
   ["cat <<'EOF'\nfind / -name x\ntar czf a b\nEOF", "plain", "allow"],
@@ -380,8 +380,8 @@ test("the hook fails open: garbage, empty, partial and foreign events change not
   assert.equal(JSON.parse(odd.stdout).hookSpecificOutput.permissionDecision, "deny");
 });
 
-test("the hook fails open without flock, with an unwritable lock, and when switched off", () => {
-  assert.equal(hook(event("du -sh ."), { ...env, PATH: "/nonexistent" }).stdout, "");
+test("known heavy work refuses without admission infrastructure; the explicit off switch remains", () => {
+  assert.equal(JSON.parse(hook(event("du -sh ."), { ...env, PATH: "/nonexistent" }).stdout).hookSpecificOutput.permissionDecision, "deny");
   assert.equal(hook(event("find / -name x"), { ...env, AGENT_HOST_GUARD: "off" }).stdout, "");
   // A lock under /proc once sent node's recursive mkdir into an endless loop at full CPU.
   for (const unwritable of ["/proc/no-such-dir/agent-heavy.lock", "/proc/self/no/such/dir/agent-heavy.lock", "/sys/no-such-dir/agent-heavy.lock", "/dev/null/agent-heavy.lock"]) {
@@ -389,7 +389,7 @@ test("the hook fails open without flock, with an unwritable lock, and when switc
     const result = spawnSync(process.execPath, [HOOK], { input: event("du -sh ."), env: { ...env, AGENT_HEAVY_LOCK: unwritable }, encoding: "utf8", timeout: 20_000 });
     assert.equal(result.signal, null, `${unwritable} hung the hook for ${Date.now() - started} ms`);
     assert.equal(result.status, 0);
-    assert.equal(result.stdout, "");
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
   }
 });
 
@@ -547,14 +547,14 @@ test("the lock dies with its holder: a killed holder frees the slot at once", { 
   assert.ok(await until(() => !lockHeld()), "freed");
 });
 
-test("a lock file the command cannot read leaves the command to run unlocked, not to fail", { skip: !haveFlock, timeout: 60_000 }, async () => {
+test("a lock removed after admission refuses instead of running the heavy command unlocked", { skip: !haveFlock, timeout: 60_000 }, async () => {
   const gone = path.join(root, "gone", "agent-heavy.lock");
   const log = path.join(root, "unlocked.log");
   const wrapped = rewritten(`du -s /dev/null >/dev/null; echo ran >> ${shellQuote(log)}`, { ...env, AGENT_HEAVY_LOCK: gone });
   rmSync(path.dirname(gone), { recursive: true });
   const { code } = await exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal(code, 0);
-  assert.equal(readFileSync(log, "utf8"), "ran\n");
+  assert.equal(code, BUSY_EXIT_CODE);
+  assert.equal(existsSync(log), false);
 });
 
 test("the original survives quoting whatever it contains", { skip: !haveFlock, timeout: 60_000 }, async () => {
@@ -732,12 +732,13 @@ test("the launcher starts the executable it is handed inside the slice, or direc
   if (!inside) assert.match(bare.stderr, /runs uncontained/u);
 });
 
-test("the host admits a quarter of its processors' worth of heavy commands, one under memory pressure", () => {
-  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0 }), 4);
+test("disk-heavy work is serial by default and explicit parallelism yields to memory or I/O pressure", () => {
+  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0, ioPressure: 0 }), 1);
   assert.equal(heavySlots({ env: {}, cpus: 2, pressure: undefined }), 1);
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2 }), 6);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2, ioPressure: 0 }), 6);
   assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 10 }), 1, "every task stalled on memory a tenth of the time");
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10 }), 4);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4", AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10, ioPressure: 0 }), 4);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4" }, pressure: 0, ioPressure: 10 }), 1);
   assert.equal(memoryPressure(() => "some avg10=5.10 avg60=2.82 avg300=14.13 total=1\nfull avg10=4.99 avg60=2.70 avg300=13.45 total=1\n"), 4.99);
   assert.equal(memoryPressure(() => { throw new Error("no PSI"); }), undefined);
   assert.deepEqual(slotLocks("/run/l", 3), ["/run/l", "/run/l.1", "/run/l.2"]);
@@ -798,7 +799,7 @@ test("the run-once marker sits beside the slot locks, so a missing XDG_RUNTIME_D
 });
 
 test("concurrent commands own distinct run-once markers and remove only their allocations", { skip: !haveFlock, timeout: 15_000 }, async () => {
-  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir);
+  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir, { recursive: true });
   const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
   for (const file of locks) writeFileSync(file, "");
   const before = readdirSync(dir).sort();
@@ -812,7 +813,7 @@ test("concurrent commands own distinct run-once markers and remove only their al
   assert.deepEqual(results.map(result => result.code), [75, 75, 75]);
   const markers = results.map(result => result.stdout.trim());
   assert.equal(new Set(markers).size, 3);
-  for (const marker of markers) assert.equal(path.dirname(path.dirname(marker)), dir);
+  for (const marker of markers) assert.equal(path.dirname(marker), dir);
   assert.deepEqual(readdirSync(dir).sort(), before, "locks survive and every private marker allocation is gone");
   for (const result of results) assert.equal(result.stderr, "");
 });

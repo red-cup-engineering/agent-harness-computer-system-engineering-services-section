@@ -140,3 +140,21 @@ test("actual shared carrier admission selects the existing resource slice", asyn
     } });
   assert.equal(observed, true); assert.equal(result.ok, true);
 });
+
+
+test("dry-run detects a retired source without writing and reconciliation preserves unrelated hooks", t => {
+  const root = scratch(t); mkdirSync(join(root, ".codex"));
+  const retired = "/retired/owner/src/host-resource-hook.mjs";
+  const file = join(root, ".codex/hooks.json");
+  const independent = { matcher: "Read", hooks: [{ type: "command", command: "echo independent" }] };
+  const prior = JSON.stringify({ hooks: { PreToolUse: [independent, ...hookEntries(retired, { provider: "codex" }).PreToolUse] } });
+  writeFileSync(file, prior);
+  const options = { node: root, providers: ["codex"], retiredSources: [retired] };
+  assert.ok(writeHostResourceControl({ ...options, dryRun: true }).written.includes(".codex/hooks.json"));
+  assert.equal(readFileSync(file, "utf8"), prior);
+  writeHostResourceControl(options);
+  const groups = JSON.parse(readFileSync(file)).hooks.PreToolUse;
+  assert.equal(groups.length, 2); assert.deepEqual(groups[0], independent);
+  assert.ok(groups[1].hooks[0].command.includes(source));
+  assert.deepEqual(writeHostResourceControl({ ...options, dryRun: true }).written, []);
+});
