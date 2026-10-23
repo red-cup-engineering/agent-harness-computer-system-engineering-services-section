@@ -5,7 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
-import { decide, run, hookEntries, hostResourceControl, writeHostResourceControl, serializedCommand, BUSY_EXIT_CODE, launcherScript, sliceUnit, isContained } from "../src/host-resource-hook.mjs";
+import { decide, run, hookEntries, hostResourceControl, writeHostResourceControl, serializedCommand, BUSY_EXIT_CODE, launcherScript, sliceUnit, isContained, mergeHostResourceHooks } from "../src/host-resource-hook.mjs";
 
 const source = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const scratch = t => {
@@ -37,6 +37,15 @@ test("both actual provider registrations use one owning executable and retain un
   assert.equal(existsSync(join(root, ".codex/hooks/host-resource-hook.mjs")), false);
   const planned = hostResourceControl({ node: root });
   assert.equal(planned.source, source); assert.deepEqual([...planned.files.keys()], [".codex/hooks.json"]);
+});
+
+test("copies of the guard from other installs collapse to the one projected entry", () => {
+  const unrelated = { matcher: "Bash", hooks: [{ type: "command", command: "node /x/host-resource-hook-audit.mjs" }] };
+  const elsewhere = ["/home/a/agent-harness-source/src/host-resource-hook.mjs", "/srv/app/node_modules/.pnpm/h@0.1.2/node_modules/h/src/host-resource-hook.mjs"]
+    .flatMap(path => hookEntries(path).PreToolUse);
+  const merged = mergeHostResourceHooks({ PreToolUse: [unrelated, ...elsewhere] }, hookEntries(source), "/node");
+  assert.deepEqual(merged.PreToolUse, [unrelated, ...hookEntries(source).PreToolUse]);
+  assert.deepEqual(mergeHostResourceHooks(merged, hookEntries(source), "/node"), merged);
 });
 
 test("invalid configuration refuses projection before any write; no trust is manufactured", t => {

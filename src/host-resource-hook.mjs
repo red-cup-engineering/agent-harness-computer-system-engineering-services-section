@@ -1240,12 +1240,17 @@ export function hostResourceControl({ node, codex = true }) {
   return Object.freeze({ source, files, hooks: hookEntries(source) });
 }
 
-/** Retain unrelated hooks; replace only this guard's original copies and owning reference. */
+/** Retain unrelated hooks; replace every copy of this guard, from whichever install wrote it (a source
+ *  checkout, an app's dependencies, a release), so a node runs the guard once. */
 export function mergeHostResourceHooks(existing, entries, node, { retiredSources = [] } = {}) {
-  const sources = [fileURLToPath(import.meta.url), path.join(node, ".claude/hooks/host-resource-hook.mjs"), path.join(node, ".codex/hooks/host-resource-hook.mjs"), ...retiredSources];
+  const sources = [fileURLToPath(import.meta.url), ...retiredSources];
+  const guard = /\/host-resource-hook\.mjs['"]?(?:\s|$)/u;
   const hooks = { ...existing };
   hooks.PreToolUse = (hooks.PreToolUse ?? []).flatMap(group => {
-    const held = (group.hooks ?? []).filter(handler => !sources.some(source => String(handler.command ?? "").includes(source)));
+    const held = (group.hooks ?? []).filter(handler => {
+      const command = String(handler.command ?? "");
+      return !guard.test(command) && !sources.some(source => command.includes(source));
+    });
     return held.length === 0 ? [] : [{ ...group, hooks: held }];
   });
   hooks.PreToolUse.push(...(entries.PreToolUse ?? []));
