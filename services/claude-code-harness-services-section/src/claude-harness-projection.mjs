@@ -20,7 +20,8 @@
  * The projection owns `.claude/agents/` and `.claude/skills/` whole, so a file there it does not yield is one
  * an earlier projection wrote: projecting again removes it and a check reports it, read from the directories
  * themselves rather than from a list the projection keeps of its own writes. Of `.claude/settings.local.json` the
- * projection owns its local resource-hook registration, the `env` keys of its session budget and `permissions.deny`, and of
+ * projection owns its local resource-hook registration, the `env` keys of its session budget, `permissions.deny` and
+ * `enabledMcpjsonServers` (the approval of exactly the servers it writes, so a session connects without a prompt), and of
  * `.mcp.json` the whole server list; any server it does not name is removed on write and reported
  * as drift on check.
  */
@@ -188,7 +189,7 @@ export function writeClaudeHarness(projection) {
   // the projection that lifted it.
   const retired = RETIRED_SESSION_BUDGET_KEYS.filter((key) => !(key in projection.env) && key in (settings.env ?? {}));
   const env = Object.fromEntries(Object.entries({ ...settings.env, ...projection.env }).filter(([key]) => !retired.includes(key)));
-  writeFileSync(settingsFile, `${JSON.stringify({ ...settings, env, hooks: mergeHostResourceHooks(settings.hooks, projection.hooks, node), permissions: { ...settings.permissions, deny: projection.deny } }, null, 2)}\n`);
+  writeFileSync(settingsFile, `${JSON.stringify({ ...settings, env, hooks: mergeHostResourceHooks(settings.hooks, projection.hooks, node), permissions: { ...settings.permissions, deny: projection.deny }, enabledMcpjsonServers: Object.keys(projection.mcpServers) }, null, 2)}\n`);
   const mcpFile = path.join(node, MCP);
   const mcp = readJson(mcpFile);
   const foreign = Object.keys(mcp.mcpServers ?? {}).filter((name) => !(name in projection.mcpServers));
@@ -217,6 +218,7 @@ export function checkClaudeHarness(projection) {
     if (settings.env?.[key] !== value) drift.push({ path: SETTINGS, reason: `env ${key} is not ${value}` });
   }
   if (JSON.stringify(settings.permissions?.deny ?? []) !== JSON.stringify(projection.deny)) drift.push({ path: SETTINGS, reason: "permissions.deny differs" });
+  if (JSON.stringify(settings.enabledMcpjsonServers ?? []) !== JSON.stringify(Object.keys(projection.mcpServers))) drift.push({ path: SETTINGS, reason: "enabledMcpjsonServers differs" });
   const servers = readJson(path.join(node, MCP)).mcpServers ?? {};
   for (const [name, server] of Object.entries(projection.mcpServers)) {
     if (JSON.stringify(servers[name]) !== JSON.stringify(server)) drift.push({ path: MCP, reason: `server '${name}' differs` });
