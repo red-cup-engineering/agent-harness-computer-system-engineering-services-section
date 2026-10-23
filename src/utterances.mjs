@@ -71,7 +71,7 @@ export function deriveUtterances(prompts, { since, until } = {}) {
     if (!(at >= from && at <= to)) continue;
     const text = utteranceText(prompt.text);
     if (text === null || typeof prompt.session !== "string" || prompt.session.trim() === "") continue;
-    const said = utterance({ session: prompt.session, at: prompt.at, text, carrier: prompt.carrier });
+    const said = utterance({ session: prompt.session, at: prompt.at, text, carrier: prompt.carrier, arrivalIdentity: prompt.arrivalIdentity });
     if (!byAddress.has(said.address)) byAddress.set(said.address, said);
     if (said.arrivalIdentity !== undefined) {
       const identities = arrivalsByAddress.get(said.address) ?? new Set();
