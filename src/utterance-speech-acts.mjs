@@ -59,6 +59,8 @@ function codePointBoundary(source, index) {
  */
 export function bindUtteranceSpeechActs(utterance, proposals, { interpretedBy } = {}) {
   const source = observedSource(utterance);
+  if (utterance.sourceOccurrence?.status === "ambiguous-distinct-arrival-ids-share-legacy-address")
+    refuse("two original arrival identities share one legacy utterance address; classify only after original source disambiguation");
   if (typeof interpretedBy !== "string" || !interpretedBy.trim())
     refuse("interpretedBy must name the actual interpreting actor or system");
   if (!Array.isArray(proposals)) refuse("proposals must be an array");
