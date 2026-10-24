@@ -62,6 +62,11 @@ export const LOCK_FILE = "agent-heavy.lock";
 export const PRESSURE_PERCENT = 10;
 /** The exit status of a heavy command that never ran because the host's one heavy slot stayed busy. */
 export const BUSY_EXIT_CODE = 75;
+// GNU timeout otherwise sends TERM once and can wait forever for a process
+// that ignores it. Keep each caller's requested deadline, finish termination
+// after ten seconds, and let an explicit later --kill-after option win.
+// Export the shell function so nested bash carriers keep the same operation.
+const requestedTimeoutPrelude = 'if ! declare -F timeout >/dev/null; then timeout() { command timeout --kill-after=10s "$@"; }; export -f timeout; fi';
 export const LIMITS = Object.freeze({
   /** A repository tracking more files than this is large; the count is read from the header of its `.git/index`. */
   largeRepoFiles: 20_000,
@@ -1005,7 +1010,7 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
   const ran = `[ -s "$_AH_RAN" ]`;
   const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
   return [
-    `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${original}`)}`,
+    `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
     // Missing admission infrastructure cannot turn into unbounded work.
     '_ah_readable=',
@@ -1157,7 +1162,7 @@ function canContain(env) {
  * The recorder is optional, time-bounded and never the reason the command does not run.
  */
 export function containedCommand(original, { slice = WORK_SLICE, recorder = null } = {}) {
-  const inner = `: >"$_AH_DIR.ran"; exec 2>&3 3>&-; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
+  const inner = `: >"$_AH_DIR.ran"; exec 2>&3 3>&-; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${requestedTimeoutPrelude}; ${original}`;
   const record = recorder ? `; { timeout 30 ${shellQuote(recorder.node)} ${shellQuote(recorder.script)} "$_ah_dir.err" "$_ah_rc" >/dev/null 2>&1 || true; }` : "";
   return [
     '_ah_dir=$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-dir.XXXXXX" 2>/dev/null || mktemp)',
