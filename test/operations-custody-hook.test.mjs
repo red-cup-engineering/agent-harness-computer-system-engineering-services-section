@@ -7,13 +7,13 @@ import { custodyHookEntries, decide, isOperationsCode, writtenPaths } from "../s
 
 const OPS = "/house/lib/phezi-ochage/services/561-group/services/operations-services-section";
 
-test("executable source in any Operations section is refused; data and legacy are not", () => {
+test("executable source in any Operations section is refused, legacy included; data is not", () => {
   assert.equal(isOperationsCode(`${OPS}/lib/fleet.mjs`), true);
   assert.equal(isOperationsCode(`${OPS}/services/channels-services-section/src/x.js`), true, "child sections of Operations");
   assert.equal(isOperationsCode("/h/services/computer-operations-services-section/scripts/run.sh"), true);
   assert.equal(isOperationsCode(`${OPS}/lib/agency/skills/x/SKILL.md`), false);
   assert.equal(isOperationsCode(`${OPS}/data/records/policy.json`), false);
-  assert.equal(isOperationsCode(`${OPS}/lib/legacy/old/thing.mjs`), false);
+  assert.equal(isOperationsCode(`${OPS}/lib/legacy/old/thing.mjs`), true, "legacy is no place to park code");
   assert.equal(isOperationsCode(`${OPS}/node_modules/pkg/index.js`), false);
   assert.equal(isOperationsCode("/h/services/engineering-services-section/src/engine.mjs"), false);
   assert.equal(isOperationsCode("src/x.mjs", `${OPS}/services/a-services-section`), true, "relative paths resolve against cwd");
