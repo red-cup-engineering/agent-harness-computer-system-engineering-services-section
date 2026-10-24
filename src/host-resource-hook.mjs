@@ -1049,14 +1049,36 @@ export const CONTAINMENT_SLICE = "agent-claude.slice";
 export const WORK_SLICE = "agent-work.slice";
 
 /**
- * The work slice's limits on a host of `memory` bytes: a low CPU weight, so the person at the machine
+ * Read the effective allocation of the destination user manager, not the
+ * launcher's cgroup. WSL-launched agents and systemd user work are siblings;
+ * sizing work from the VM ignored its tighter user.slice allocation and let
+ * one npm process throttle the manager before the work limit could act.
+ * Only these four known ancestors and their native limit files are read.
+ */
+export function effectiveUserServiceMemory({ memory = totalmem(), uid = process.getuid?.(), cgroupRoot = "/sys/fs/cgroup" } = {}) {
+  if (!Number.isSafeInteger(uid) || uid < 0) return memory;
+  const ancestors = ["", "user.slice", `user.slice/user-${uid}.slice`, `user.slice/user-${uid}.slice/user@${uid}.service`];
+  let effective = memory;
+  for (const ancestor of ancestors) for (const limit of ["memory.high", "memory.max"]) {
+    try {
+      const text = readFileSync(path.join(cgroupRoot, ancestor, limit), "utf8").trim();
+      if (!/^[1-9][0-9]*$/u.test(text)) continue;
+      const bytes = Number(text);
+      if (Number.isSafeInteger(bytes)) effective = Math.min(effective, bytes);
+    } catch { /* A non-cgroup host keeps the existing physical-memory fallback. */ }
+  }
+  return effective;
+}
+
+/**
+ * The work slice's limits within `memory` bytes of effective user-service allocation: a low CPU weight, so the person at the machine
  * wins any contention while an otherwise idle host still runs agents' work at full speed (a hard CPU
  * quota of a quarter of the processors starved nine agents on an idle sixteen-processor host); memory
  * reclaimed from the commands above 45% of the host and a command killed above 60%, with no swap, so
  * an exhausted command fails rather than the machine thrashing; and a task ceiling that stops a
  * runaway fan-out of processes.
  */
-export function containmentLimits({ memory = totalmem() } = {}) {
+export function containmentLimits({ memory = effectiveUserServiceMemory() } = {}) {
   const share = (fraction) => `${Math.floor((memory * fraction) / (1024 * 1024))}M`;
   return Object.freeze({ CPUWeight: 20, MemoryHigh: share(0.45), MemoryMax: share(0.6), MemorySwapMax: 0, TasksMax: 1024 });
 }
