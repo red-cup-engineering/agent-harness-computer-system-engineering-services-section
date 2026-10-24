@@ -15,8 +15,9 @@
  * `*** Add File:` / `*** Update File:` / `*** Move to:` path is judged.
  *
  * A path is refused when one of its directories is named `*-operations-services-section`, the file has an
- * executable-source extension, and no directory on the way is `legacy` (retirement of retained legacy code
- * deletes or moves it; it never adds new code) or `node_modules`.
+ * executable-source extension, and no directory on the way is `node_modules`. Legacy trees are not exempt:
+ * Coesite's retained legacy code moved to red-cup-engineering/red-cup-engineering-legacy on 2026-10-24, so a
+ * `legacy/` directory in an Operations section is no place to park code.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -24,7 +25,7 @@ import { fileURLToPath } from "node:url";
 
 const OPERATIONS = /(^|-)operations-services-section$/u;
 const CODE = /\.(?:mjs|cjs|js|jsx|mts|cts|ts|tsx|py|sh|bash|rb|go|rs|scm|el|lua|php|pl)$/iu;
-const EXEMPT = new Set(["legacy", "node_modules"]);
+const EXEMPT = new Set(["node_modules"]);
 const EDIT_TOOLS = /^(?:Write|Edit|MultiEdit|NotebookEdit)$/u;
 const PATCH_PATH = /^\*\*\* (?:Add File|Update File|Move to): (.+)$/gmu;
 const RULE = "https://github.com/561-group/561-group-services-section/blob/main/lib/agency/rules/science-engineering-operations-parameterize-in-order.json";
