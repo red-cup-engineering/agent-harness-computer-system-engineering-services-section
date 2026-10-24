@@ -42,3 +42,44 @@ test("an unobserved source coordinate must not be invented into a content identi
 test("same text from one session at different source times stays distinct inside a bounded window", () => {
   assert.deepEqual(deriveUtterances([prompt(at1), prompt(at2)], { since: at2, until: at2 }).map(({ at }) => at), [at2]);
 });
+
+
+test("separate admitted CloudEvent IDs at one legacy timestamp do not silently become replay", () => {
+  const first = { ...prompt(at1, "metroplat-arrival"), arrivalIdentity: "urn:event:a" };
+  const second = { ...prompt(at1, "metroplat-arrival"), arrivalIdentity: "urn:event:b" };
+  assert.equal(utterance(first).address, utterance(second).address,
+    "preserve the original v2 source address pending independent source migration");
+  const prior = deriveUtterances([first]);
+  assert.equal(prior.length, 1);
+  assert.equal(prior[0].sourceOccurrence, undefined);
+  const repeated = deriveUtterances([first, { ...first }]);
+  assert.equal(repeated.length, 1);
+  assert.equal(repeated[0].sourceOccurrence, undefined, "one replayed CloudEvent is not another event");
+  const collided = deriveUtterances([first, second]);
+  assert.equal(collided.length, 1, "a legacy NI cannot falsely address two distinct occurrences");
+  assert.equal(collided[0].sourceOccurrence.status,
+    "ambiguous-distinct-arrival-ids-share-legacy-address");
+  assert.equal(collided[0].sourceOccurrence.witnessedEventCount, 2);
+  assert.deepEqual(collided[0].sourceOccurrence.sourceEventIds, ["urn:event:a", "urn:event:b"]);
+  assert.equal(collided[0].sourceOccurrence.omittedEventIds, 0);
+});
+
+test("bounded collision evidence preserves count without exposing an unbounded event-id preview", () => {
+  const collided = deriveUtterances(Array.from({ length: 12 }, (_, n) =>
+    ({ ...prompt(at1, "metroplat-arrival"), arrivalIdentity: "urn:event:" + n })));
+  assert.equal(collided.length, 1);
+  assert.equal(collided[0].sourceOccurrence.witnessedEventCount, 12);
+  assert.equal(collided[0].sourceOccurrence.sourceEventIds.length, 8);
+  assert.equal(collided[0].sourceOccurrence.omittedEventIds, 4);
+  const distinct = deriveUtterances([
+    { ...prompt(at1), arrivalIdentity: "urn:event:one" },
+    { ...prompt(at2), arrivalIdentity: "urn:event:two" },
+  ]);
+  assert.equal(distinct.length, 2);
+  assert.equal(distinct[0].sourceOccurrence, undefined);
+  assert.equal(distinct[1].sourceOccurrence, undefined);
+  assert.throws(() => utterance({ ...prompt(at1), arrivalIdentity: "" }),
+    /bounded source-reported event identity/u);
+  assert.throws(() => utterance({ ...prompt(at1), arrivalIdentity: "x".repeat(513) }),
+    /bounded source-reported event identity/u);
+});

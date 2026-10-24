@@ -17,6 +17,7 @@
  * These occurrence-aware addresses are what articulations cite and what `knowing` consumes.
  */
 import fs from "node:fs";
+import { attachUtteranceSpeechActs } from "./utterance-speech-acts.mjs";
 import path from "node:path";
 import readline from "node:readline";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
@@ -44,13 +45,16 @@ export function utteranceText(raw) {
 
 /** One source-positioned utterance: the token names the recorded occurrence, the claim the text.
  * This source coordinate is a technological readout, NOT a `Quot.sound` proof across carriers. */
-export function utterance({ session, at, text, carrier }) {
+export function utterance({ session, at, text, carrier, arrivalIdentity }) {
   if (typeof session !== "string" || session.trim() === "") throw new TypeError("utterance requires a source session");
   if (typeof at !== "string" || !Number.isFinite(Date.parse(at))) throw new TypeError("utterance requires a source occurrence timestamp");
   if (typeof text !== "string" || text.trim() === "") throw new TypeError("utterance requires a nonempty claim text");
+  if (arrivalIdentity !== undefined && (typeof arrivalIdentity !== "string" || !arrivalIdentity.trim() || arrivalIdentity.length > 512))
+    throw new TypeError("utterance requires a bounded source-reported event identity");
   return Object.freeze({
     address: semanticId({ kind: "utterance", version: 2, token: { session, at }, claim: text }),
     session, at, text, carrier,
+    ...(arrivalIdentity === undefined ? {} : { arrivalIdentity }),
   });
 }
 
@@ -61,15 +65,33 @@ export function deriveUtterances(prompts, { since, until } = {}) {
   const from = since === undefined ? -Infinity : Date.parse(since);
   const to = until === undefined ? Infinity : Date.parse(until);
   const byAddress = new Map();
+  const arrivalsByAddress = new Map();
   for (const prompt of [...prompts].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
     const at = Date.parse(prompt.at);
     if (!(at >= from && at <= to)) continue;
     const text = utteranceText(prompt.text);
     if (text === null || typeof prompt.session !== "string" || prompt.session.trim() === "") continue;
-    const said = utterance({ session: prompt.session, at: prompt.at, text, carrier: prompt.carrier });
+    const said = utterance({ session: prompt.session, at: prompt.at, text, carrier: prompt.carrier, arrivalIdentity: prompt.arrivalIdentity });
     if (!byAddress.has(said.address)) byAddress.set(said.address, said);
+    if (said.arrivalIdentity !== undefined) {
+      const identities = arrivalsByAddress.get(said.address) ?? new Set();
+      identities.add(said.arrivalIdentity);
+      arrivalsByAddress.set(said.address, identities);
+    }
   }
-  return Object.freeze([...byAddress.values()]);
+  return Object.freeze([...byAddress.values()].map(said => {
+    const identities = arrivalsByAddress.get(said.address);
+    if (!identities || identities.size < 2) return said;
+    return Object.freeze({ ...said,
+      sourceOccurrence: Object.freeze({
+        status: 'ambiguous-distinct-arrival-ids-share-legacy-address',
+        witnessedEventCount: identities.size,
+        sourceEventIds: Object.freeze([...identities].slice(0, 8)),
+        omittedEventIds: Math.max(0, identities.size - 8),
+        evidence: 'original-arrival-CloudEvent-IDs-not-independent-Work-or-authority',
+      }),
+    });
+  }));
 }
 
 /** Read files through a cache (a machine-state file path, or none): a file whose size and mtime are
@@ -97,11 +119,11 @@ async function readThroughCache(cache, entries) {
 /** The prompts one day's arrivals admitted as UserPromptSubmit arrivals. */
 function readArrivalDay(root, date) {
   const prompts = [];
-  for (const { envelope, at } of hookArrivalsOfDay(root, date)) {
+  for (const { identity, envelope, at } of hookArrivalsOfDay(root, date)) {
     const payload = envelope.payload;
     if (envelope.hookEventName !== "UserPromptSubmit" || typeof payload?.prompt !== "string") continue;
     const text = utteranceText(payload.prompt);
-    if (text !== null) prompts.push({ session: envelope.sessionId ?? payload.session_id, at: typeof at === "string" ? at : undefined, text, carrier: "metroplat-arrival" });
+    if (text !== null) prompts.push({ session: envelope.sessionId ?? payload.session_id, at: typeof at === "string" ? at : undefined, text, carrier: "metroplat-arrival", ...(typeof identity === "string" && identity.trim() ? { arrivalIdentity: identity } : {}) });
   }
   return prompts;
 }
@@ -175,7 +197,7 @@ export const claudeTranscriptDirectory = (cwd, home = process.env.HOME ?? "") =>
  *  them from `arrivalsSince` when no `since` is given); transcripts from `transcripts` directories.
  *  and Codex prompt-history files from `codex`. With `cache` (carrier directory → machine-state
  *  path), each carrier is read through its cache. */
-export async function readUtterances({ root, transcripts = [], codex = [], since, until, arrivalsSince = "2026-09-01", cache }, options = {}) {
+export async function readUtterances({ root, transcripts = [], codex = [], since, until, arrivalsSince = "2026-09-01", cache, speechActProposals, speechActInterpreter }, options = {}) {
   const end = until ?? new Date().toISOString();
   const prompts = [];
   if (root !== undefined) prompts.push(...await readPromptArrivals(root, datesOf(since ?? arrivalsSince, end), { ...options, cache: cache?.(root) }));
@@ -184,5 +206,9 @@ export async function readUtterances({ root, transcripts = [], codex = [], since
   const untyped = new Set(prompts.filter((p) => p.typed === false && typeof p.session === "string"
     && p.session.trim() !== "" && typeof p.at === "string" && Number.isFinite(Date.parse(p.at))
     && utteranceText(p.text) !== null).map((p) => utterance({ ...p, text: utteranceText(p.text) }).address));
-  return deriveUtterances(prompts, { since, until: end }).filter((u) => !untyped.has(u.address));
+  const selected = deriveUtterances(prompts, { since, until: end }).filter((u) => !untyped.has(u.address));
+  // Optional source-bound analyst readout. Never reclassify, drop or promote the
+  // original message automatically; missing proposals mean unassessed evidence.
+  return speechActProposals === undefined ? selected
+    : attachUtteranceSpeechActs(selected, speechActProposals, { interpretedBy: speechActInterpreter });
 }

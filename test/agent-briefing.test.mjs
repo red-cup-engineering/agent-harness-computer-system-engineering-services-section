@@ -89,3 +89,31 @@ test("a scheduled Actor hand can begin with one native World journal read withou
   assert.doesNotMatch(markdown, /Enter with `metroplat_world-connect`, then speak/u);
   assert.doesNotMatch(markdown, /knowledge garden/u);
 });
+
+
+test("pre-provider consent and commercial signal classifications stay bounded by source and receiver", (t) => {
+  const root = agencyFixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const {markdown, obstructions} = projectAgentBriefing({
+    agencyRoot: root, holder: "password:pat", principal: "Pat",
+    instance: {name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test"},
+  });
+  assert.deepEqual(obstructions, []);
+  for (const required of [
+    "ATTUNE ingress/consent",
+    "User input required but current turn is running in a non-interactive mode",
+    "pre-provider admission obstruction",
+    "remote World, journal, mailbox, Host, Session or resource status",
+    "independently authorized original source lane",
+    "keep native Work and receiver effect unknown",
+    "ATTUNE commercial signal qualification",
+    "customer seeking a priced deliverable",
+    "external vendor selling distribution",
+    "compensated referral",
+    "unsent Draft or private annotation is not delivered customer contact",
+    "payment notice to a personal principal is not settled Group cash",
+    "do not outreach, publish a listing or move money",
+  ]) assert.ok(markdown.includes(required), "original briefing lacks source qualification: " + required);
+  assert.doesNotMatch(markdown, /App-specific permission is a Work grant/u);
+  assert.doesNotMatch(markdown, /No unread World messages after a pre-provider refusal/u);
+});
