@@ -22,7 +22,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 
 /** Where the 561 Group services section sits in a working tree of the Group. */
-export const SECTION_PATH = "lib/phezi-ochage/services/561-group/services/561-group-services-section";
+export const SECTION_PATH = "services/561-group-services-section";
 export const PROJECTION_RECORD = "data/records/session-projection-records/agent-session-projection.json";
 export const CACHE_SECONDS = 600;
 /** Characters of context each event may carry (Claude Code caps a hook's context at 10,000). */
