@@ -292,6 +292,62 @@ test("a clone into the user's home, or the tmp-named directory of a working tree
   assert.equal(classify("git clone https://example.com/o/r.git /home/someone/.cache/scratch/r", { cwd: "/srv/work/proj", ...user }).action, "serialize");
 });
 
+test("clone custody refuses a missing cd and unresolved destinations before executing Git", () => {
+  const missing = path.join(home, "scratch", "absent-clone-parent");
+  const cases = [
+    `cd ${shellQuote(missing)}; for r in owner/one owner/two; do git clone -q --depth 1 https://example.com/$r.git 2>&1 | tail -2; done; ls`,
+    `cd ${shellQuote(missing)}; git clone https://example.com/o/r.git`,
+    `pushd ${shellQuote(missing)}; gh repo clone o/r`,
+    `cd ${shellQuote(missing)}; bash -c 'git clone https://example.com/o/r.git'`,
+    `git -C ${shellQuote(missing)} clone https://example.com/o/r.git`,
+    "git clone https://example.com/$repository.git",
+    "git clone https://example.com/o/r.git $unknownDestination",
+  ];
+  for (const command of cases) {
+    const result = hook(event(command));
+    assert.equal(result.status, 0);
+    const decision = JSON.parse(result.stdout).hookSpecificOutput;
+    assert.equal(decision.permissionDecision, "deny", command);
+    assert.match(decision.permissionDecisionReason, /destination cannot be established/u);
+    assert.equal(decision.updatedInput, undefined, "the refusal contains no executable rewrite");
+  }
+  assert.equal(existsSync(missing), false, "admission does not create the intended directory");
+});
+
+test("clone custody preserves valid targets and intentional cd failure recovery without shell rewrites", () => {
+  const scratch = path.join(home, "scratch", "clone-custody");
+  const bin = path.join(scratch, "bin");
+  mkdirSync(bin, { recursive: true });
+  const marker = path.join(scratch, "git-effects");
+  // The real hook admits a harmless executable standing in for Git: no clone or network effect.
+  writeFileSync(path.join(bin, "git"), '#!/bin/sh\nprintf "%s\\n" "$PWD" >> "$CLONE_CUSTODY_MARKER"\n', { mode: 0o755 });
+  const hookEnv = { ...env, PATH: `${bin}:${env.PATH}`, CLONE_CUSTODY_MARKER: marker, AGENT_CONTAINMENT: "off" };
+  const execute = command => {
+    const admission = hook(event(command), hookEnv);
+    assert.equal(admission.status, 0);
+    const decision = admission.stdout ? JSON.parse(admission.stdout).hookSpecificOutput : undefined;
+    assert.notEqual(decision?.permissionDecision, "deny", command);
+    return spawnSync("bash", ["-c", decision?.updatedInput?.command ?? command], {
+      cwd: dirs.plain, env: hookEnv, encoding: "utf8", timeout: 5_000,
+    });
+  };
+  const positive = execute(`cd ${shellQuote(scratch)} && git clone https://example.com/o/r.git ./fixture`);
+  assert.equal(positive.status, 0, positive.stderr);
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n`);
+  const missing = path.join(scratch, "missing");
+  const alternate = execute(`if ! cd ${shellQuote(missing)}; then git clone https://example.com/o/r.git ${shellQuote(path.join(scratch, "alternate"))}; fi`);
+  assert.equal(alternate.status, 0, alternate.stderr);
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`);
+  const recovery = `if ! cd ${shellQuote(missing)}; then printf recovered; fi`;
+  assert.equal(classify(recovery, { cwd: dirs.plain, env: hookEnv, home }).action, "allow");
+  const recovered = execute(recovery);
+  assert.equal(recovered.status, 0);
+  assert.equal(recovered.stdout, "recovered");
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`, "recovery made no Git call");
+  assert.equal(existsSync(path.join(scratch, "fixture")), false);
+  assert.equal(existsSync(path.join(scratch, "alternate")), false);
+});
+
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
   const confined = (command) => decide({ tool_name: "Bash", cwd: dirs.big, permission_mode: "dontAsk", tool_input: { command } }, { env, home });
   assert.equal(confined("git status").permissionDecision, "deny");
@@ -369,7 +425,7 @@ test("the hook fails open: garbage, empty, partial and foreign events change not
     '{"tool_name":"Bash","tool_input":null}', '{"tool_name":"Bash","tool_input":{"command":"   "}}',
     JSON.stringify({ tool_name: "Read", tool_input: { file_path: "/etc/passwd" } }),
     JSON.stringify({ tool_name: "Bash", tool_input: { command: `du -sh ${"x".repeat(300_000)}` } }),
-    "\u0000\u0001\u0002", "x".repeat(300_000)]) {
+    "^@^A^B", "x".repeat(300_000)]) {
     const result = hook(stdin);
     assert.equal(result.status, 0, stdin.slice(0, 40));
     assert.equal(result.stdout, "", stdin.slice(0, 40));
@@ -397,7 +453,7 @@ test("known heavy work refuses without admission infrastructure; the explicit of
 // is bounded for every kind of stdin the harness or a broken one can give it.
 const STDIN_KINDS = {
   empty: (args) => spawnSync(process.execPath, args, { input: "", encoding: "utf8" }),
-  garbage: (args) => spawnSync(process.execPath, args, { input: "\u0000not json{{ [", encoding: "utf8" }),
+  garbage: (args) => spawnSync(process.execPath, args, { input: "^@not json{{ [", encoding: "utf8" }),
   ignored: (args) => spawnSync(process.execPath, args, { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" }),
   closed: (args) => spawnSync("bash", ["-c", 'exec "$@" <&-', "bash", process.execPath, ...args], { encoding: "utf8" }),
 };

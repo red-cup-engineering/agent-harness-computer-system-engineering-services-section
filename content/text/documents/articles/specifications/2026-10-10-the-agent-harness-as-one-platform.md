@@ -146,7 +146,34 @@ The coordination framework of rule `complex-inter-office-conflict-uses-formal-co
 
 Inspection: each requirement R1 to R31 has a conformance check placed with its owner. Demonstration: a Claude Code session and a Codex session projected from the same upstream differ only in provider configuration files.
 
-## 7. Open
+## 7. Clone custody after a failed directory change
+
+The existing host-resource controller MUST refuse a clone whose destination
+cannot be resolved within its existing scratch-custody contract. A directory
+named by `cd` or `pushd` is not an observed successful directory change. In
+particular, a missing directory followed by `; git clone` MUST NOT acquire
+permission from that intended directory. An unresolved inferred repository
+basename MUST NOT silently bypass clone custody.
+
+The shared `host-resource-hook.mjs` remains the owner and the directly consumed
+Claude/Codex entry; no second hook, configuration or shell wrapper is introduced.
+Its existing scan-directory heuristic remains separate from a clone-directory
+candidate. A literal directory change supplies that candidate only when the
+target currently exists as a directory; an unknown or missing target invalidates
+it. Explicit absolute clone destinations remain independently judgeable by the
+existing custody rule. Relative destinations require the candidate; an omitted
+destination additionally requires a resolvable source basename. Nested shell
+and Git `-C` calls carry the same distinction.
+
+This is bounded source maintenance of the existing refusal contract, not a full
+Bash control-flow or race proof. It does not prepend `set -e`, execute a clone,
+or alter intentional error recovery. Receiving covers the original missing-cd
+semicolon loop through the installed hook, an existing directory and permitted
+destination, an explicit permitted destination after handled failure, unknown
+destination refusal, and unchanged `if ! cd ...; then ...` recovery without a
+clone. Native tests use a harmless marker in place of Git effects.
+
+## 8. Open
 
 - The value of the concurrent-agent ceiling for the 8 GB WSL VM.
 - Which of the platform's apps already carry file-touch, mcp-tool, serve-web and workspace-analysis.
