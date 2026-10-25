@@ -67,7 +67,8 @@
     "./house-context": "./src/house-context.mjs",
     "./house-context-hook": "./src/house-context-hook.mjs",
     "./transcripts/codex-tool-accounting": "./src/transcripts/codex-tool-accounting.mjs",
-    "./transcripts/native-tool-observation": "./src/transcripts/native-tool-observation.mjs"
+    "./transcripts/native-tool-observation": "./src/transcripts/native-tool-observation.mjs",
+    "./carrier/receiving-judgement": "./src/carrier/receiving-judgement.mjs"
   },
   "bin": {
     "record-harness-skill-selection": "scripts/record-harness-skill-selection.mjs",
