@@ -42,6 +42,18 @@ harness engineering beneath an inference provider.
   names it. It never blocks a session: a board it cannot read is said in the journal.
   `scripts/install-session-journal-hook.mjs --settings <file> -- <hook arguments>` installs a
   reference to this owning source, keeping every other hook and replacing an earlier journal entry.
+- `src/house-context-hook.mjs` is the house-context carrier (rule
+  capitalized-leader-statements-mark-a-failed-carrier): one zero-dependency hook for SessionStart,
+  SubagentStart and UserPromptSubmit that projects the 561 Group's binding rules, standing Leader
+  decisions, open campaign carriers and a "before asking the Leader" checklist into every Claude Code
+  session started in the Group's working trees, and the carrier-repair instruction when the Leader
+  writes in capitals. `src/house-context.mjs` generates the text from the records the 561 Group
+  services section's `data/records/session-projection-records/agent-session-projection.json` names,
+  never from text of its own, under a strict size budget (8000 characters at session start, 5400 in
+  a sub-agent, which does not receive SessionStart context); carrier states are read from GitHub
+  with a ten-minute cache and fail soft offline. `scripts/install-house-context-hook.mjs` references
+  this source from a user's Claude Code settings (backup kept, other hooks retained, `--uninstall`
+  removes only its entries); `scripts/project-house-context.mjs` prints what a session was given.
 - `codex-harness-services-section` owns the Codex dialect (`codex exec`), the
   Codex node's durable task rail and the Codex runtime projection.
 - `claude-code-harness-services-section` owns the Claude Code dialect
