@@ -425,7 +425,7 @@ test("the hook fails open: garbage, empty, partial and foreign events change not
     '{"tool_name":"Bash","tool_input":null}', '{"tool_name":"Bash","tool_input":{"command":"   "}}',
     JSON.stringify({ tool_name: "Read", tool_input: { file_path: "/etc/passwd" } }),
     JSON.stringify({ tool_name: "Bash", tool_input: { command: `du -sh ${"x".repeat(300_000)}` } }),
-    "^@^A^B", "x".repeat(300_000)]) {
+    "\u0000\u0001\u0002", "x".repeat(300_000)]) {
     const result = hook(stdin);
     assert.equal(result.status, 0, stdin.slice(0, 40));
     assert.equal(result.stdout, "", stdin.slice(0, 40));
@@ -453,7 +453,7 @@ test("known heavy work refuses without admission infrastructure; the explicit of
 // is bounded for every kind of stdin the harness or a broken one can give it.
 const STDIN_KINDS = {
   empty: (args) => spawnSync(process.execPath, args, { input: "", encoding: "utf8" }),
-  garbage: (args) => spawnSync(process.execPath, args, { input: "^@not json{{ [", encoding: "utf8" }),
+  garbage: (args) => spawnSync(process.execPath, args, { input: "\u0000not json{{ [", encoding: "utf8" }),
   ignored: (args) => spawnSync(process.execPath, args, { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" }),
   closed: (args) => spawnSync("bash", ["-c", 'exec "$@" <&-', "bash", process.execPath, ...args], { encoding: "utf8" }),
 };
