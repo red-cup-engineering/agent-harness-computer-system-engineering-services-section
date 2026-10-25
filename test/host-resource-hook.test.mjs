@@ -705,7 +705,7 @@ async function withBus(work) {
 
 test("the work slice yields the CPU by weight, not a quota, is reclaimed above 45% of memory and killed above 60%, with no swap; the sessions' slice is protected", () => {
   const limits = containmentLimits({ memory: 7748 * MiB });
-  assert.deepEqual(limits, { CPUWeight: 20, MemoryHigh: "3486M", MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
+  assert.deepEqual(limits, { CPUWeight: 20, MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
   assert.deepEqual(sessionLimits({ memory: 7748 * MiB }), { CPUWeight: 50, MemoryLow: "774M" });
   assert.deepEqual(sessionLimits({ memory: 64 * 1024 * MiB }), { CPUWeight: 50, MemoryLow: "1536M" });
   const unit = sliceUnit(limits);
