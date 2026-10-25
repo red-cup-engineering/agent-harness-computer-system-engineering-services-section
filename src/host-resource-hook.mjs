@@ -1305,6 +1305,21 @@ const SHELL_TOOLS = /^(Bash|shell|exec_command|local_shell|container\.exec)$/u;
 /** Claude Code's Monitor runs a shell command for as long as it watches: contained, never serialized, since a watch would hold the heavy slot for its whole life. */
 const WATCH_TOOLS = /^Monitor$/u;
 
+/** Programs the harness's own removal check must read as written. Contained, a command is a
+ *  `systemd-run … bash -c` carrier that check cannot see into, so it refuses every removal. */
+const SELF_CHECKED_PROGRAMS = new Set(["rm", "rmdir", "unlink"]);
+
+/** Whether every simple command of `command` is a removal the harness checks itself: light work,
+ *  left uncontained so that check reads it. */
+export function isSelfCheckedRemoval(command) {
+  try {
+    const { commands } = parseShell(command);
+    return commands.length > 0 && commands.every(({ words, piped }) => !piped && SELF_CHECKED_PROGRAMS.has(words[0]));
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The hook's answer to one PreToolUse event: the `hookSpecificOutput` object, or undefined to let
  * the command run untouched. `provider` is "claude" or "codex"; Codex accepts `updatedInput` only
@@ -1341,7 +1356,8 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
     wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
   }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
-  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
+  const selfChecked = wrapped === undefined && !watch && isSelfCheckedRemoval(command);
+  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && !selfChecked && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
   if (contain) wrapped = containedCommand(wrapped ?? command, { recorder: { node: process.execPath, script: fileURLToPath(new URL("./scope-failure-record.mjs", import.meta.url)) } });
   if (wrapped === undefined) return undefined;
   const output = { hookEventName: "PreToolUse", updatedInput: { ...toolInput, command: wrapped } };
