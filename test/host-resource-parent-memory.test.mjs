@@ -25,7 +25,7 @@ test('a 12 GiB VM with a 4 GiB user allocation cannot admit a VM-sized batch', t
   const memory = effectiveUserServiceMemory({ memory: 12 * GiB, uid: 1000, cgroupRoot: root });
   assert.equal(memory, 4 * GiB);
   assert.deepEqual(containmentLimits({ memory }), {
-    CPUWeight: 20, MemoryHigh: '1843M', MemoryMax: '2457M', MemorySwapMax: 0, TasksMax: 1024,
+    CPUWeight: 20, MemoryMax: '2457M', MemorySwapMax: 0, TasksMax: 1024,
   });
 });
 

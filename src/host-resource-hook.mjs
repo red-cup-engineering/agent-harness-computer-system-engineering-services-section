@@ -1094,14 +1094,16 @@ export function effectiveUserServiceMemory({ memory = totalmem(), uid = process.
 /**
  * The work slice's limits within `memory` bytes of effective user-service allocation: a low CPU weight, so the person at the machine
  * wins any contention while an otherwise idle host still runs agents' work at full speed (a hard CPU
- * quota of a quarter of the processors starved nine agents on an idle sixteen-processor host); memory
- * reclaimed from the commands above 45% of the host and a command killed above 60%, with no swap, so
- * an exhausted command fails rather than the machine thrashing; and a task ceiling that stops a
- * runaway fan-out of processes.
+ * quota of a quarter of the processors starved nine agents on an idle sixteen-processor host); a
+ * command killed above 60% of the host, with no swap, so an exhausted command fails rather than the
+ * machine thrashing; and a task ceiling that stops a runaway fan-out of processes. There is no
+ * MemoryHigh: with no swap, anonymous memory cannot be reclaimed, so a high mark only throttles every
+ * allocation in the slice without end. On 2026-10-24 the slice sat between its 45% high and 60% max
+ * for hours (26.7M high events, 247 max events): every agent's command stalled, nothing was killed.
  */
 export function containmentLimits({ memory = effectiveUserServiceMemory() } = {}) {
   const share = (fraction) => `${Math.floor((memory * fraction) / (1024 * 1024))}M`;
-  return Object.freeze({ CPUWeight: 20, MemoryHigh: share(0.45), MemoryMax: share(0.6), MemorySwapMax: 0, TasksMax: 1024 });
+  return Object.freeze({ CPUWeight: 20, MemoryMax: share(0.6), MemorySwapMax: 0, TasksMax: 1024 });
 }
 
 /** The sessions' slice: protected, not capped. Their memory up to 10% of the host (at most 1.5 GiB) is reclaimed last, so the work slice's pressure never starves the sessions directing it. */
