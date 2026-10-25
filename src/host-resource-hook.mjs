@@ -606,7 +606,12 @@ function git(argv, state, ctx, report) {
     if (args[0] === "add") report.deny("git worktree add checks out a full working tree on disk: use a blobless sparse clone in the scratchpad instead (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>, then git sparse-checkout set <dirs>).");
     return;
   }
-  if (sub === "clone") { clone(positionals(args, CLONE_VALUE_OPTIONS), state, ctx, report); return; }
+  if (sub === "clone") {
+    const candidate = directory === undefined ? state.cloneCwd : resolveDir(directory, state.cloneCwd, ctx);
+    const cloneCwd = directory === undefined || (candidate && isDirectory(candidate)) ? candidate : undefined;
+    clone(positionals(args, CLONE_VALUE_OPTIONS), { cloneCwd }, ctx, report);
+    return;
+  }
   if (GIT_ALWAYS_HEAVY.has(sub)) { report.heavy(`git ${sub}`); return; }
   if (sub === "ls-tree") { if (hasFlag(args, "r", ["--recursive"])) report.heavy("git ls-tree -r"); return; }
   if (sub === "cat-file") { if (args.some((arg) => arg.startsWith("--batch"))) report.heavy("git cat-file --batch"); return; }
@@ -665,13 +670,16 @@ function clone(words, state, ctx, report) {
   if (source === undefined) return;
   let destination = words[1];
   if (destination === undefined) {
-    const name = source.replace(/[/:]+$/u, "").split(/[/:]/u).pop()?.replace(/\.git$/u, "");
+    const name = expand(source, state.cloneCwd, ctx)?.replace(/[/:]+$/u, "").split(/[/:]/u).pop()?.replace(/\.git$/u, "");
     destination = name === undefined || name === "" ? undefined : name;
   }
   report.heavy("git clone");
-  if (destination === undefined) return;
-  const resolved = resolveDir(destination, state.cwd, ctx);
-  if (resolved === undefined || isScratch(resolved, ctx)) return;
+  const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
+  if (resolved === undefined) {
+    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination within the permitted session scratchpad/tmp custody.");
+    return;
+  }
+  if (isScratch(resolved, ctx)) return;
   report.deny(`git clone into ${resolved} is outside a scratchpad/tmp directory: clone into the session scratchpad or /tmp (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>) and delete the clone when done.`);
 }
 
@@ -888,18 +896,26 @@ function simple(command, frame, state, ctx, report, depth, lock) {
     if (!frame.cwds.has(scope)) frame.cwds.set(scope, cwdOf(frame.scopes[scope].parent));
     return frame.cwds.get(scope);
   };
-  const here = { cwd: cwdOf(command.scope) };
+  const cloneCwdOf = (scope) => {
+    if (!frame.cloneCwds.has(scope)) frame.cloneCwds.set(scope, cloneCwdOf(frame.scopes[scope].parent));
+    return frame.cloneCwds.get(scope);
+  };
+  const here = { cwd: cwdOf(command.scope), cloneCwd: cloneCwdOf(command.scope) };
   if (name === "cd" || name === "pushd") {
     const target = positionals(words.slice(1))[0];
     frame.cwds.set(command.scope, target === "-" ? undefined : target === undefined ? ctx.home : resolveDir(target, here.cwd, ctx));
+    // Keep the existing scan heuristic, but never grant clone custody from a directory
+    // that is only intended. A failed `cd; clone` otherwise runs in the caller's tree.
+    const cloneCwd = target === "-" ? undefined : target === undefined ? ctx.home : resolveDir(target, here.cloneCwd, ctx);
+    frame.cloneCwds.set(command.scope, cloneCwd && isDirectory(cloneCwd) ? cloneCwd : undefined);
     return;
   }
   if (SHELLS.has(name)) {
     const at = words.findIndex((word, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/u.test(word));
-    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, state, ctx, report, depth + 1, lock);
+    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd);
     return;
   }
-  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, state, ctx, report, depth + 1, lock); return; }
+  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd); return; }
   if (name === "find" || name === "bfs") { find(words, here, ctx, report); return; }
   if (name === "git") { git(words, here, ctx, report); return; }
   if (name === "gh") { github(words, here, ctx, report); return; }
@@ -908,10 +924,10 @@ function simple(command, frame, state, ctx, report, depth, lock) {
   heavyTool(name, words, report, here, ctx);
 }
 
-function walk(source, cwd, state, ctx, report, depth, lock) {
+function walk(source, cwd, state, ctx, report, depth, lock, cloneCwd) {
   if (depth > LIMITS.maxShellDepth) return;
   const { commands, scopes } = parseShell(source);
-  const frame = { scopes, cwds: new Map([[0, cwd]]) };
+  const frame = { scopes, cwds: new Map([[0, cwd]]), cloneCwds: new Map([[0, cloneCwd]]) };
   for (const command of commands) simple(command, frame, state, ctx, report, depth, lock);
 }
 
@@ -921,7 +937,7 @@ export function classify(command, { cwd, env = process.env, home, scratchpad, lo
   const denied = [];
   const heavy = [];
   const state = { locked: false };
-  walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock);
+  walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock, ctx.cwd);
   if (denied.length > 0) return { action: "deny", reason: denied[0] };
   if (heavy.length > 0) return { action: "serialize", heavy, locked: state.locked };
   return { action: "allow" };
