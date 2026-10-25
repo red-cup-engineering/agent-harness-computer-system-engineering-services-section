@@ -978,6 +978,97 @@ export function heavySlots({ env = process.env, pressure = memoryPressure(), ioP
 /** The lock files of `slots` slots: the first is `lock` itself, so a command an agent wraps in `flock <lock>` by hand holds slot one. */
 export const slotLocks = (lock, slots = 1) => Array.from({ length: Math.max(1, slots) }, (_, i) => (i === 0 ? lock : `${lock}.${i}`));
 
+// Contention testimony comes from the existing kernel locks, not another
+// ownership journal. In particular, a missing PID never licenses lock removal.
+function boundedLockReading(file, maximum) {
+  const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const bytes = Buffer.alloc(maximum + 1);
+    let used = 0;
+    while (used <= maximum) {
+      const n = readSync(fd, bytes, used, bytes.length - used, null);
+      if (n === 0) return bytes.subarray(0, used).toString("utf8");
+      used += n;
+    }
+    throw new Error("lock observation exceeds allocation");
+  } finally { closeSync(fd); }
+}
+
+function processBirth(stat) {
+  const end = stat.lastIndexOf(")");
+  const fields = end < 0 ? [] : stat.slice(end + 2).trim().split(/\s+/u);
+  return /^\d+$/u.test(fields[19] ?? "") ? fields[19] : null;
+}
+
+/** Deliberately omit every argv value: shell text, credentials and customer
+ * input cannot be made safe by a token-name blacklist. */
+function lockProcess(pid, procRoot, includeChildren, budget) {
+  if (budget.remaining <= 0) return { pid, state: "process-budget-exhausted" };
+  budget.remaining -= 1;
+  const root = path.join(procRoot, String(pid));
+  try {
+    const before = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
+    if (before === null) throw new Error("unknown birth");
+    const command = boundedLockReading(path.join(root, "cmdline"), 65536).split("\0").filter(Boolean);
+    const named = path.basename(command[0] ?? "");
+    const executable = ["node", "nodejs", "flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make", "sleep"].includes(named) ? named : "other";
+    const kind = ["node", "nodejs"].includes(executable) && command.includes("--test") ? "node-test"
+      : ["flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make"].includes(executable) ? executable : "other";
+    const fullCgroup = boundedLockReading(path.join(root, "cgroup"), 8192).trim();
+    const cgroup = fullCgroup.slice(0, 1024);
+    const childrenText = includeChildren
+      ? boundedLockReading(path.join(root, "task", String(pid), "children"), 4096).trim() : "";
+    const allChildren = childrenText ? childrenText.split(/\s+/u).filter(x => /^[1-9]\d*$/u.test(x)).map(Number) : [];
+    const children = allChildren.slice(0, 4);
+    const after = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
+    if (before !== after) return { pid, state: "identity-changed" };
+    return { pid, state: "observed", startTicks: before, cgroup, cgroupComplete: fullCgroup.length <= 1024,
+      command: { executable, kind, argv: "omitted" },
+      ...(includeChildren ? { childrenComplete: allChildren.length <= Math.min(4, budget.remaining),
+        children: children.slice(0, budget.remaining).map(child => lockProcess(child, procRoot, false, budget)) } : {}) };
+  } catch (error) {
+    return { pid, state: error.code === "ENOENT" || error.code === "ESRCH" ? "exited-or-unavailable" : "unavailable" };
+  }
+}
+
+/** Bounded read-only snapshot for the exact already selected slot files.
+ * It neither creates/open-locks a file nor enumerates processes/directories. */
+export function heavyLockStatus(locks, { procRoot = "/proc" } = {}) {
+  if (!Array.isArray(locks) || locks.length < 1 || locks.length > 16 ||
+      locks.some(lock => typeof lock !== "string" || lock.length > 4096 || !path.isAbsolute(lock)))
+    throw new TypeError("one to sixteen exact absolute slot paths required");
+  let rows;
+  try { rows = boundedLockReading(path.join(procRoot, "locks"), 524288).split("\n"); }
+  catch { return { kind: "agent-heavy.lock-status.v1", state: "kernel-locks-unavailable", snapshot: true }; }
+  const processBudget = { remaining: 8 };
+  return { kind: "agent-heavy.lock-status.v1", snapshot: true, authority: "kernel-advisory-lock-snapshot",
+    locks: locks.map(lock => {
+      try {
+        const before = lstatSync(lock, { bigint: true });
+        if (!before.isFile() || before.isSymbolicLink()) throw new Error("not an original regular slot");
+        const major = ((before.dev >> 8n) & 0xfffn) | ((before.dev >> 32n) & 0xfffff000n);
+        const minor = (before.dev & 0xffn) | ((before.dev >> 12n) & 0xffffff00n);
+        const selected = [];
+        for (const row of rows) {
+          const match = /^\s*\d+:\s*(->\s*)?FLOCK\s+ADVISORY\s+(?:WRITE|READ)\s+(-?\d+)\s+([a-f0-9]+):([a-f0-9]+):(\d+)\s/iu.exec(row);
+          if (match && BigInt("0x" + match[3]) === major && BigInt("0x" + match[4]) === minor && BigInt(match[5]) === before.ino)
+            selected.push({ role: match[1] ? "waiter" : "holder", pid: Number(match[2]) });
+        }
+        const after = lstatSync(lock, { bigint: true });
+        if (before.dev !== after.dev || before.ino !== after.ino)
+          return { path: lock, state: "slot-identity-changed" };
+        const retained = selected.slice(0, 8);
+        const processes = retained.map(({ role, pid }) => ({ role,
+          ...(pid > 0 ? lockProcess(pid, procRoot, role === "holder", processBudget) : { pid, state: "kernel-holder-unavailable" }) }));
+        return { path: lock, state: selected.length ? "contended-or-held" : "free-at-snapshot",
+          device: String(before.dev), major: major.toString(16), minor: minor.toString(16), inode: String(before.ino),
+          complete: retained.length === selected.length && !processes.some(p => p.state === "process-budget-exhausted" || p.childrenComplete === false),
+          processes };
+      } catch { return { path: lock, state: "slot-unavailable" }; }
+    }),
+    limitations: "Processes and locks can change after this snapshot; never remove a lock or terminate an owner from this testimony." };
+}
+
 // Never `mkdirSync(..., { recursive: true })` here: on a path whose parent exists but cannot hold
 // the child (anything under /proc) node's recursive mkdir retries forever at full CPU.
 function makeDirectories(dir, levels = 4) {
@@ -1025,6 +1116,7 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
   const runner = (flockArgs, file) => ["AGENT_HEAVY_LOCK_HELD=1", nice ? "nice -n 10" : "", ionice ? "$_ah_io" : "", `flock ${flockArgs} -E ${BUSY_EXIT_CODE} ${file} bash -c "$_ah_c"`].filter(Boolean).join(" ");
   const ran = `[ -s "$_AH_RAN" ]`;
   const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
+  const diagnose = `timeout --signal=KILL 2s ${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} --lock-status ${locks.map(shellQuote).join(" ")} >&2 || true`;
   return [
     `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
@@ -1043,7 +1135,7 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
     `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
     `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; fi`,
     "fi",
-    `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || printf '%s\\n' ${shellQuote(busy)} >&2`,
+    `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || { printf '%s\\n' ${shellQuote(busy)} >&2; ${diagnose}; }`,
     'unlink -- "$_AH_RAN"',
     '(exit "$_ah_rc")',
     '}',
@@ -1370,6 +1462,11 @@ export const hookSettingsArguments = (hookPath) => ["--settings", JSON.stringify
  * leaves the command untouched. The hook never waits on the lock; the rewritten command does.
  */
 function main() {
+  if (process.argv[2] === "--lock-status") {
+    try { process.stdout.write(JSON.stringify(heavyLockStatus(process.argv.slice(3))) + "\n"); }
+    catch { process.stdout.write('{"kind":"agent-heavy.lock-status.v1","state":"observation-unavailable","snapshot":true}\n'); }
+    return;
+  }
   const guard = setTimeout(() => process.exit(0), LIMITS.guardMilliseconds);
   guard.unref();
   const chunks = [];

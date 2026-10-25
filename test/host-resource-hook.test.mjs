@@ -7,7 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import net from "node:net";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
+import { closeSync, constants, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -491,10 +491,10 @@ test("on a stdin that never closes the hook's own timer ends it, still exit 0 an
   assert.ok(elapsed < 10_000, `${elapsed} ms`);
 });
 
-test("a harness's other settings do not change the command language: unknown variables and unknown cwd never deny", () => {
+test("unknown read coordinates remain fail-open while clone custody requires an established destination", () => {
   assert.equal(classify("find $NOPE -name x", { cwd: dirs.plain, env, home }).action, "allow");
   assert.equal(classify("find . -name x", { env, home }).action, "allow");
-  assert.equal(classify("git clone https://example.com/o/r.git $DEST", { cwd: dirs.srv, env, home }).action, "serialize");
+  assert.equal(classify("git clone https://example.com/o/r.git $DEST", { cwd: dirs.srv, env, home }).action, "deny");
   assert.equal(classify("cd - && find . -name x", { cwd: dirs.plain, env, home }).action, "allow");
 });
 
@@ -643,7 +643,7 @@ test("rm of index.lock is denied only while a git process works in that reposito
     assert.match(inside.reason, new RegExp(`git \\(pid ${git.pid}\\)`, "u"));
     assert.equal(verdict(`rm -f ${dirs.big}/.git/index.lock`, "plain").action, "deny", "a git working in a subdirectory counts");
     assert.equal(verdict(`rm -f ${dirs.small}/.git/index.lock`, "plain").action, "allow", "a git working in another repository does not");
-    assert.equal(verdict("rm -f .git/index.lock", "plain").action, "allow", "no repository there");
+    assert.equal(verdict("rm -f .git/index.lock", "small").action, "allow", "an unrelated owned fixture repository has no active writer");
     assert.equal(verdict("rm -f lib/a.mjs", "big").action, "allow");
   } finally { git.kill("SIGKILL"); }
   assert.ok(await until(() => verdict(`rm -f ${dirs.big}/.git/index.lock`, "plain").action === "allow"), "the git process has ended");
@@ -698,17 +698,23 @@ const shellEvent = (command, permission_mode, tool_name = "Bash") => ({ hook_eve
 
 async function withBus(work) {
   const runtime = mkdtempSync(path.join(root, "runtime-"));
+  // AF_UNIX has a short address limit. Bind through the held descriptor of
+  // this same owned fixture directory; the socket remains runtime/bus.
+  const directory = openSync(runtime, constants.O_RDONLY | constants.O_DIRECTORY);
   const server = net.createServer();
-  await new Promise((resolve) => server.listen(path.join(runtime, "bus"), resolve));
-  try { return await work(runtime); } finally { await new Promise((resolve) => server.close(resolve)); }
+  try {
+    await new Promise((resolve, reject) => { server.once("error", reject); server.listen(`/proc/self/fd/${directory}/bus`, resolve); });
+    try { return await work(runtime); } finally { await new Promise((resolve) => server.close(resolve)); }
+  } finally { closeSync(directory); }
 }
 
-test("the work slice yields the CPU by weight, not a quota, is reclaimed above 45% of memory and killed above 60%, with no swap; the sessions' slice is protected", () => {
+test("the work slice yields the CPU by weight and retains the 60% hard bound without a no-swap soft throttle; the sessions' slice is protected", () => {
   const limits = containmentLimits({ memory: 7748 * MiB });
   assert.deepEqual(limits, { CPUWeight: 20, MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
   assert.deepEqual(sessionLimits({ memory: 7748 * MiB }), { CPUWeight: 50, MemoryLow: "774M" });
   assert.deepEqual(sessionLimits({ memory: 64 * 1024 * MiB }), { CPUWeight: 50, MemoryLow: "1536M" });
   const unit = sliceUnit(limits);
+  assert.doesNotMatch(unit, /^MemoryHigh=/mu);
   assert.match(unit, /^\[Unit\]\nDescription=.+\n\n\[Slice\]\n/u);
   for (const [key, value] of Object.entries(limits)) assert.ok(unit.includes(`\n${key}=${value}\n`), key);
 });
