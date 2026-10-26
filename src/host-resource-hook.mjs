@@ -954,7 +954,9 @@ export function classify(command, { cwd, env = process.env, home, scratchpad, lo
   const state = { locked: false };
   walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock, ctx.cwd);
   if (denied.length > 0) return { action: "deny", reason: denied[0] };
-  if (heavy.length > 0) return { action: "serialize", heavy, locked: state.locked };
+  // Heavy commands are no longer queued behind one host-wide slot. Leader, 2026-10-26: "fuck this
+  // heavy-command slot slop": the slot held every session's fetches and pushes for tens of minutes
+  // behind one long command, so no work landed. Whole-tree reads are still denied above.
   return { action: "allow" };
 }
 
