@@ -15,7 +15,8 @@
  *              unscoped `git status`/`git log --all`/`git ls-files` and `git submodule update|foreach`
  *              in a large repository, `rm .git/index.lock` while a git process works there); the
  *              reason, shown to the agent, names the safe alternative;
- *   serialize  the command is disk- or CPU-heavy (clone, fetch, push, gc, repack, archive, recursive
+ *   serialize  the command is disk- or CPU-heavy (clone, a fetch or push in a large repository or of all
+ *              history, gc, repack, archive, recursive
  *              tree reads, du/tar/rsync outside scratch, package installs, guix, lake,
  *              cargo, make, and git or gh operations that stat a large working tree). It is rewritten
  *              (`updatedInput.command`) to run in one of the host's heavy SLOTS, each a kernel lock
@@ -531,7 +532,13 @@ const GUIX_HEAVY = new Set(["build", "pull", "shell", "environment", "package", 
 const LAKE_HEAVY = new Set(["build", "update", "exe", "test", "lint", "clean", "check-build", "cache", "upload", "pack", "unpack"]);
 const CARGO_LIGHT = new Set(["version", "help", "locate-project", "pkgid", "read-manifest", "config", "search", "login", "logout", "owner", "yank", "verify-project", "fmt", "metadata"]);
 const DOCKER_HEAVY = new Set(["build", "pull", "push", "load", "save", "import", "export", "buildx", "builder"]);
-const GIT_ALWAYS_HEAVY = new Set(["fetch", "push", "pull", "gc", "repack", "archive", "prune", "maintenance", "bundle", "fsck", "index-pack", "pack-objects", "unpack-objects", "fast-import", "fast-export", "filter-branch", "filter-repo", "commit-graph", "multi-pack-index", "lfs", "prune-packed", "pack-refs", "bisect"]);
+// A transfer costs the history it packs or unpacks, not the crossing of the network: a few commits pushed from a
+// small clone are light, and holding them behind the host's one heavy slot only starves the work that made them
+// (2026-10-26: a two-file push waited 15 minutes behind another session's job). A large or unrecognized repository,
+// or a transfer of every ref or the whole history, still serializes.
+const GIT_TRANSFERS = new Set(["fetch", "push", "pull"]);
+const WHOLE_HISTORY_TRANSFER = new Set(["--all", "--mirror", "--unshallow", "--tags", "--recurse-submodules", "--recurse-submodules=yes", "--recurse-submodules=on-demand"]);
+const GIT_ALWAYS_HEAVY = new Set(["gc", "repack", "archive", "prune", "maintenance", "bundle", "fsck", "index-pack", "pack-objects", "unpack-objects", "fast-import", "fast-export", "filter-branch", "filter-repo", "commit-graph", "multi-pack-index", "lfs", "prune-packed", "pack-refs", "bisect"]);
 const GIT_WORKTREE_WIDE = new Set(["stash", "checkout", "switch", "reset", "clean", "merge", "rebase", "cherry-pick", "revert"]);
 const CLONE_VALUE_OPTIONS = ["-b", "--branch", "--depth", "--filter", "-o", "--origin", "--reference", "--reference-if-able", "-c", "--config", "-j", "--jobs", "--template", "--separate-git-dir", "-u", "--upload-pack", "--server-option", "--shallow-since", "--shallow-exclude", "--bundle-uri", "--ref-format", "--revision"];
 
@@ -613,6 +620,11 @@ function git(argv, state, ctx, report) {
     return;
   }
   if (GIT_ALWAYS_HEAVY.has(sub)) { report.heavy(`git ${sub}`); return; }
+  if (GIT_TRANSFERS.has(sub)) {
+    const whole = args.some((arg) => WHOLE_HISTORY_TRANSFER.has(arg) || arg.startsWith("--deepen") || arg.startsWith("--shallow-since") || arg.startsWith("--shallow-exclude"));
+    if (repo?.large !== false || whole) report.heavy(`git ${sub}${size}`);
+    return;
+  }
   if (sub === "ls-tree") { if (hasFlag(args, "r", ["--recursive"])) report.heavy("git ls-tree -r"); return; }
   if (sub === "cat-file") { if (args.some((arg) => arg.startsWith("--batch"))) report.heavy("git cat-file --batch"); return; }
   if (sub === "rev-list") { if (args.some((arg) => ["--all", "--objects", "--objects-edge", "--branches"].includes(arg))) report.heavy("git rev-list over all history"); return; }
