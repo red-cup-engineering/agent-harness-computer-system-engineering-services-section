@@ -270,7 +270,9 @@ async function reserveSharedSlot(dialect, { slot: requested, environment, host, 
   const root = sharedCapacityRoot(dialect, { ...process.env, ...environment });
   const limit = harnessConcurrency(dialect, environment, host);
   const id = reservation?.id ?? randomUUID();
-  for (;;) {
+  // Each look spawns the flock helper and lists systemd units, so a waiter backs off toward the
+  // session poll interval instead of re-asking at a fixed 50 ms for as long as capacity is full.
+  for (let delay = 50; ; delay = Math.min(delay * 2, POLL_INTERVAL_MS)) {
     const result = await withCapacityLock(root, async () => {
       await reconcileReservations(dialect, root, systemRunner);
       const records = readdirSync(root).filter(value => /^slot-\d+\.json$/u.test(value)).map(value => readJson(path.join(root, value)));
@@ -315,7 +317,7 @@ async function reserveSharedSlot(dialect, { slot: requested, environment, host, 
       return { slot, record };
     });
     if (!result.wait) return { root, dialect, ...result };
-    await pause(50);
+    await pause(delay);
   }
 }
 
