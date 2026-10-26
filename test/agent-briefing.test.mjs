@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { projectAgentBriefing } from "../src/agent-briefing.mjs";
+import { harnessAgencyAt } from "../src/agency-source.mjs";
+import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
 
 function agencyFixture() {
   const root = mkdtempSync(join(tmpdir(), "agent-briefing-"));
@@ -19,10 +23,48 @@ function agencyFixture() {
   return root;
 }
 
+test("the host names the original section; the harness preserves the original holder and excludes data snapshots", t => {
+  const root = agencyFixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const section = "shop-services-section";
+  const copy = join(root, "data", "logs", "copied", section);
+  cpSync(join(root, section), copy, { recursive: true });
+  const common = { agencyRoot: root, holder: "password:pat", principal: "Pat",
+    instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } };
+  const environment = { METROPLAT_AGENCY_SECTIONS: JSON.stringify([section]) };
+  assert.equal(projectAgentBriefing({ ...common, environment: {} }).offices.length, 0,
+    "a source root alone cannot discover or authorize nested sections");
+  assert.deepEqual(projectAgentBriefing({ ...common, environment }).offices, ["owner"]);
+  assert.equal(harnessAgencyAt(root, { environment }), agencyAt(root, { sections: [section] }),
+    "selection retains the original Organizing registry identity");
+  assert.throws(() => harnessAgencyAt(root, { agencySections: ["data/logs/copied/" + section] }),
+    /copy under data or a vendored package/u);
+  assert.throws(() => harnessAgencyAt(root, { agencySections: ["../" + section] }), /not a section path/u);
+  assert.throws(() => harnessAgencyAt(root, { environment: { METROPLAT_AGENCY_SECTIONS: '"shop-services-section"' } }), /array/u);
+  assert.deepEqual(projectAgentBriefing({ ...common, agencySections: [], environment }).offices, [],
+    "an explicit empty host selection must not fall back to ambient sections");
+});
+
+test("the original briefing CLI consumes the named section declaration without scanning copied agency trees", t => {
+  const root = agencyFixture();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const script = fileURLToPath(new URL("../scripts/project-agent-briefing.mjs", import.meta.url));
+  const args = [script, "--agency-root", root, "--holder", "password:pat", "--principal", "Pat",
+    "--instance-name", "ops.shop.test", "--instance-title", "Shop operations", "--origin", "https://ops.shop.test"];
+  const read = spawnSync(process.execPath, args, { encoding: "utf8", timeout: 10000,
+    env: { ...process.env, METROPLAT_AGENCY_SECTIONS: '["shop-services-section"]' } });
+  assert.equal(read.status, 0, read.stderr);
+  assert.match(read.stdout, /The owner answers for the shop\./u);
+  const refused = spawnSync(process.execPath, [...args, "--agency-sections", "[]"], { encoding: "utf8", timeout: 10000,
+    env: { ...process.env, METROPLAT_AGENCY_SECTIONS: '["shop-services-section"]' } });
+  assert.equal(refused.status, 1, refused.stderr);
+  assert.match(refused.stderr, /holds no office/u);
+});
+
 test("a briefing carries the principal's office, its duties with their notes, powers, skills and connection", (t) => {
   const root = agencyFixture();
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const briefing = projectAgentBriefing({ agencyRoot: root, holder: "password:pat", principal: "Pat", instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } });
+  const briefing = projectAgentBriefing({ agencyRoot: root, agencySections: ["shop-services-section"], environment: {}, holder: "password:pat", principal: "Pat", instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } });
   assert.deepEqual(briefing.obstructions, []);
   assert.deepEqual(briefing.offices, ["owner"]);
   assert.ok(!briefing.markdown.includes("Read the mail first."), "a skill is named by reference, its body is not inlined");
@@ -34,7 +76,7 @@ test("a briefing carries the principal's office, its duties with their notes, po
 test("a holder with no seat is an obstruction, not an empty briefing passed off as whole", (t) => {
   const root = agencyFixture();
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const briefing = projectAgentBriefing({ agencyRoot: root, holder: "password:nobody", principal: "Nobody", instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } });
+  const briefing = projectAgentBriefing({ agencyRoot: root, agencySections: ["shop-services-section"], environment: {}, holder: "password:nobody", principal: "Nobody", instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" } });
   assert.equal(briefing.offices.length, 0);
   assert.equal(briefing.obstructions.length, 1);
 });
@@ -43,7 +85,7 @@ test("the generated harness briefing qualifies Actor testimony before Work and r
   const root = agencyFixture();
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const { markdown } = projectAgentBriefing({
-    agencyRoot: root, holder: "password:pat", principal: "Pat",
+    agencyRoot: root, agencySections: ["shop-services-section"], environment: {}, holder: "password:pat", principal: "Pat",
     instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" },
   });
   for (const expected of [
@@ -73,7 +115,7 @@ test("a scheduled Actor hand can begin with one native World journal read withou
   const root = agencyFixture();
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const { markdown } = projectAgentBriefing({
-    agencyRoot: root, holder: "password:pat", principal: "Pat",
+    agencyRoot: root, agencySections: ["shop-services-section"], environment: {}, holder: "password:pat", principal: "Pat",
     instance: { name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test" },
   });
   for (const fragment of [
@@ -99,7 +141,7 @@ test("pre-provider consent and commercial signal classifications stay bounded by
   const root = agencyFixture();
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const {markdown, obstructions} = projectAgentBriefing({
-    agencyRoot: root, holder: "password:pat", principal: "Pat",
+    agencyRoot: root, agencySections: ["shop-services-section"], environment: {}, holder: "password:pat", principal: "Pat",
     instance: {name: "ops.shop.test", title: "Shop operations", origin: "https://ops.shop.test"},
   });
   assert.deepEqual(obstructions, []);

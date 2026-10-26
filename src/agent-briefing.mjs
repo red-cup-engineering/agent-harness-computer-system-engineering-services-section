@@ -9,7 +9,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { officeReading } from "@red-cup-engineering/organizing/agency";
-import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
+import { harnessAgencyAt } from "./agency-source.mjs";
 
 const raw = (agency, record) => {
   if (!record?.source) return {};
@@ -29,13 +29,13 @@ function readmeLead(dir) {
 }
 
 /**
- * @param {{ agencyRoot: string, holder: string, principal: string, instance: { name: string, title: string, origin: string } }} input
+ * @param {{ agencyRoot: string, agencySections?: string[], environment?: object, holder: string, principal: string, instance: { name: string, title: string, origin: string } }} input
  *   `holder` is the principal's account on the instance (as its incumbencies name it);
  *   `principal` is the person's name; `origin` is the instance's public origin.
  * @returns {{ markdown: string, offices: string[], obstructions: string[] }}
  */
-export function projectAgentBriefing({ agencyRoot, holder, principal, instance }) {
-  const agency = agencyAt(path.resolve(agencyRoot));
+export function projectAgentBriefing({ agencyRoot, agencySections, environment, holder, principal, instance }) {
+  const agency = harnessAgencyAt(path.resolve(agencyRoot), { agencySections, environment });
   const obstructions = [];
   const seats = [...agency.incumbencies.values()].filter((seat) => seat.holder === holder);
   if (seats.length === 0) obstructions.push(`${holder} holds no office in ${agencyRoot}`);

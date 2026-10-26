@@ -6,7 +6,8 @@
 
 import * as defaultFilesystem from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
-import { officeReading, readAgency, resolve as resolveRecord } from "@red-cup-engineering/organizing/agency";
+import { officeReading, resolve as resolveRecord } from "@red-cup-engineering/organizing/agency";
+import { readHarnessAgency } from "../../../src/agency-source.mjs";
 
 let REPO_ROOT;
 let DRY_RUN;
@@ -62,7 +63,9 @@ let AGENCY_ROOT;
 function agencyOf() {
   if (agency === undefined) {
     AGENCY_ROOT = existsSync(join(REPO_ROOT, "lib")) ? join(REPO_ROOT, "lib") : REPO_ROOT;
-    agency = readAgency(AGENCY_ROOT);
+    agency = readHarnessAgency(AGENCY_ROOT, {
+      agencySections: argValue("--agency-sections") === undefined ? undefined : JSON.parse(argValue("--agency-sections")),
+    });
   }
   return agency;
 }
@@ -485,7 +488,7 @@ export async function installClaudeAsAnAgent({
   DRY_RUN = argv.includes("--dry-run");
   STANDPOINT = resolve(argValue("--from") ?? cwd);
 
-  const FLAGS_TAKING_VALUE = new Set(["--root", "--from"]);
+  const FLAGS_TAKING_VALUE = new Set(["--root", "--from", "--agency-sections"]);
   const positionals = [];
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];

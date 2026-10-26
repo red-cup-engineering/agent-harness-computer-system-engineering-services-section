@@ -30,7 +30,7 @@ import path from "node:path";
 import { operation } from "@red-cup-engineering/computer-system-engine/rpc/operation";
 import { schemaFrom } from "@red-cup-engineering/json-schema-services-section/contracts";
 import { incumbenciesOf, officeReading } from "@red-cup-engineering/organizing/agency";
-import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
+import { harnessAgencyAt } from "../../../src/agency-source.mjs";
 import { projectOfficeAgent } from "./install-claude-as-an-agent.mjs";
 import { hostResourceControl, mergeHostResourceHooks } from "../../../src/host-resource-hook.mjs";
 
@@ -94,9 +94,9 @@ function heldOffices(agency, readings, harness, obstructions) {
  * session environment the node's sessions run under, `SESSION_BUDGET` unless the host holds another;
  * `deny` the commands they may never run, `SHARED_CHECKOUT_DENY` unless the host holds another.
  */
-export function projectClaudeHarness({ node, agencyRoot, settlementRoot, hookCommand, harness = "claude", mcpServers = {}, standing, budget = SESSION_BUDGET, deny = [] }) {
+export function projectClaudeHarness({ node, agencyRoot, agencySections, environment, settlementRoot, hookCommand, harness = "claude", mcpServers = {}, standing, budget = SESSION_BUDGET, deny = [] }) {
   node = path.resolve(node);
-  const agency = agencyAt(path.resolve(agencyRoot));
+  const agency = harnessAgencyAt(path.resolve(agencyRoot), { agencySections, environment });
   const obstructions = [];
   const files = new Map();
 
@@ -236,6 +236,8 @@ export function claudeHarnessOperations(host) {
   const project = ({ node } = {}) => projectClaudeHarness({
     node: node ?? host.repoRoot,
     agencyRoot: host.agencyRoot,
+    agencySections: host.agencySections,
+    environment: host.environment,
     settlementRoot: host.dataRoot,
     hookCommand: host.hookCommand,
     harness: host.harness,

@@ -12,7 +12,7 @@ import { extend, get, heads } from "@red-cup-engineering/semiotic-eavt-services-
 import { operation } from "@red-cup-engineering/computer-system-engine/rpc/operation";
 import { sessionContextImage } from "@red-cup-engineering/feltos/agents/context-image";
 import { resolve as resolveAgencyRecord } from "@red-cup-engineering/organizing/agency";
-import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
+import { harnessAgencyAt } from "../../../src/agency-source.mjs";
 import { enterpriseRootOf, settlementsRootOf } from "@red-cup-engineering/organizing/enterprise";
 import { bestStaffing, carrierStandingOf } from "@red-cup-engineering/organizing/work/staffing";
 import { recordCarrierAllowance } from "../../../src/carrier/agency-carrier.mjs";
@@ -25,16 +25,16 @@ export const codexTaskType = "codex-task";
 /** The micro-enterprise this harness is the service of; its record sits in this section's agency. */
 export const CODEX_NODE = "codex-node";
 
-function codexNodeRecord(agencyRoot) {
-  const record = resolveAgencyRecord(agencyAt(agencyRoot), "enterprises", CODEX_NODE);
+function codexNodeRecord(agencyRoot, options) {
+  const record = resolveAgencyRecord(harnessAgencyAt(agencyRoot, options), "enterprises", CODEX_NODE);
   if (record === undefined) throw new TypeError(`codex harness: no ${CODEX_NODE} enterprise record under ${agencyRoot}`);
   return record;
 }
 
 /** The codex node's own root, from its enterprise record. Its state is kept in the working tree
  *  (`repositoryRoot`), wherever the agency is read from. */
-export function codexNodeRoot({ agencyRoot, repositoryRoot = path.dirname(agencyRoot), environment = process.env }) {
-  return enterpriseRootOf(codexNodeRecord(agencyRoot), { settlementsRoot: settlementsRootOf(environment), repositoryRoot });
+export function codexNodeRoot({ agencyRoot, agencySections, repositoryRoot = path.dirname(agencyRoot), environment = process.env }) {
+  return enterpriseRootOf(codexNodeRecord(agencyRoot, { agencySections, environment }), { settlementsRoot: settlementsRootOf(environment), repositoryRoot });
 }
 
 const codexOutcomeOf = (task) => ({ outcome: task.state === "failed" ? "failed" : task.integration !== undefined ? "accepted" : task.state,
@@ -430,7 +430,7 @@ export function codexTaskOperations(spec = {}) {
 export function codexNodeOptions(binding, { environment = process.env, workspace = process.cwd() } = {}) {
   const house = path.resolve(binding.dataRoot);
   const agencyRoot = binding.agencyRoot ?? environment.METROPLAT_AGENCY_ROOT ?? path.join(environment.METROPLAT_REPOSITORY_ROOT ?? workspace, "lib");
-  const dataRoot = codexNodeRoot({ agencyRoot, repositoryRoot: environment.METROPLAT_REPOSITORY_ROOT ?? workspace, environment });
+  const dataRoot = codexNodeRoot({ agencyRoot, agencySections: binding.agencySections, repositoryRoot: environment.METROPLAT_REPOSITORY_ROOT ?? workspace, environment });
   return {
     dataRoot,
     formerRoots: dataRoot === house ? [] : [house],

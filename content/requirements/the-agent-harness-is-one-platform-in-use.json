@@ -10,6 +10,16 @@
       "target": "held",
       "command": "sh -c 'ls lib/emsenn/services/561-group/services/engineering-services-section/services/computer-engineering-services-section/services/computer-systems-engineering-services-section/services/agent-computer-system-engineering-services-section/services/agent-harness-computer-system-engineering-services-section/content/text/documents/articles/specifications/2026-10-10-the-agent-harness-as-one-platform.md >/dev/null 2>&1'",
       "expected-exit": 0
+    },
+    {
+      "cell": "harness:original-organizing-cohort",
+      "target": "held",
+      "says": "The original harness and its World consumer receive one compatible Organizing work schema in the same process. Operation-realization allocation remains admitted by the native contract, and incompatible schema redefinition remains refused."
+    },
+    {
+      "cell": "harness:named-agency-source",
+      "target": "held",
+      "says": "The harness reads only source sections named by the owning host, forwarding that declaration to the original Organizing holder. Root-only selection does not recursively discover nested offices; retained data snapshots and vendor copies are never additional agency sections."
     }
   ],
   "tier": "major",
@@ -303,6 +313,18 @@
       "type": "emsenn/schema/requirement",
       "mark": "ni:///sha-256;FytXmQiX3S9rX9F21NoTgct_7kZy3kCIkWqtqBUi90U",
       "cell": "ni:///sha-256;yBbt9O3GJol3ee1zE693pks40NMZNv2MKIvVe2KeTzw"
+    }
+  },
+  "x-development": {
+    "original-organizing-cohort": {
+      "state": "source-qualified-awaiting-original-publication-and-consumer-receiving",
+      "source-base": "b0093779c808b329982937b1f877d9bd6c86e827",
+      "source-observation": "The published harness 0.2.12-dev.139 declares Organizing 0.8.0-dev.741 while MetroPlat main 73146189cc1cc8aeb5a801df43c2bf54b763d430 declares Organizing 0.8.0-dev.946. Importing the genuine enterprise runtime with each immutable package resolving its own declared supplier refused incompatible schema redefinition for metroplat/work/agency-work-allocation before construction. This was not a test of the canonical installed MetroPlat workspace closure.",
+      "correction": "Select original immutable Organizing0.8.0-dev.946 in the harness; receive its addressed-operation work schema and explicit named-section agency contract through existing harness carriers and readers. Preserve all original schema guards and native source ownership.",
+      "prior-continuity": "Harness PR18 excluded copied agency trees under section data from sign-in records. The current source selection still refuses data/vendor sections and does not reintroduce a directory census.",
+      "receiving": "content/work-orders/organizing-cohort-receiving.json",
+      "consumer": "The original MetroPlat retained L-Space binding must receive the published harness edition together with immutable CAIRN343 and the published FeltOS resident binding. Source qualification is not hosted activation.",
+      "workspace-observation": "Canonical MetroPlat pnpm-workspace.yaml at main 73146189 explicitly overrides transitive Organizing to 0.8.0-dev.946, harness to 0.2.12-dev.137, and FeltOS to 0.21.9-dev.1098. That original workspace-wide cohort policy is preserved. The harness repair receives the current API in its own supplier declaration rather than relying on an external override; no canonical installed-host failure is inferred from the isolated package-declared result."
     }
   }
 }

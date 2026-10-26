@@ -101,7 +101,18 @@
     "services",
     "!services/codex-harness-services-section/services/codex-harness-projection-service/**",
     "!services/codex-harness-services-section/services/codex-home-service/**",
-    "!**/lib/legacy/**"
+    "!**/lib/legacy/**",
+    "test/agent-briefing.test.mjs",
+    "test/organizing-cohort.test.mjs",
+    "test/carrier-workspaces.test.mjs",
+    "test/inference-receiving-carrier.test.mjs",
+    "test/receiving-judgement-export.test.mjs",
+    "test/session-journal-hook.test.mjs",
+    "test/claude-harness-projection.test.mjs",
+    "test/claude-mcp-headers-entry.test.mjs",
+    "test/claude-sign-in.test.mjs",
+    "content/requirements/the-agent-harness-is-one-platform-in-use.json",
+    "content/work-orders/organizing-cohort-receiving.json"
   ],
   "scripts": {
     "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/agent-handoff.mjs && node --check scripts/write-agent-handoff.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs && node --check src/scope-failure-record.mjs && node --check test/scope-failure-record.test.mjs && node --check src/session-journal-hook.mjs && node --check scripts/install-session-journal-hook.mjs && node --check test/session-journal-hook.test.mjs && node --check src/house-context.mjs && node --check src/house-context-hook.mjs && node --check scripts/install-house-context-hook.mjs && node --check scripts/project-house-context.mjs && node --check test/house-context.test.mjs && node --check src/transcripts/codex-tool-accounting.mjs && node --check src/transcripts/native-tool-observation.mjs && node --check test/transcript-native-tool-observation.test.mjs && node --check src/utterance-speech-acts.mjs && node --check src/agent-briefing.mjs && node --check test/agent-briefing.test.mjs && node --check src/utterances.mjs && node --check test/utterances.test.mjs && node --check test/utterance-speech-acts.test.mjs",
@@ -129,7 +140,7 @@
     "@red-cup-engineering/computer-system-engine": "0.1.4",
     "@red-cup-engineering/computer-systems-fabrication-engineering-services-section": "0.4.14",
     "@red-cup-engineering/feltos": "0.20.2",
-    "@red-cup-engineering/organizing": "0.8.0-dev.741",
+    "@red-cup-engineering/organizing": "0.8.0-dev.946",
     "@red-cup-engineering/animating": "0.2.4"
   },
   "engines": {
@@ -147,5 +158,16 @@
   "funding": {
     "type": "individual",
     "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
-  }
+  },
+  "receivingTests": [
+    "test/agent-briefing.test.mjs",
+    "test/organizing-cohort.test.mjs",
+    "test/carrier-workspaces.test.mjs",
+    "test/inference-receiving-carrier.test.mjs",
+    "test/receiving-judgement-export.test.mjs",
+    "test/session-journal-hook.test.mjs",
+    "test/claude-harness-projection.test.mjs",
+    "test/claude-mcp-headers-entry.test.mjs",
+    "test/claude-sign-in.test.mjs"
+  ]
 }

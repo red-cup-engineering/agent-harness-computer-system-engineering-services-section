@@ -12,7 +12,8 @@
  * every other duty and every receiving act reads, in a read-only tree of its own. No session runs
  * in the repository's shared checkout (carrier/workspace.mjs).
  */
-import { readAgency, resolve } from "@red-cup-engineering/organizing/agency";
+import { resolve } from "@red-cup-engineering/organizing/agency";
+import { readHarnessAgency } from "../../../src/agency-source.mjs";
 
 import { agencyOutcomeSchema, agencyWorkCarrier, RECEIVING_JUDGEMENT_SCHEMA } from "../../../src/carrier/agency-carrier.mjs";
 import { carrierWorkspaces } from "../../../src/carrier/workspace.mjs";
@@ -26,7 +27,7 @@ export const claudeEffectsOf = (item) => (item.requiresCapabilities ?? []).some(
 /** An office as a Claude Code agent definition: the projection installing-claude-as-an-agent
  *  renders, as `{ name, description, prompt }`. `agency` is the registry the host reads offices
  *  from; the office is resolved there by id or key. */
-export function officeAgentDefinition({ repoRoot, agency = readAgency(repoRoot), office }) {
+export function officeAgentDefinition({ repoRoot, agencySections, environment, agency = readHarnessAgency(repoRoot, { agencySections, environment }), office }) {
   const record = resolve(agency, "offices", office);
   if (record === undefined) throw new TypeError(`Claude Code carrier: office ${office} is absent or ambiguous`);
   const { id, text } = projectOfficeAgent({ repoRoot, agency, office: record.key });

@@ -9,7 +9,7 @@ import * as defaultFilesystem from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createEnterpriseStandingBlock } from "./enterprise-standing-block.mjs";
-import { readAgency } from "@red-cup-engineering/organizing/agency";
+import { readHarnessAgency } from "../../../src/agency-source.mjs";
 
 let HERE;
 let REPO_ROOT;
@@ -150,9 +150,9 @@ function resolveEnterprise(arg, node) {
 function roster(enterprise) {
   const agencyRoot = existsSync(join(REPO_ROOT, "lib")) ? join(REPO_ROOT, "lib") : REPO_ROOT;
   const sectionPath = relative(agencyRoot, enterprise).split("\\").join("/");
-  return [...readAgency(agencyRoot).offices.values()]
+  return [...readHarnessAgency(agencyRoot, { agencySections: [sectionPath] }).offices.values()]
     .filter((office) => office.sectionPath === sectionPath)
-    .map((office) => ({ id: office.id, record: join(agencyRoot, office.source), duties: office.bearsDuty }))
+    .map((office) => ({ id: office.id, record: join(agencyRoot, office.source), sectionPath, duties: office.bearsDuty }))
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -165,8 +165,9 @@ function resolveSibling() {
   return sibling;
 }
 
-function spawnSibling(sibling, officeArg, node, flags, doing, motion) {
-  const args = [sibling, officeArg, node, "--root", REPO_ROOT, ...flags];
+function spawnSibling(sibling, officeArg, node, flags, doing, motion, sectionPath) {
+  const args = [sibling, officeArg, node, "--root", REPO_ROOT,
+    "--agency-sections", JSON.stringify([sectionPath]), ...flags];
   const r = spawnSync(processApi.execPath, args, { stdio: "inherit" });
   if (r.status !== 0) {
     // The sweep sentence cites the manifest, and under a dry run nothing was
@@ -206,7 +207,7 @@ function doInstall(enterprise, node, offices, sibling) {
 
   const flags = [...(REINSTALL ? ["--reinstall"] : []), ...(DRY_RUN ? ["--dry-run"] : [])];
   for (const office of offices) {
-    spawnSibling(sibling, office.record, node, flags, `installing office '${office.id}' into ${rel(node)}`, "install");
+    spawnSibling(sibling, office.record, node, flags, `installing office '${office.id}' into ${rel(node)}`, "install", office.sectionPath);
     if (!DRY_RUN) standingBlock.recordInManifest(node, office.id);
   }
 
@@ -287,7 +288,7 @@ function doClean(enterprise, node, sibling) {
     return;
   }
   const entries = standingBlock.readManifest(node);
-  const seated = new Map(roster(enterprise).map((o) => [o.id, o.record]));
+  const seated = new Map(roster(enterprise).map((o) => [o.id, o]));
   const would = DRY_RUN ? "dry run — would remove" : "removed";
 
   const blockEntry = entries.find(standingBlock.isBlockEntry);
@@ -309,7 +310,8 @@ function doClean(enterprise, node, sibling) {
   const flags = ["--clean", ...(DRY_RUN ? ["--dry-run"] : [])];
   for (const id of entries.filter((e) => !standingBlock.isBlockEntry(e))) {
     if (seated.has(id)) {
-      spawnSibling(sibling, seated.get(id), node, flags, `cleaning office '${id}' from ${rel(node)}`, "clean");
+      const office = seated.get(id);
+      spawnSibling(sibling, office.record, node, flags, `cleaning office '${id}' from ${rel(node)}`, "clean", office.sectionPath);
     } else {
       cleanRetired(node, id, would);
     }

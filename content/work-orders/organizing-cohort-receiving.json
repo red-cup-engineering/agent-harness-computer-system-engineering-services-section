@@ -1,0 +1,153 @@
+{
+  "kind": "agent-harness.original-organizing-cohort-receiving/v1",
+  "source": {
+    "repository": "red-cup-engineering/agent-harness-computer-system-engineering-services-section",
+    "baseCommit": "b0093779c808b329982937b1f877d9bd6c86e827",
+    "files": [
+      {
+        "path": "package.json",
+        "bytes": 13020,
+        "gitBlob": "225870f902c1ecabfabad5f0803ae19d35fbbecf",
+        "sha256": "7599f0c3ed0c88df909d3c3be2e6e5f1fd7d676867bb91b5cb71047a672b9b34"
+      },
+      {
+        "path": "src/agency-source.mjs",
+        "bytes": 1165,
+        "gitBlob": "9038ba5fac87d5bec4b71f70068b3568fbf23be6",
+        "sha256": "93fba01022bc8ff893901fcc910417a9e7a75c474c352be4491486c134274ac1"
+      },
+      {
+        "path": "src/agent-briefing.mjs",
+        "bytes": 14681,
+        "gitBlob": "12c40b123f79c2d315ceaa4056217e1acf4f1cea",
+        "sha256": "6ce7ea8745ad4e4307da1f35b8a36916a9cdca01e6ec41084034a59f5847a4ba"
+      },
+      {
+        "path": "scripts/project-agent-briefing.mjs",
+        "bytes": 1431,
+        "gitBlob": "6db9ac0375c16b374abcb0ddc892da5631c659e3",
+        "sha256": "c0993e29abee46cbfb1acc22759b11f554cafffac5085574ee1b72b10f94ad96"
+      },
+      {
+        "path": "services/claude-code-harness-services-section/src/claude-harness-projection.mjs",
+        "bytes": 16920,
+        "gitBlob": "9989424fb5de52a572f76f64830ea16350511efa",
+        "sha256": "b00efc39b41d3faf39a1e72bb82d4c83339ce4094e3f63b055987379345f71ba"
+      },
+      {
+        "path": "services/claude-code-harness-services-section/scripts/claude-mcp-headers.mjs",
+        "bytes": 3234,
+        "gitBlob": "5786ffec6cff6880c643f59b1794bc76d66a2d6e",
+        "sha256": "b4724201f0c25cd010324e84eed7fd44b0f9db6a8ffad803d70a69d30b29588f"
+      },
+      {
+        "path": "services/claude-code-harness-services-section/src/agency-work.mjs",
+        "bytes": 4894,
+        "gitBlob": "38e2cddc01bfec7d5a27a73697185f9e7cdc1e27",
+        "sha256": "3e3ccc90359e77cc6c06810516b02b1d2520294a94f63b7ac1ac35195cc57be6"
+      },
+      {
+        "path": "services/claude-code-harness-services-section/src/install-enterprise-in-claude.mjs",
+        "bytes": 27329,
+        "gitBlob": "d24b6268581e851d51bd9071534149437605cbb6",
+        "sha256": "df0efa8d97cadbc393f31e4f8cbd03f60c6a6c67c1b0e9d1a3a7234d6154d795"
+      },
+      {
+        "path": "services/claude-code-harness-services-section/src/install-claude-as-an-agent.mjs",
+        "bytes": 22322,
+        "gitBlob": "5e43a04ba6942a9b3e25a4d0a70bda720dd2b094",
+        "sha256": "1c7e28b0bbbee2487e5a33400073039c045008561819131dd30934f494a4c13a"
+      },
+      {
+        "path": "services/codex-harness-services-section/src/operations.mjs",
+        "bytes": 30972,
+        "gitBlob": "f929e8f7f37cef36570af2b5478704261933a8e2",
+        "sha256": "a1994a906fffbfb72fe6cc08988bad87aef0c54dc4c5a99a57d037695e906631"
+      },
+      {
+        "path": "test/agent-briefing.test.mjs",
+        "bytes": 12022,
+        "gitBlob": "5bfd6b2d3e71f2aebb8e1583ac134c8c429ca4b9",
+        "sha256": "10042e5d5a2ea9d0db13c443db7b4cbfd2c75f9c80e16fa6ec26a35373bf019b"
+      },
+      {
+        "path": "test/organizing-cohort.test.mjs",
+        "bytes": 3109,
+        "gitBlob": "b0dffc1d6caa3f0e9550afc410f71bf3b8045deb",
+        "sha256": "9b2c722b1f1f8355a86207adfa03f71d9dcbfca4cbb39aaa900030a95c486d99"
+      },
+      {
+        "path": "content/requirements/the-agent-harness-is-one-platform-in-use.json",
+        "bytes": 21364,
+        "gitBlob": "79d9ab2562f2cb647935810ae3aaa03587371b07",
+        "sha256": "e06730bd38b10db79fe296705b8fb1d465f8483f6bdc081b989a60c2449cd48b"
+      }
+    ]
+  },
+  "requirement": "content/requirements/the-agent-harness-is-one-platform-in-use.json#x-development.original-organizing-cohort",
+  "supplier": {
+    "name": "@red-cup-engineering/organizing",
+    "version": "0.8.0-dev.946",
+    "gitHead": "00ec45c3f18ba62e7a8791e26c88af05a77a6568",
+    "integrity": "sha512-B91hiOlF6MOXu1diYLuWyI7GXrC7F3pUnKYm9g+SJyai4A8MPyzQZWdzgJG2AFSuk+GuInCE9e4YeDzbh+EvSQ==",
+    "tarSha256": "f8245a3540947489ff8a994f2c505ee55959860476826642f4d4177c685db709"
+  },
+  "nativeReceiving": {
+    "command": "node --test --test-reporter=tap test/agent-briefing.test.mjs test/organizing-cohort.test.mjs test/carrier-workspaces.test.mjs test/inference-receiving-carrier.test.mjs test/receiving-judgement-export.test.mjs test/session-journal-hook.test.mjs test/claude-harness-projection.test.mjs test/claude-mcp-headers-entry.test.mjs test/claude-sign-in.test.mjs",
+    "node": "v24.22.1",
+    "tests": 56,
+    "pass": 56,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 2331.636632,
+    "tapSha256": "e0fb8888f8af6ecf0df0702f66b69410084ee6439873f303087189dbb4ce86f3",
+    "controls": [
+      "Original carrier workspace and read-only receiver contracts",
+      "Original native success/error receiving and journal behavior",
+      "Original localhost-only sign-in and credential-cache contracts",
+      "Current addressed-operation allocation admission and incompatible schema redefinition refusal",
+      "Named-source projection, original Organizing holder identity, explicit empty selection and copied-data exclusion",
+      "Original briefing CLI and Codex enterprise binding"
+    ],
+    "independentReceiving": {
+      "command": "node --test --test-reporter=tap test/organizing-cohort.test.mjs test/agent-briefing.test.mjs",
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "skipped": 0,
+      "tapSha256": "6f2f7e94e213eebd552137eec2da98ed24ceabc94c64de9c13a1a49256c61806",
+      "supplierGitHead": "00ec45c3f18ba62e7a8791e26c88af05a77a6568"
+    }
+  },
+  "cohort": {
+    "consumerRepository": "red-cup-engineering/metroplat",
+    "consumerBase": "73146189cc1cc8aeb5a801df43c2bf54b763d430",
+    "consumerOrganizingVersion": "0.8.0-dev.946",
+    "priorHarnessVersion": "0.2.12-dev.139",
+    "priorHarnessOrganizingVersion": "0.8.0-dev.741",
+    "originalConflict": "schemaFrom: incompatible schema redefinition for metroplat/work/agency-work-allocation",
+    "schemaGuardWeakened": false,
+    "currentHarnessFeltosVersion": "0.20.2",
+    "pendingConsumerReceipt": "Receive this exact source through the original immutable publisher before selecting it in MetroPlat alongside CAIRN343 and the separately published FeltOS resident binding.",
+    "observedResolution": "Each immutable package resolved its own declared suppliers in an isolated consumer. The canonical MetroPlat workspace-wide override closure was not reproduced by that observation.",
+    "canonicalWorkspace": {
+      "source": "pnpm-workspace.yaml",
+      "gitBlob": "265a2133a1b5bea0e741b68bd5a1351718703cfa",
+      "organizingOverride": "0.8.0-dev.946",
+      "harnessOverride": "0.2.12-dev.137",
+      "feltosOverride": "0.21.9-dev.1098",
+      "policyPreserved": true
+    },
+    "canonicalInstalledFailureClaimed": false
+  },
+  "scope": {
+    "newRegistries": 0,
+    "newCaches": 0,
+    "newQueryEngines": 0,
+    "recursiveAgencyDiscovery": false,
+    "hostDeclaration": "Explicit agencySections or existing METROPLAT_AGENCY_SECTIONS JSON array; absent declaration selects the root section only. Original Organizing owns source path admission, holder identity, and invalidation.",
+    "hostedActivationVerified": false,
+    "revenueObserved": 0,
+    "newCashExpense": 0
+  }
+}

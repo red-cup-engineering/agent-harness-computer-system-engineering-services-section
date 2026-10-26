@@ -33,9 +33,11 @@ async function main() {
     mcpUrl: options.url, holder: options.character, cache, sessionId,
     username: async () => {
       // The agency reader is imported only when a sign-in needs the records.
-      const { agencyAt } = await import("@red-cup-engineering/organizing/agency/held");
+      const { harnessAgencyAt } = await import("../../../src/agency-source.mjs");
       const { resolve } = await import("@red-cup-engineering/organizing/agency");
-      const agency = agencyAt(options["agency-root"]);
+      const agency = harnessAgencyAt(options["agency-root"], {
+        agencySections: options["agency-sections"] === undefined ? undefined : JSON.parse(options["agency-sections"]),
+      });
       const character = [...new Set(agency.characters.values())].find((c) => c.id === options.character);
       if (character === undefined) throw new Error(`the agency records no character ${options.character}`);
       return signInOf([...new Set(agency.organs.values())], character, {
