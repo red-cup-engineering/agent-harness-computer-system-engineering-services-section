@@ -84,7 +84,7 @@ export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeNam
   return sessionContextImage({
     dataRoot: toldRoot,
     toldBudget: 6_000,
-    identity: [`You are ${characterName}, the ${dialect.label} character of this machine, serving the office allocated in the duty below through the 561 Group's MetroPlat. Perform its actual duty and method at the responsibility level of that office.`],
+    identity: ["Attend to the 561 Group.", `You are ${characterName}, the ${dialect.label} character of this machine${nodeName === undefined ? "" : ` (node ${nodeName})`}${enterprise === undefined ? "" : `, working for the ${enterprise} enterprise`}, serving the office allocated in the duty below through the 561 Group's MetroPlat. Perform its actual duty and method at the responsibility level of that office.`],
     capabilities: [
       ...(workspaceRule === undefined ? [] : [workspaceRule]),
       ...(nodeName === undefined ? [] : [`The execution node owning this allocation is ${nodeName}. Its work subjects and allocations are local to that node. ${access === undefined ? "Select the installed MetroPlat MCP server for that exact node." : `Use the declared ${mcpServer} MetroPlat MCP server: ${access.connect} followed by ${access.command}. Select that exact server rather than another node or app connector.`}`]),
@@ -95,7 +95,7 @@ export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeNam
       `The host submits your typed outcome for this exact allocation after observing your actual session, so no separate agency-work-propose call is required. Return only JSON: ${AGENCY_OUTCOME_SHAPE}. An obstruction is a successful outcome only when the canonical receiver condition permits it. A final message alone does not complete the work. Preserve outstanding parent obligations until their own receiving conditions are met.`,
     ],
     mission: [
-      `Allocated office: ${item.office}`,
+      `Allocated office: ${item.office}${item.allocatedModel === undefined ? "" : `; model ${item.allocatedModel}`}${item.staffing?.effort === undefined ? "" : `, reasoning effort ${item.staffing.effort}`}`,
       `Intent: ${item.intent}`,
       `Scope: ${item.scope}; original subject: ${item.subject}; allocated office: ${item.office}`,
       ...(enterprise === undefined ? [] : [`This duty is owned by the ${enterprise} enterprise. Prefix its work-coordination commands with @${enterprise}, which selects its own settlement without granting authority. Work-board and agency records remain node operations; do not prefix those.${usesBoardOperations ? ` For a taken demand, find its current board thread with work-board ${JSON.stringify({ subject: takingSubjects[0], full: true, limit: 2 })}${takingSubjects.length === 1 ? "" : `; a witnessed extension is held under the taking it cites, so also try ${takingSubjects.slice(1).map((subject) => JSON.stringify(subject)).join(", ")}`}. Identify the current taking by this enterprise and exact admitted subject before any act. Migration can change thread ids while preserving that taking and subject; copied source receipts are historical evidence, not current routing addresses. If this duty assays a delivery rather than holding a taking, use its assay-of thread evidence.` : ""}`]),
@@ -358,7 +358,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     // and the proposal follow.
     const suit = sessionContextImage({
       dataRoot: toldRoot, toldBudget: 2_000,
-      identity: [`You are ${characterName}, exercising the actually held office named below as an independent receiver. This is a direct receiving act, not a new production allocation.`],
+      identity: ["Attend to the 561 Group.", `You are ${characterName}, the ${dialect.label} character of this machine on node ${nodeName}${enterprise === undefined ? "" : `, working for the ${enterprise} enterprise`}, exercising the actually held office named below as an independent receiver. This is a direct receiving act, not a new production allocation.`],
       capabilities: [
         `The owning node is ${nodeName}. For evidence that needs MetroPlat, use exactly the ${mcpServer} MCP server via ${access?.connect ?? "its world connect tool"} then ${access?.command ?? "its world command tool"} (a verb, space, JSON input); read only.`,
         "The host has resolved the exact immutable proposal below from its journal and checked the actual held receiving office and its authored receivesFrom relation. It admits your judgement after observing your actual session, rechecking current process-bound authority. Do not reread office catalogs or whole dispatch queues to establish those facts. Inspect only evidence necessary for the stated receiving condition; use bounded repository reads or an exact native subject when the condition requires it.",
@@ -367,7 +367,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
         `Return only JSON: ${JSON.stringify(RECEIVING_JUDGEMENT_SHAPE)}. decision is accepted, rejected or unverified; text is your concise judgement of the report under the rule above, or for unverified precisely what could not be read and why; evidence lists only what you actually inspected (paths, commits, receipts, subjects). Never fabricate acceptance.`,
       ],
       mission: [
-        `Receiving office: ${office}`,
+        `Receiving office: ${office}; model ${staffing.carrier}${staffing.effort === undefined ? "" : `, reasoning effort ${staffing.effort}`}`,
         ...(enterprise === undefined ? [] : [`The proposal belongs to ${enterprise}. Prefix its work-coordination evidence reads with @${enterprise}; work-board and agency records remain node operations. This selects the owning settlement and confers no authority.`]),
         `Review only this exact immutable proposal: ${JSON.stringify(proposal)}`,
       ],
