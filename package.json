@@ -1,6 +1,6 @@
 {
   "name": "@red-cup-engineering/agent-harness-computer-system-engineering-services-section",
-  "version": "0.2.10",
+  "version": "0.2.12-dev.1",
   "type": "module",
   "description": "The agent harness section: the actor-parameterized harness lifecycle journal (one admitted event schema, one recording path for every agent harness's skill selections and provider commissions) plus the lagoon world folds that read it, so a second harness never re-derives them.",
   "license": "MIT",
@@ -64,8 +64,11 @@
     "./world-roots": "./src/world-roots.mjs",
     "./scope-failure-record": "./src/scope-failure-record.mjs",
     "./session-journal-hook": "./src/session-journal-hook.mjs",
+    "./house-context": "./src/house-context.mjs",
+    "./house-context-hook": "./src/house-context-hook.mjs",
     "./transcripts/codex-tool-accounting": "./src/transcripts/codex-tool-accounting.mjs",
     "./transcripts/native-tool-observation": "./src/transcripts/native-tool-observation.mjs",
+    "./carrier/receiving-judgement": "./src/carrier/receiving-judgement.mjs",
     "./utterance-speech-acts": "./src/utterance-speech-acts.mjs"
   },
   "bin": {
@@ -86,7 +89,10 @@
     "write-agent-handoff": "scripts/write-agent-handoff.mjs",
     "project-agent-briefing": "scripts/project-agent-briefing.mjs",
     "session-journal-hook": "src/session-journal-hook.mjs",
-    "install-session-journal-hook": "scripts/install-session-journal-hook.mjs"
+    "install-session-journal-hook": "scripts/install-session-journal-hook.mjs",
+    "house-context-hook": "src/house-context-hook.mjs",
+    "install-house-context-hook": "scripts/install-house-context-hook.mjs",
+    "project-house-context": "scripts/project-house-context.mjs"
   },
   "files": [
     "src",
@@ -98,7 +104,7 @@
     "!**/lib/legacy/**"
   ],
   "scripts": {
-    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/agent-handoff.mjs && node --check scripts/write-agent-handoff.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs && node --check src/scope-failure-record.mjs && node --check test/scope-failure-record.test.mjs && node --check src/session-journal-hook.mjs && node --check scripts/install-session-journal-hook.mjs && node --check test/session-journal-hook.test.mjs && node --check src/transcripts/codex-tool-accounting.mjs && node --check src/transcripts/native-tool-observation.mjs && node --check test/transcript-native-tool-observation.test.mjs && node --check src/utterance-speech-acts.mjs && node --check src/agent-briefing.mjs && node --check test/agent-briefing.test.mjs && node --check src/utterances.mjs && node --check test/utterances.test.mjs && node --check test/utterance-speech-acts.test.mjs",
+    "check": "node --check src/cli.mjs && node --check src/harness-lifecycle.mjs && node --check src/harness-routing.mjs && node --check src/agent-lifecycle-hook.mjs && node --check src/harness-efficiency.mjs && node --check src/agent-handoff.mjs && node --check scripts/write-agent-handoff.mjs && node --check src/ops-attention-events.mjs && node --check src/tool-evidence.mjs && node --check scripts/record-harness-skill-selection.mjs && node --check scripts/record-harness-provider-commission.mjs && node --check scripts/summarize-harness-lifecycle.mjs && node --check scripts/admit-set-of-session-event-arrivals.mjs && node --check scripts/harness-lifecycle-cli.mjs && node --check scripts/fold-harness-lifecycle.mjs && node --check scripts/fold-harness-turns.mjs && node --check scripts/seed-offices.mjs && node --check src/carrier/session.mjs && node --check src/carrier/agency-carrier.mjs && node --check src/carrier/inference-receiving-carrier.mjs && node --check src/carrier/workspace.mjs && node --check src/host-resource-hook.mjs && node --check scripts/install-host-resource-hook.mjs && node --check src/connector-call-evidence.mjs && node --check test/connector-call-evidence.test.mjs && node --check src/harness-world-verbs.mjs && node --check src/world-roots.mjs && node --check src/scope-failure-record.mjs && node --check test/scope-failure-record.test.mjs && node --check src/session-journal-hook.mjs && node --check scripts/install-session-journal-hook.mjs && node --check test/session-journal-hook.test.mjs && node --check src/house-context.mjs && node --check src/house-context-hook.mjs && node --check scripts/install-house-context-hook.mjs && node --check scripts/project-house-context.mjs && node --check test/house-context.test.mjs && node --check src/transcripts/codex-tool-accounting.mjs && node --check src/transcripts/native-tool-observation.mjs && node --check test/transcript-native-tool-observation.test.mjs && node --check src/utterance-speech-acts.mjs && node --check src/agent-briefing.mjs && node --check test/agent-briefing.test.mjs && node --check src/utterances.mjs && node --check test/utterances.test.mjs && node --check test/utterance-speech-acts.test.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
@@ -120,10 +126,10 @@
     "@red-cup-engineering/mcp-engineering-services-section": "0.1.1",
     "@red-cup-engineering/javascript-file-services-section": "0.1.1",
     "@red-cup-engineering/computer-inference-engine": "0.1.2",
-    "@red-cup-engineering/computer-system-engine": "0.1.2",
-    "@red-cup-engineering/computer-systems-fabrication-engineering-services-section": "0.3.2",
+    "@red-cup-engineering/computer-system-engine": "0.1.4",
+    "@red-cup-engineering/computer-systems-fabrication-engineering-services-section": "0.4.14",
     "@red-cup-engineering/feltos": "0.20.2",
-    "@red-cup-engineering/organizing": "0.2.3",
+    "@red-cup-engineering/organizing": "0.8.0-dev.741",
     "@red-cup-engineering/animating": "0.2.4"
   },
   "engines": {

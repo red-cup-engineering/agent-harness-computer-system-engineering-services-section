@@ -26,3 +26,15 @@ test("what the projection no longer yields is found in the directories it owns, 
   writeFileSync(path.join(node, ".claude", "agents", "hand-written.md"), "x\n");
   assert.deepEqual(checkClaudeHarness(projectionAt(node)).drift, [{ path: ".claude/agents/hand-written.md", reason: "no longer projected" }]);
 });
+
+test("the servers written into .mcp.json are the servers the settings approve, so a session connects without a prompt", (t) => {
+  const node = mkdtempSync(path.join(tmpdir(), "claude-harness-"));
+  t.after(() => rmSync(node, { recursive: true, force: true }));
+  const projection = { ...projectionAt(node), mcpServers: { metroplat: { type: "http", url: "https://metroplat.example/mcp" } } };
+  writeClaudeHarness(projection);
+  const settings = () => JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8"));
+  assert.deepEqual(settings().enabledMcpjsonServers, ["metroplat"]);
+  assert.equal(checkClaudeHarness(projection).current, true);
+  writeFileSync(path.join(node, ".claude", "settings.local.json"), JSON.stringify({ ...settings(), enabledMcpjsonServers: [] }));
+  assert.deepEqual(checkClaudeHarness(projection).drift, [{ path: ".claude/settings.local.json", reason: "enabledMcpjsonServers differs" }]);
+});

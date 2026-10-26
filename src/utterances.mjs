@@ -34,7 +34,9 @@ const NOISE = [
 ];
 const DAY_MS = 86_400_000;
 /** The decoding law's version: a cache written under another law is read again. */
-const DECODING = "2026-09-27.2";
+// Arrival event IDs entered the decoded prompt shape in October 2026. A cache
+// written by the older decoder must be reread even if log size/mtime match.
+const DECODING = "2026-10-25.1";
 
 /** The utterance a prompt's raw text carries, or null when it carries none. */
 export function utteranceText(raw) {

@@ -7,7 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import net from "node:net";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
+import { closeSync, constants, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -247,9 +247,9 @@ const TABLE = [
   ["nice -n 5 tar xf a.tar", "plain", "serialize"],
   ["sudo du -sh /", "plain", "serialize"],
   ["time cargo check", "plain", "serialize"],
-  ["npm test", "plain", "allow"],
-  ["npm run build", "plain", "allow"],
-  ["pnpm run test", "plain", "allow"],
+  ["npm test", "plain", "serialize"],
+  ["npm run build", "plain", "serialize"],
+  ["pnpm run test", "plain", "serialize"],
   ["cargo --version", "plain", "allow"],
   ["lake --version", "plain", "allow"],
   ["guix --version", "plain", "allow"],
@@ -258,7 +258,7 @@ const TABLE = [
   ["ls", "plain", "allow"],
   ["cat README.md", "plain", "allow"],
   ["echo hi", "plain", "allow"],
-  ["node --test test/a.test.mjs", "plain", "allow"],
+  ["node --test test/a.test.mjs", "plain", "serialize"],
   ['echo "find / -name x"', "plain", "allow"],
   ['grep "find /" notes.txt', "plain", "allow"],
   ["cat <<'EOF'\nfind / -name x\ntar czf a b\nEOF", "plain", "allow"],
@@ -290,6 +290,62 @@ test("a clone into the user's home, or the tmp-named directory of a working tree
   assert.equal(classify("git clone https://example.com/o/r.git ../../../tmp/r", { cwd: "/srv/work/proj", ...user }).action, "serialize");
   assert.equal(classify("git clone https://example.com/o/r.git ../r", { cwd: "/srv/work/scratchpad/harness", ...user }).action, "serialize");
   assert.equal(classify("git clone https://example.com/o/r.git /home/someone/.cache/scratch/r", { cwd: "/srv/work/proj", ...user }).action, "serialize");
+});
+
+test("clone custody refuses a missing cd and unresolved destinations before executing Git", () => {
+  const missing = path.join(home, "scratch", "absent-clone-parent");
+  const cases = [
+    `cd ${shellQuote(missing)}; for r in owner/one owner/two; do git clone -q --depth 1 https://example.com/$r.git 2>&1 | tail -2; done; ls`,
+    `cd ${shellQuote(missing)}; git clone https://example.com/o/r.git`,
+    `pushd ${shellQuote(missing)}; gh repo clone o/r`,
+    `cd ${shellQuote(missing)}; bash -c 'git clone https://example.com/o/r.git'`,
+    `git -C ${shellQuote(missing)} clone https://example.com/o/r.git`,
+    "git clone https://example.com/$repository.git",
+    "git clone https://example.com/o/r.git $unknownDestination",
+  ];
+  for (const command of cases) {
+    const result = hook(event(command));
+    assert.equal(result.status, 0);
+    const decision = JSON.parse(result.stdout).hookSpecificOutput;
+    assert.equal(decision.permissionDecision, "deny", command);
+    assert.match(decision.permissionDecisionReason, /destination cannot be established/u);
+    assert.equal(decision.updatedInput, undefined, "the refusal contains no executable rewrite");
+  }
+  assert.equal(existsSync(missing), false, "admission does not create the intended directory");
+});
+
+test("clone custody preserves valid targets and intentional cd failure recovery without shell rewrites", () => {
+  const scratch = path.join(home, "scratch", "clone-custody");
+  const bin = path.join(scratch, "bin");
+  mkdirSync(bin, { recursive: true });
+  const marker = path.join(scratch, "git-effects");
+  // The real hook admits a harmless executable standing in for Git: no clone or network effect.
+  writeFileSync(path.join(bin, "git"), '#!/bin/sh\nprintf "%s\\n" "$PWD" >> "$CLONE_CUSTODY_MARKER"\n', { mode: 0o755 });
+  const hookEnv = { ...env, PATH: `${bin}:${env.PATH}`, CLONE_CUSTODY_MARKER: marker, AGENT_CONTAINMENT: "off" };
+  const execute = command => {
+    const admission = hook(event(command), hookEnv);
+    assert.equal(admission.status, 0);
+    const decision = admission.stdout ? JSON.parse(admission.stdout).hookSpecificOutput : undefined;
+    assert.notEqual(decision?.permissionDecision, "deny", command);
+    return spawnSync("bash", ["-c", decision?.updatedInput?.command ?? command], {
+      cwd: dirs.plain, env: hookEnv, encoding: "utf8", timeout: 5_000,
+    });
+  };
+  const positive = execute(`cd ${shellQuote(scratch)} && git clone https://example.com/o/r.git ./fixture`);
+  assert.equal(positive.status, 0, positive.stderr);
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n`);
+  const missing = path.join(scratch, "missing");
+  const alternate = execute(`if ! cd ${shellQuote(missing)}; then git clone https://example.com/o/r.git ${shellQuote(path.join(scratch, "alternate"))}; fi`);
+  assert.equal(alternate.status, 0, alternate.stderr);
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`);
+  const recovery = `if ! cd ${shellQuote(missing)}; then printf recovered; fi`;
+  assert.equal(classify(recovery, { cwd: dirs.plain, env: hookEnv, home }).action, "allow");
+  const recovered = execute(recovery);
+  assert.equal(recovered.status, 0);
+  assert.equal(recovered.stdout, "recovered");
+  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`, "recovery made no Git call");
+  assert.equal(existsSync(path.join(scratch, "fixture")), false);
+  assert.equal(existsSync(path.join(scratch, "alternate")), false);
 });
 
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
@@ -380,8 +436,8 @@ test("the hook fails open: garbage, empty, partial and foreign events change not
   assert.equal(JSON.parse(odd.stdout).hookSpecificOutput.permissionDecision, "deny");
 });
 
-test("the hook fails open without flock, with an unwritable lock, and when switched off", () => {
-  assert.equal(hook(event("du -sh ."), { ...env, PATH: "/nonexistent" }).stdout, "");
+test("known heavy work refuses without admission infrastructure; the explicit off switch remains", () => {
+  assert.equal(JSON.parse(hook(event("du -sh ."), { ...env, PATH: "/nonexistent" }).stdout).hookSpecificOutput.permissionDecision, "deny");
   assert.equal(hook(event("find / -name x"), { ...env, AGENT_HOST_GUARD: "off" }).stdout, "");
   // A lock under /proc once sent node's recursive mkdir into an endless loop at full CPU.
   for (const unwritable of ["/proc/no-such-dir/agent-heavy.lock", "/proc/self/no/such/dir/agent-heavy.lock", "/sys/no-such-dir/agent-heavy.lock", "/dev/null/agent-heavy.lock"]) {
@@ -389,7 +445,7 @@ test("the hook fails open without flock, with an unwritable lock, and when switc
     const result = spawnSync(process.execPath, [HOOK], { input: event("du -sh ."), env: { ...env, AGENT_HEAVY_LOCK: unwritable }, encoding: "utf8", timeout: 20_000 });
     assert.equal(result.signal, null, `${unwritable} hung the hook for ${Date.now() - started} ms`);
     assert.equal(result.status, 0);
-    assert.equal(result.stdout, "");
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
   }
 });
 
@@ -435,10 +491,10 @@ test("on a stdin that never closes the hook's own timer ends it, still exit 0 an
   assert.ok(elapsed < 10_000, `${elapsed} ms`);
 });
 
-test("a harness's other settings do not change the command language: unknown variables and unknown cwd never deny", () => {
+test("unknown read coordinates remain fail-open while clone custody requires an established destination", () => {
   assert.equal(classify("find $NOPE -name x", { cwd: dirs.plain, env, home }).action, "allow");
   assert.equal(classify("find . -name x", { env, home }).action, "allow");
-  assert.equal(classify("git clone https://example.com/o/r.git $DEST", { cwd: dirs.srv, env, home }).action, "serialize");
+  assert.equal(classify("git clone https://example.com/o/r.git $DEST", { cwd: dirs.srv, env, home }).action, "deny");
   assert.equal(classify("cd - && find . -name x", { cwd: dirs.plain, env, home }).action, "allow");
 });
 
@@ -547,14 +603,14 @@ test("the lock dies with its holder: a killed holder frees the slot at once", { 
   assert.ok(await until(() => !lockHeld()), "freed");
 });
 
-test("a lock file the command cannot read leaves the command to run unlocked, not to fail", { skip: !haveFlock, timeout: 60_000 }, async () => {
+test("a lock removed after admission refuses instead of running the heavy command unlocked", { skip: !haveFlock, timeout: 60_000 }, async () => {
   const gone = path.join(root, "gone", "agent-heavy.lock");
   const log = path.join(root, "unlocked.log");
   const wrapped = rewritten(`du -s /dev/null >/dev/null; echo ran >> ${shellQuote(log)}`, { ...env, AGENT_HEAVY_LOCK: gone });
   rmSync(path.dirname(gone), { recursive: true });
   const { code } = await exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal(code, 0);
-  assert.equal(readFileSync(log, "utf8"), "ran\n");
+  assert.equal(code, BUSY_EXIT_CODE);
+  assert.equal(existsSync(log), false);
 });
 
 test("the original survives quoting whatever it contains", { skip: !haveFlock, timeout: 60_000 }, async () => {
@@ -587,7 +643,7 @@ test("rm of index.lock is denied only while a git process works in that reposito
     assert.match(inside.reason, new RegExp(`git \\(pid ${git.pid}\\)`, "u"));
     assert.equal(verdict(`rm -f ${dirs.big}/.git/index.lock`, "plain").action, "deny", "a git working in a subdirectory counts");
     assert.equal(verdict(`rm -f ${dirs.small}/.git/index.lock`, "plain").action, "allow", "a git working in another repository does not");
-    assert.equal(verdict("rm -f .git/index.lock", "plain").action, "allow", "no repository there");
+    assert.equal(verdict("rm -f .git/index.lock", "small").action, "allow", "an unrelated owned fixture repository has no active writer");
     assert.equal(verdict("rm -f lib/a.mjs", "big").action, "allow");
   } finally { git.kill("SIGKILL"); }
   assert.ok(await until(() => verdict(`rm -f ${dirs.big}/.git/index.lock`, "plain").action === "allow"), "the git process has ended");
@@ -642,17 +698,23 @@ const shellEvent = (command, permission_mode, tool_name = "Bash") => ({ hook_eve
 
 async function withBus(work) {
   const runtime = mkdtempSync(path.join(root, "runtime-"));
+  // AF_UNIX has a short address limit. Bind through the held descriptor of
+  // this same owned fixture directory; the socket remains runtime/bus.
+  const directory = openSync(runtime, constants.O_RDONLY | constants.O_DIRECTORY);
   const server = net.createServer();
-  await new Promise((resolve) => server.listen(path.join(runtime, "bus"), resolve));
-  try { return await work(runtime); } finally { await new Promise((resolve) => server.close(resolve)); }
+  try {
+    await new Promise((resolve, reject) => { server.once("error", reject); server.listen(`/proc/self/fd/${directory}/bus`, resolve); });
+    try { return await work(runtime); } finally { await new Promise((resolve) => server.close(resolve)); }
+  } finally { closeSync(directory); }
 }
 
-test("the work slice yields the CPU by weight, not a quota, is reclaimed above 45% of memory and killed above 60%, with no swap; the sessions' slice is protected", () => {
+test("the work slice yields the CPU by weight and retains the 60% hard bound without a no-swap soft throttle; the sessions' slice is protected", () => {
   const limits = containmentLimits({ memory: 7748 * MiB });
-  assert.deepEqual(limits, { CPUWeight: 20, MemoryHigh: "3486M", MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
+  assert.deepEqual(limits, { CPUWeight: 20, MemoryMax: "4648M", MemorySwapMax: 0, TasksMax: 1024 });
   assert.deepEqual(sessionLimits({ memory: 7748 * MiB }), { CPUWeight: 50, MemoryLow: "774M" });
   assert.deepEqual(sessionLimits({ memory: 64 * 1024 * MiB }), { CPUWeight: 50, MemoryLow: "1536M" });
   const unit = sliceUnit(limits);
+  assert.doesNotMatch(unit, /^MemoryHigh=/mu);
   assert.match(unit, /^\[Unit\]\nDescription=.+\n\n\[Slice\]\n/u);
   for (const [key, value] of Object.entries(limits)) assert.ok(unit.includes(`\n${key}=${value}\n`), key);
 });
@@ -664,6 +726,11 @@ test("commands go to the work slice, from a session outside the slices or inside
     const answer = (input, cgroup = OUTSIDE, provider = "claude") => decide(input, { env: live, provider, cgroup })?.updatedInput?.command;
     // Without permission rules, every command is contained.
     assert.ok(answer(shellEvent("ls -la", "bypassPermissions")).includes(slice));
+    // Except a line of removals only, which the harness's own removal check must read as written.
+    const removal = ["r" + "m", "src/old.mjs"].join(" ");
+    assert.equal(answer(shellEvent(removal, "bypassPermissions")), undefined);
+    assert.equal(answer(shellEvent(`${"r" + "mdir"} a/b && ${"r" + "mdir"} a`, "bypassPermissions")), undefined);
+    assert.ok(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")).includes(slice), "a removal beside other work is contained");
     // With them, only what is already rewritten, so no allow rule stops matching a light command.
     assert.equal(answer(shellEvent("ls -la", "default")), undefined);
     const heavy = answer(shellEvent("git fetch origin", "default"));
@@ -732,12 +799,13 @@ test("the launcher starts the executable it is handed inside the slice, or direc
   if (!inside) assert.match(bare.stderr, /runs uncontained/u);
 });
 
-test("the host admits a quarter of its processors' worth of heavy commands, one under memory pressure", () => {
-  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0 }), 4);
+test("disk-heavy work is serial by default and explicit parallelism yields to memory or I/O pressure", () => {
+  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0, ioPressure: 0 }), 1);
   assert.equal(heavySlots({ env: {}, cpus: 2, pressure: undefined }), 1);
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2 }), 6);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2, ioPressure: 0 }), 6);
   assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 10 }), 1, "every task stalled on memory a tenth of the time");
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10 }), 4);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4", AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10, ioPressure: 0 }), 4);
+  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4" }, pressure: 0, ioPressure: 10 }), 1);
   assert.equal(memoryPressure(() => "some avg10=5.10 avg60=2.82 avg300=14.13 total=1\nfull avg10=4.99 avg60=2.70 avg300=13.45 total=1\n"), 4.99);
   assert.equal(memoryPressure(() => { throw new Error("no PSI"); }), undefined);
   assert.deepEqual(slotLocks("/run/l", 3), ["/run/l", "/run/l.1", "/run/l.2"]);
@@ -798,7 +866,7 @@ test("the run-once marker sits beside the slot locks, so a missing XDG_RUNTIME_D
 });
 
 test("concurrent commands own distinct run-once markers and remove only their allocations", { skip: !haveFlock, timeout: 15_000 }, async () => {
-  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir);
+  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir, { recursive: true });
   const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
   for (const file of locks) writeFileSync(file, "");
   const before = readdirSync(dir).sort();
@@ -812,7 +880,7 @@ test("concurrent commands own distinct run-once markers and remove only their al
   assert.deepEqual(results.map(result => result.code), [75, 75, 75]);
   const markers = results.map(result => result.stdout.trim());
   assert.equal(new Set(markers).size, 3);
-  for (const marker of markers) assert.equal(path.dirname(path.dirname(marker)), dir);
+  for (const marker of markers) assert.equal(path.dirname(marker), dir);
   assert.deepEqual(readdirSync(dir).sort(), before, "locks survive and every private marker allocation is gone");
   for (const result of results) assert.equal(result.stderr, "");
 });

@@ -5,7 +5,7 @@
  * every projected file comes from projectClaudeHarness, and the write is writeClaudeHarness.
  *
  *   node project-info-claude-harness.mjs --projector <file> [--node <dir>] [--agency-root <dir>]
- *        [--settlement-root <dir>] [--show <relative path>] [--write]
+ *        [--settlement-root <dir>] [--mcp-servers <json file>] [--show <relative path>] [--write]
  *
  * Without --write it only reads: it prints the files map (paths and sizes), counts, obstructions,
  * the check against the node, and with --show the text of one projected file. The projector is
@@ -29,7 +29,16 @@ const settingsFile = path.join(node, ".claude/settings.local.json");
 const existing = existsSync(settingsFile) ? (JSON.parse(readFileSync(settingsFile, "utf8")).permissions?.deny ?? []) : [];
 const deny = [...new Set([...existing, ...mod.SHARED_CHECKOUT_DENY])];
 
-const projection = mod.projectClaudeHarness({ node, agencyRoot, settlementRoot, mcpServers: {}, deny });
+// The projector removes every server it is not given, so an empty list would blank the node's `.mcp.json`.
+// The servers are the host's: pass the MetroPlat host's `mcpServers()` as JSON; a write without them is refused.
+const serversFile = opt("mcp-servers");
+const mcpServers = serversFile ? JSON.parse(readFileSync(serversFile, "utf8")) : {};
+if (args.includes("--write") && Object.keys(mcpServers).length === 0) {
+  console.error("--write needs --mcp-servers <json file> (the host's mcpServers()): the projector would otherwise delete every server in .mcp.json");
+  process.exit(2);
+}
+
+const projection = mod.projectClaudeHarness({ node, agencyRoot, settlementRoot, mcpServers, deny });
 console.log(JSON.stringify({ node, agencyRoot, settlementRoot, projector: projectorFile, counts: projection.counts, env: projection.env, denyCount: deny.length, obstructions: projection.obstructions }, null, 2));
 for (const [file, text] of projection.files) console.log(`${String(text.length).padStart(8)}  ${file}`);
 const show = opt("show");

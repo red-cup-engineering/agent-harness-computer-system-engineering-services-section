@@ -42,6 +42,18 @@ harness engineering beneath an inference provider.
   names it. It never blocks a session: a board it cannot read is said in the journal.
   `scripts/install-session-journal-hook.mjs --settings <file> -- <hook arguments>` installs a
   reference to this owning source, keeping every other hook and replacing an earlier journal entry.
+- `src/house-context-hook.mjs` is the house-context carrier (rule
+  capitalized-leader-statements-mark-a-failed-carrier): one zero-dependency hook for SessionStart,
+  SubagentStart and UserPromptSubmit that projects the 561 Group's binding rules, standing Leader
+  decisions, open campaign carriers and a "before asking the Leader" checklist into every Claude Code
+  session started in the Group's working trees, and the carrier-repair instruction when the Leader
+  writes in capitals. `src/house-context.mjs` generates the text from the records the 561 Group
+  services section's `data/records/session-projection-records/agent-session-projection.json` names,
+  never from text of its own, under a strict size budget (8000 characters at session start, 5400 in
+  a sub-agent, which does not receive SessionStart context); carrier states are read from GitHub
+  with a ten-minute cache and fail soft offline. `scripts/install-house-context-hook.mjs` references
+  this source from a user's Claude Code settings (backup kept, other hooks retained, `--uninstall`
+  removes only its entries); `scripts/project-house-context.mjs` prints what a session was given.
 - `codex-harness-services-section` owns the Codex dialect (`codex exec`), the
   Codex node's durable task rail and the Codex runtime projection.
 - `claude-code-harness-services-section` owns the Claude Code dialect
@@ -117,3 +129,19 @@ attestations or learning records. Raw carrier caches store source prompts
 and rederive their identities on read. Same-instant collisions and sources
 whose timestamp differs between carriers remain explicit limits until a
 native event-occurrence token or independently admitted relation is carried.
+
+### Effective parent budget for shared containment
+
+Shared work containment uses the destination user manager's effective memory allocation. A 12GiB VM with user.slice at4GiB previously received work high5552209920/max7402946560 from VM fractions, so a3.4GiB npm process throttled the parent and prevented its900-second timeout from completing termination for37minutes. The existing harness now reads only memory.high/memory.max of the four known destination ancestors and takes their minimum with physical memory before applying its unchanged45%/60% shares. Bare Cedar Fog therefore declares work high1843M/max2457M within the received4GiB parent. Session protection, heavy slots, CPU/I/O weights, zero work swap and provider trust remain under their existing owners. Codex-home's record explicitly selects the existing shared containment installer; its harness apply and scheduled reconciliation install the same units instead of merely refreshing hook references. Dry-run has no installation effects; source-reference registration alone is not a claim of active provider enforcement.
+
+### Requested timeout termination
+
+The existing Bash carriers preserve requested GNU timeout durations and add a
+ten-second final termination grace. Explicit caller kill-after options retain
+their native meaning. Commands without a requested timeout gain no deadline.
+The exported shell function stays within the original containment/serialization
+carriers; it adds no runner, timer or controller and never retries executed work.
+This receives two real npm groups that held the one heavy slot after their
+900/1500-second TERM-only timeouts, retaining their partial outcomes for their
+original owners. Native tests include a TERM-ignoring process group, explicit
+caller grace, no-timeout status, and all existing slot/containment behavior.

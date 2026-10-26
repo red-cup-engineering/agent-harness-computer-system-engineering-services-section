@@ -114,3 +114,58 @@ test("conflicted arrival identity cannot be given a confident speech-act label",
   assert.equal(unassessed[0].speechActs, null);
   assert.equal(source.speechActs, undefined);
 });
+
+test("the Leader's interconnected Funday ideas retain separate source passages and an explicit systems request", () => {
+  // A transcribed regression fixture, not an observed ChatGPT event or native
+  // Actor/session receipt. The interpreter supplies these candidate readings;
+  // exact-span binding preserves them without autonomous language classification.
+  const text = `Three ideas:
+
+
+
+- Me, Myself, and I as the 5, 6, and 1 of agency, the in, out, across
+- Who Owns What? becoming an ongoing desk in Koios.News, and the economic research that it requires being services we sell through bazaars and other places, as well as using ourselves
+- Doing more to operationalize our concepts of rendanheyi, huidu guanli, and especially, the four colored armies.
+
+
+
+These are interconnected because the same underlying fabrication systems should facilitate each part of improving each of these: doing a serious scientific research paper into the mathematics of agency and our mathematics; doing serious intelligence research into world economics to find the beneficial parties of services and assets in the world; doing deep agentic operations over a piece of work.
+
+
+
+The four armies part is of especial interest to us, because right now, it feels like we mostly just have the red army building lots of code, and we would greatly benefit from more attention on the systems that build stuff, so that what we build is more conformant with the rules and less vernacular. In fact, the difference between architected and vernacular might be useful in helping understand the settlements on territories, as we see this stuff in our deeper spatiotemporal semiotics ideas from Obsmetrologia and mathematics.
+
+
+
+---
+
+
+
+Have Funday Sunday with this long and rambly prompt, by making the systems that take in Prompt-Messages from the Leader of the 561 Group more robust and capable - again, feeding into the metacircular self-improving we're aiming toward across almost all sessions.`;
+  const source = {
+    address: "test-fixture:leader-funday-interconnected-ideas",
+    session: "synthetic-fixture-session", at: "2026-10-25T00:00:00Z",
+    carrier: "test-fixture", text,
+  };
+  const phrases = [
+    "Me, Myself, and I as the 5, 6, and 1 of agency, the in, out, across",
+    "Who Owns What? becoming an ongoing desk in Koios.News, and the economic research that it requires being services we sell through bazaars and other places, as well as using ourselves",
+    "Doing more to operationalize our concepts of rendanheyi, huidu guanli, and especially, the four colored armies.",
+    "These are interconnected because the same underlying fabrication systems should facilitate each part of improving each of these",
+    "right now, it feels like we mostly just have the red army building lots of code",
+    "Have Funday Sunday with this long and rambly prompt, by making the systems that take in Prompt-Messages from the Leader of the 561 Group more robust and capable - again, feeding into the metacircular self-improving we're aiming toward across almost all sessions.",
+  ];
+  const kinds = ["idea", "idea", "idea", "suggestion", "observation", "order"];
+  const proposals = phrases.map((phrase, i) => ({
+    start: text.indexOf(phrase), end: text.indexOf(phrase) + phrase.length, kind: kinds[i],
+  }));
+  const read = bindUtteranceSpeechActs(source, proposals, { interpretedBy: "test-fixture-reader" });
+  assert.deepEqual(read.candidates.map(c => c.text), phrases);
+  assert.deepEqual(read.candidates.map(c => c.proposedKind), kinds);
+  assert.equal(read.candidates[1].proposedKind, "idea", "a question mark in the desk title does not change the supplied reading");
+  assert.equal(read.source.carrier, "test-fixture");
+  assert.equal(read.workAuthorized, false);
+  assert.equal(read.requirementAdmitted, false);
+  assert.equal(read.assessment, "candidate-only");
+  assert.equal(source.text, text);
+});

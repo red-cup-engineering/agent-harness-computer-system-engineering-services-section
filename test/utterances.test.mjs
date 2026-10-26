@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
-import { deriveUtterances, utterance } from "../src/utterances.mjs";
+import { deriveUtterances, readCodexPrompts, utterance } from "../src/utterances.mjs";
 
 const session = "urn:session:observed";
 const at1 = "2026-10-18T14:00:00.000Z";
@@ -82,4 +85,25 @@ test("bounded collision evidence preserves count without exposing an unbounded e
     /bounded source-reported event identity/u);
   assert.throws(() => utterance({ ...prompt(at1), arrivalIdentity: "x".repeat(513) }),
     /bounded source-reported event identity/u);
+});
+
+test("a cache predating arrival identity retention is decoded again despite matching file metadata", async (t) => {
+  const root = mkdtempSync(join(tmpdir(), "utterance-cache-law-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const file = join(root, "history.jsonl");
+  const cache = join(root, "prompts.json");
+  const text = "Preserve the observed source occurrence.";
+  writeFileSync(file, JSON.stringify({ session_id: session, ts: Date.parse(at1) / 1000, text }) + "\n");
+  const { size, mtimeMs } = statSync(file);
+  writeFileSync(cache, JSON.stringify({
+    kind: "agent-harness.carrier-prompts",
+    decoding: "2026-09-27.2",
+    files: { [file]: { size, mtimeMs, prompts: [prompt(at1, "codex-history", "stale decoded value")] } },
+  }));
+  const read = await readCodexPrompts([file], { cache });
+  assert.deepEqual(read.map(p => p.text), [text], "old decoding cannot conceal the current carrier read");
+  const refreshed = JSON.parse(readFileSync(cache, "utf8"));
+  assert.notEqual(refreshed.decoding, "2026-09-27.2");
+  assert.equal(refreshed.files[file].mtimeMs, mtimeMs, "the decoder version, not a changed source stat, invalidates the cache");
+  assert.deepEqual(await readCodexPrompts([file], { cache }), read, "the refreshed cache remains reusable");
 });

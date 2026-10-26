@@ -20,8 +20,8 @@
  *              cargo, make, and git or gh operations that stat a large working tree). It is rewritten
  *              (`updatedInput.command`) to run in one of the host's heavy SLOTS, each a kernel lock
  *              (`flock(1)` on a file every process of the user shares), at `nice -n 10` and idle I/O
- *              class. The host has a quarter of its processors' worth of slots (AGENT_HEAVY_SLOTS
- *              overrides), and ONE while memory is under pressure: when every task stalled on memory
+ *              class. The host admits one heavy command by default (AGENT_HEAVY_SLOTS
+ *              explicitly overrides), and ONE while memory or I/O is under pressure: when every task stalled on memory
  *              for at least AGENT_HEAVY_PRESSURE percent (default 10) of the last ten seconds
  *              (/proc/pressure/memory, "full avg10"), admitting more heavy work only deepens the stall.
  *              A command takes the first free slot, else waits on one;
@@ -53,7 +53,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from "node:fs";
-import { availableParallelism, homedir, tmpdir, totalmem } from "node:os";
+import { homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -62,6 +62,11 @@ export const LOCK_FILE = "agent-heavy.lock";
 export const PRESSURE_PERCENT = 10;
 /** The exit status of a heavy command that never ran because the host's one heavy slot stayed busy. */
 export const BUSY_EXIT_CODE = 75;
+// GNU timeout otherwise sends TERM once and can wait forever for a process
+// that ignores it. Keep each caller's requested deadline, finish termination
+// after ten seconds, and let an explicit later --kill-after option win.
+// Export the shell function so nested bash carriers keep the same operation.
+const requestedTimeoutPrelude = 'if ! declare -F timeout >/dev/null; then timeout() { command timeout --kill-after=10s "$@"; }; export -f timeout; fi';
 export const LIMITS = Object.freeze({
   /** A repository tracking more files than this is large; the count is read from the header of its `.git/index`. */
   largeRepoFiles: 20_000,
@@ -601,7 +606,12 @@ function git(argv, state, ctx, report) {
     if (args[0] === "add") report.deny("git worktree add checks out a full working tree on disk: use a blobless sparse clone in the scratchpad instead (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>, then git sparse-checkout set <dirs>).");
     return;
   }
-  if (sub === "clone") { clone(positionals(args, CLONE_VALUE_OPTIONS), state, ctx, report); return; }
+  if (sub === "clone") {
+    const candidate = directory === undefined ? state.cloneCwd : resolveDir(directory, state.cloneCwd, ctx);
+    const cloneCwd = directory === undefined || (candidate && isDirectory(candidate)) ? candidate : undefined;
+    clone(positionals(args, CLONE_VALUE_OPTIONS), { cloneCwd }, ctx, report);
+    return;
+  }
   if (GIT_ALWAYS_HEAVY.has(sub)) { report.heavy(`git ${sub}`); return; }
   if (sub === "ls-tree") { if (hasFlag(args, "r", ["--recursive"])) report.heavy("git ls-tree -r"); return; }
   if (sub === "cat-file") { if (args.some((arg) => arg.startsWith("--batch"))) report.heavy("git cat-file --batch"); return; }
@@ -660,13 +670,16 @@ function clone(words, state, ctx, report) {
   if (source === undefined) return;
   let destination = words[1];
   if (destination === undefined) {
-    const name = source.replace(/[/:]+$/u, "").split(/[/:]/u).pop()?.replace(/\.git$/u, "");
+    const name = expand(source, state.cloneCwd, ctx)?.replace(/[/:]+$/u, "").split(/[/:]/u).pop()?.replace(/\.git$/u, "");
     destination = name === undefined || name === "" ? undefined : name;
   }
   report.heavy("git clone");
-  if (destination === undefined) return;
-  const resolved = resolveDir(destination, state.cwd, ctx);
-  if (resolved === undefined || isScratch(resolved, ctx)) return;
+  const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
+  if (resolved === undefined) {
+    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination within the permitted session scratchpad/tmp custody.");
+    return;
+  }
+  if (isScratch(resolved, ctx)) return;
   report.deny(`git clone into ${resolved} is outside a scratchpad/tmp directory: clone into the session scratchpad or /tmp (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>) and delete the clone when done.`);
 }
 
@@ -860,7 +873,9 @@ function heavyTool(name, argv, report, here = {}, ctx = undefined) {
     case "cargo": { const s = sub(); if (s !== undefined && !CARGO_LIGHT.has(s)) report.heavy("cargo"); return; }
     case "lake": if (LAKE_HEAVY.has(sub())) report.heavy("lake"); return;
     case "guix": if (GUIX_HEAVY.has(sub(["-L", "--load-path", "-C", "--cores", "-M", "--max-jobs"]))) report.heavy("guix"); return;
-    case "npm": case "pnpm": case "bun": if (NPM_INSTALL.has(sub(["-C", "--dir", "--prefix", "--filter", "-F", "--workspace", "-w"]))) report.heavy(`${name} install`); return;
+    case "node": case "nodejs": if (args.some(arg => arg === "--test" || arg.startsWith("--test="))) report.heavy("node tests"); return;
+    case "npm": case "pnpm": case "bun": if (NPM_INSTALL.has(sub(["-C", "--dir", "--prefix", "--filter", "-F", "--workspace", "-w"])) || ["run", "run-script", "test", "build", "exec", "x"].includes(sub())) report.heavy(`${name} install or script`); return;
+    case "npx": report.heavy("npx script"); return;
     case "yarn": { const s = sub(["--cwd"]); if (s === undefined || NPM_INSTALL.has(s)) report.heavy("yarn install"); return; }
     case "pip": case "pip3": if (sub() === "install") report.heavy("pip install"); return;
     case "uv": if (["sync", "add", "lock", "pip"].includes(sub())) report.heavy("uv"); return;
@@ -881,18 +896,26 @@ function simple(command, frame, state, ctx, report, depth, lock) {
     if (!frame.cwds.has(scope)) frame.cwds.set(scope, cwdOf(frame.scopes[scope].parent));
     return frame.cwds.get(scope);
   };
-  const here = { cwd: cwdOf(command.scope) };
+  const cloneCwdOf = (scope) => {
+    if (!frame.cloneCwds.has(scope)) frame.cloneCwds.set(scope, cloneCwdOf(frame.scopes[scope].parent));
+    return frame.cloneCwds.get(scope);
+  };
+  const here = { cwd: cwdOf(command.scope), cloneCwd: cloneCwdOf(command.scope) };
   if (name === "cd" || name === "pushd") {
     const target = positionals(words.slice(1))[0];
     frame.cwds.set(command.scope, target === "-" ? undefined : target === undefined ? ctx.home : resolveDir(target, here.cwd, ctx));
+    // Keep the existing scan heuristic, but never grant clone custody from a directory
+    // that is only intended. A failed `cd; clone` otherwise runs in the caller's tree.
+    const cloneCwd = target === "-" ? undefined : target === undefined ? ctx.home : resolveDir(target, here.cloneCwd, ctx);
+    frame.cloneCwds.set(command.scope, cloneCwd && isDirectory(cloneCwd) ? cloneCwd : undefined);
     return;
   }
   if (SHELLS.has(name)) {
     const at = words.findIndex((word, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/u.test(word));
-    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, state, ctx, report, depth + 1, lock);
+    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd);
     return;
   }
-  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, state, ctx, report, depth + 1, lock); return; }
+  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd); return; }
   if (name === "find" || name === "bfs") { find(words, here, ctx, report); return; }
   if (name === "git") { git(words, here, ctx, report); return; }
   if (name === "gh") { github(words, here, ctx, report); return; }
@@ -901,10 +924,10 @@ function simple(command, frame, state, ctx, report, depth, lock) {
   heavyTool(name, words, report, here, ctx);
 }
 
-function walk(source, cwd, state, ctx, report, depth, lock) {
+function walk(source, cwd, state, ctx, report, depth, lock, cloneCwd) {
   if (depth > LIMITS.maxShellDepth) return;
   const { commands, scopes } = parseShell(source);
-  const frame = { scopes, cwds: new Map([[0, cwd]]) };
+  const frame = { scopes, cwds: new Map([[0, cwd]]), cloneCwds: new Map([[0, cloneCwd]]) };
   for (const command of commands) simple(command, frame, state, ctx, report, depth, lock);
 }
 
@@ -914,7 +937,7 @@ export function classify(command, { cwd, env = process.env, home, scratchpad, lo
   const denied = [];
   const heavy = [];
   const state = { locked: false };
-  walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock);
+  walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock, ctx.cwd);
   if (denied.length > 0) return { action: "deny", reason: denied[0] };
   if (heavy.length > 0) return { action: "serialize", heavy, locked: state.locked };
   return { action: "allow" };
@@ -943,17 +966,108 @@ export function memoryPressure(read = () => readFileSync("/proc/pressure/memory"
   } catch { return undefined; }
 }
 
-/** How many heavy commands the host admits at once: a quarter of its processors (at least one), or AGENT_HEAVY_SLOTS; one under memory pressure. */
-export function heavySlots({ env = process.env, cpus = availableParallelism(), pressure = memoryPressure() } = {}) {
+/** CPU count does not measure disk capacity. Parallel admission is explicit; pressure always reduces it to one. */
+export function heavySlots({ env = process.env, pressure = memoryPressure(), ioPressure = memoryPressure(() => readFileSync("/proc/pressure/io", "utf8")) } = {}) {
   const configured = Math.floor(Number(env.AGENT_HEAVY_SLOTS));
-  const slots = Number.isFinite(configured) && configured >= 1 ? configured : Math.max(1, Math.floor(cpus / 4));
+  const slots = Number.isFinite(configured) && configured >= 1 ? configured : 1;
   const threshold = Number(env.AGENT_HEAVY_PRESSURE);
   const limit = env.AGENT_HEAVY_PRESSURE !== undefined && env.AGENT_HEAVY_PRESSURE !== "" && Number.isFinite(threshold) ? threshold : PRESSURE_PERCENT;
-  return pressure !== undefined && pressure >= limit ? 1 : slots;
+  return (pressure !== undefined && pressure >= limit) || (ioPressure !== undefined && ioPressure >= limit) ? 1 : slots;
 }
 
 /** The lock files of `slots` slots: the first is `lock` itself, so a command an agent wraps in `flock <lock>` by hand holds slot one. */
 export const slotLocks = (lock, slots = 1) => Array.from({ length: Math.max(1, slots) }, (_, i) => (i === 0 ? lock : `${lock}.${i}`));
+
+// Contention testimony comes from the existing kernel locks, not another
+// ownership journal. In particular, a missing PID never licenses lock removal.
+function boundedLockReading(file, maximum) {
+  const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  try {
+    const bytes = Buffer.alloc(maximum + 1);
+    let used = 0;
+    while (used <= maximum) {
+      const n = readSync(fd, bytes, used, bytes.length - used, null);
+      if (n === 0) return bytes.subarray(0, used).toString("utf8");
+      used += n;
+    }
+    throw new Error("lock observation exceeds allocation");
+  } finally { closeSync(fd); }
+}
+
+function processBirth(stat) {
+  const end = stat.lastIndexOf(")");
+  const fields = end < 0 ? [] : stat.slice(end + 2).trim().split(/\s+/u);
+  return /^\d+$/u.test(fields[19] ?? "") ? fields[19] : null;
+}
+
+/** Deliberately omit every argv value: shell text, credentials and customer
+ * input cannot be made safe by a token-name blacklist. */
+function lockProcess(pid, procRoot, includeChildren, budget) {
+  if (budget.remaining <= 0) return { pid, state: "process-budget-exhausted" };
+  budget.remaining -= 1;
+  const root = path.join(procRoot, String(pid));
+  try {
+    const before = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
+    if (before === null) throw new Error("unknown birth");
+    const command = boundedLockReading(path.join(root, "cmdline"), 65536).split("\0").filter(Boolean);
+    const named = path.basename(command[0] ?? "");
+    const executable = ["node", "nodejs", "flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make", "sleep"].includes(named) ? named : "other";
+    const kind = ["node", "nodejs"].includes(executable) && command.includes("--test") ? "node-test"
+      : ["flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make"].includes(executable) ? executable : "other";
+    const fullCgroup = boundedLockReading(path.join(root, "cgroup"), 8192).trim();
+    const cgroup = fullCgroup.slice(0, 1024);
+    const childrenText = includeChildren
+      ? boundedLockReading(path.join(root, "task", String(pid), "children"), 4096).trim() : "";
+    const allChildren = childrenText ? childrenText.split(/\s+/u).filter(x => /^[1-9]\d*$/u.test(x)).map(Number) : [];
+    const children = allChildren.slice(0, 4);
+    const after = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
+    if (before !== after) return { pid, state: "identity-changed" };
+    return { pid, state: "observed", startTicks: before, cgroup, cgroupComplete: fullCgroup.length <= 1024,
+      command: { executable, kind, argv: "omitted" },
+      ...(includeChildren ? { childrenComplete: allChildren.length <= Math.min(4, budget.remaining),
+        children: children.slice(0, budget.remaining).map(child => lockProcess(child, procRoot, false, budget)) } : {}) };
+  } catch (error) {
+    return { pid, state: error.code === "ENOENT" || error.code === "ESRCH" ? "exited-or-unavailable" : "unavailable" };
+  }
+}
+
+/** Bounded read-only snapshot for the exact already selected slot files.
+ * It neither creates/open-locks a file nor enumerates processes/directories. */
+export function heavyLockStatus(locks, { procRoot = "/proc" } = {}) {
+  if (!Array.isArray(locks) || locks.length < 1 || locks.length > 16 ||
+      locks.some(lock => typeof lock !== "string" || lock.length > 4096 || !path.isAbsolute(lock)))
+    throw new TypeError("one to sixteen exact absolute slot paths required");
+  let rows;
+  try { rows = boundedLockReading(path.join(procRoot, "locks"), 524288).split("\n"); }
+  catch { return { kind: "agent-heavy.lock-status.v1", state: "kernel-locks-unavailable", snapshot: true }; }
+  const processBudget = { remaining: 8 };
+  return { kind: "agent-heavy.lock-status.v1", snapshot: true, authority: "kernel-advisory-lock-snapshot",
+    locks: locks.map(lock => {
+      try {
+        const before = lstatSync(lock, { bigint: true });
+        if (!before.isFile() || before.isSymbolicLink()) throw new Error("not an original regular slot");
+        const major = ((before.dev >> 8n) & 0xfffn) | ((before.dev >> 32n) & 0xfffff000n);
+        const minor = (before.dev & 0xffn) | ((before.dev >> 12n) & 0xffffff00n);
+        const selected = [];
+        for (const row of rows) {
+          const match = /^\s*\d+:\s*(->\s*)?FLOCK\s+ADVISORY\s+(?:WRITE|READ)\s+(-?\d+)\s+([a-f0-9]+):([a-f0-9]+):(\d+)\s/iu.exec(row);
+          if (match && BigInt("0x" + match[3]) === major && BigInt("0x" + match[4]) === minor && BigInt(match[5]) === before.ino)
+            selected.push({ role: match[1] ? "waiter" : "holder", pid: Number(match[2]) });
+        }
+        const after = lstatSync(lock, { bigint: true });
+        if (before.dev !== after.dev || before.ino !== after.ino)
+          return { path: lock, state: "slot-identity-changed" };
+        const retained = selected.slice(0, 8);
+        const processes = retained.map(({ role, pid }) => ({ role,
+          ...(pid > 0 ? lockProcess(pid, procRoot, role === "holder", processBudget) : { pid, state: "kernel-holder-unavailable" }) }));
+        return { path: lock, state: selected.length ? "contended-or-held" : "free-at-snapshot",
+          device: String(before.dev), major: major.toString(16), minor: minor.toString(16), inode: String(before.ino),
+          complete: retained.length === selected.length && !processes.some(p => p.state === "process-budget-exhausted" || p.childrenComplete === false),
+          processes };
+      } catch { return { path: lock, state: "slot-unavailable" }; }
+    }),
+    limitations: "Processes and locks can change after this snapshot; never remove a lock or terminate an owner from this testimony." };
+}
 
 // Never `mkdirSync(..., { recursive: true })` here: on a path whose parent exists but cannot hold
 // the child (anything under /proc) node's recursive mkdir retries forever at full CPU.
@@ -996,33 +1110,33 @@ export function waitSeconds(toolInput, env = process.env) {
  * `waitOn` (one of them; spread at random so waiters do not all queue on the first). A busy host ends
  * the command with exit 75 and a message to the agent. A marker the command touches first tells a slot
  * that was busy from a command that ran and itself exited 75, so a command never runs twice. A lock
- * file the command's sandbox cannot read leaves it to run unlocked rather than fail.
+ * file the command's sandbox cannot read refuses admission; it never runs unlocked.
  */
 export function serializedCommand(original, { lock, locks = [lock], wait, nice = true, ionice = true, waitOn = locks[Math.floor(Math.random() * locks.length)] }) {
   const runner = (flockArgs, file) => ["AGENT_HEAVY_LOCK_HELD=1", nice ? "nice -n 10" : "", ionice ? "$_ah_io" : "", `flock ${flockArgs} -E ${BUSY_EXIT_CODE} ${file} bash -c "$_ah_c"`].filter(Boolean).join(" ");
-  const ran = `[ -e "$_AH_RAN" ]`;
+  const ran = `[ -s "$_AH_RAN" ]`;
   const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
+  const diagnose = `timeout --signal=KILL 2s ${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} --lock-status ${locks.map(shellQuote).join(" ")} >&2 || true`;
   return [
-    `_ah_c=${shellQuote(`: >"$_AH_RAN"; ${original}`)}`,
+    `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
-    // With no readable slot, preserve the existing once-only unconfined path before requiring
-    // storage beside the locks. A failed allocation for a readable slot never takes this path.
+    // Missing admission infrastructure cannot turn into unbounded work.
     '_ah_readable=',
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ ! -r "$_ah_l" ] || _ah_readable=1; done`,
     // The marker sits beside the slot locks, whose directory the hook has just made sure exists: XDG_RUNTIME_DIR can
     // name a directory that is not there yet (a host still booting has no /run/user/<uid>), and then the marker could
     // not be written and a command that itself exits 75 could run again in the next slot.
-    // Allocate an exclusive private directory: the child marker starts absent without deleting
-    // a guessed pathname. Only our own file and the empty allocation are removed afterwards.
-    `if [ -z "$_ah_readable" ]; then bash -c ${shellQuote(original)}; else _AH_RAN_DIR=$(mktemp -d ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { _AH_RAN="$_AH_RAN_DIR/ran"; export _AH_RAN`,
+    // Allocate an exclusive private marker file: it starts empty and the command's first act makes it non-empty,
+    // so no guessed pathname is deleted. Only our own file is unlinked afterwards; no rm or rmdir appears, which
+    // Claude Code's removal check refuses in a rewritten command.
+    `if [ -z "$_ah_readable" ]; then printf '%s\\n' 'agent-heavy: no readable admission lock; this command did not run' >&2; (exit ${BUSY_EXIT_CODE}); else _AH_RAN=$(mktemp ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { export _AH_RAN`,
     `_ah_rc=${BUSY_EXIT_CODE}`,
     `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ -r "$_ah_l" ] || continue; ${runner("-n", '"$_ah_l"')}; _ah_rc=$?; { [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}; } || break; done`,
     `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
-    `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; else bash -c "$_ah_c"; _ah_rc=$?; fi`,
+    `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; fi`,
     "fi",
-    `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || printf '%s\\n' ${shellQuote(busy)} >&2`,
-    'if [ -e "$_AH_RAN" ]; then unlink -- "$_AH_RAN"; fi',
-    'rmdir -- "$_AH_RAN_DIR"',
+    `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || { printf '%s\\n' ${shellQuote(busy)} >&2; ${diagnose}; }`,
+    'unlink -- "$_AH_RAN"',
     '(exit "$_ah_rc")',
     '}',
     'fi',
@@ -1048,16 +1162,40 @@ export const CONTAINMENT_SLICE = "agent-claude.slice";
 export const WORK_SLICE = "agent-work.slice";
 
 /**
- * The work slice's limits on a host of `memory` bytes: a low CPU weight, so the person at the machine
- * wins any contention while an otherwise idle host still runs agents' work at full speed (a hard CPU
- * quota of a quarter of the processors starved nine agents on an idle sixteen-processor host); memory
- * reclaimed from the commands above 45% of the host and a command killed above 60%, with no swap, so
- * an exhausted command fails rather than the machine thrashing; and a task ceiling that stops a
- * runaway fan-out of processes.
+ * Read the effective allocation of the destination user manager, not the
+ * launcher's cgroup. WSL-launched agents and systemd user work are siblings;
+ * sizing work from the VM ignored its tighter user.slice allocation and let
+ * one npm process throttle the manager before the work limit could act.
+ * Only these four known ancestors and their native limit files are read.
  */
-export function containmentLimits({ memory = totalmem() } = {}) {
+export function effectiveUserServiceMemory({ memory = totalmem(), uid = process.getuid?.(), cgroupRoot = "/sys/fs/cgroup" } = {}) {
+  if (!Number.isSafeInteger(uid) || uid < 0) return memory;
+  const ancestors = ["", "user.slice", `user.slice/user-${uid}.slice`, `user.slice/user-${uid}.slice/user@${uid}.service`];
+  let effective = memory;
+  for (const ancestor of ancestors) for (const limit of ["memory.high", "memory.max"]) {
+    try {
+      const text = readFileSync(path.join(cgroupRoot, ancestor, limit), "utf8").trim();
+      if (!/^[1-9][0-9]*$/u.test(text)) continue;
+      const bytes = Number(text);
+      if (Number.isSafeInteger(bytes)) effective = Math.min(effective, bytes);
+    } catch { /* A non-cgroup host keeps the existing physical-memory fallback. */ }
+  }
+  return effective;
+}
+
+/**
+ * The work slice's limits within `memory` bytes of effective user-service allocation: a low CPU weight, so the person at the machine
+ * wins any contention while an otherwise idle host still runs agents' work at full speed (a hard CPU
+ * quota of a quarter of the processors starved nine agents on an idle sixteen-processor host); a
+ * command killed above 60% of the host, with no swap, so an exhausted command fails rather than the
+ * machine thrashing; and a task ceiling that stops a runaway fan-out of processes. There is no
+ * MemoryHigh: with no swap, anonymous memory cannot be reclaimed, so a high mark only throttles every
+ * allocation in the slice without end. On 2026-10-24 the slice sat between its 45% high and 60% max
+ * for hours (26.7M high events, 247 max events): every agent's command stalled, nothing was killed.
+ */
+export function containmentLimits({ memory = effectiveUserServiceMemory() } = {}) {
   const share = (fraction) => `${Math.floor((memory * fraction) / (1024 * 1024))}M`;
-  return Object.freeze({ CPUWeight: 20, MemoryHigh: share(0.45), MemoryMax: share(0.6), MemorySwapMax: 0, TasksMax: 1024 });
+  return Object.freeze({ CPUWeight: 20, MemoryMax: share(0.6), MemorySwapMax: 0, TasksMax: 1024 });
 }
 
 /** The sessions' slice: protected, not capped. Their memory up to 10% of the host (at most 1.5 GiB) is reclaimed last, so the work slice's pressure never starves the sessions directing it. */
@@ -1134,7 +1272,7 @@ function canContain(env) {
  * The recorder is optional, time-bounded and never the reason the command does not run.
  */
 export function containedCommand(original, { slice = WORK_SLICE, recorder = null } = {}) {
-  const inner = `: >"$_AH_DIR.ran"; exec 2>&3 3>&-; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${original}`;
+  const inner = `: >"$_AH_DIR.ran"; exec 2>&3 3>&-; trap 'pwd -P >"$_AH_DIR" 2>/dev/null' EXIT; ${requestedTimeoutPrelude}; ${original}`;
   const record = recorder ? `; { timeout 30 ${shellQuote(recorder.node)} ${shellQuote(recorder.script)} "$_ah_dir.err" "$_ah_rc" >/dev/null 2>&1 || true; }` : "";
   return [
     '_ah_dir=$(mktemp "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/agent-dir.XXXXXX" 2>/dev/null || mktemp)',
@@ -1167,6 +1305,21 @@ const SHELL_TOOLS = /^(Bash|shell|exec_command|local_shell|container\.exec)$/u;
 /** Claude Code's Monitor runs a shell command for as long as it watches: contained, never serialized, since a watch would hold the heavy slot for its whole life. */
 const WATCH_TOOLS = /^Monitor$/u;
 
+/** Programs the harness's own removal check must read as written. Contained, a command is a
+ *  `systemd-run … bash -c` carrier that check cannot see into, so it refuses every removal. */
+const SELF_CHECKED_PROGRAMS = new Set(["rm", "rmdir", "unlink"]);
+
+/** Whether every simple command of `command` is a removal the harness checks itself: light work,
+ *  left uncontained so that check reads it. */
+export function isSelfCheckedRemoval(command) {
+  try {
+    const { commands } = parseShell(command);
+    return commands.length > 0 && commands.every(({ words, piped }) => !piped && SELF_CHECKED_PROGRAMS.has(words[0]));
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The hook's answer to one PreToolUse event: the `hookSpecificOutput` object, or undefined to let
  * the command run untouched. `provider` is "claude" or "codex"; Codex accepts `updatedInput` only
@@ -1192,6 +1345,9 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   // A session confined to an allow-list (`dontAsk`, the carriers') has its permission rules checked
   // against the rewritten command, which no allowed pattern matches: it is denied there, never rewritten.
   if (input.permission_mode === "dontAsk") return undefined;
+  if (!watch && verdict.action === "serialize" && !env.AGENT_HEAVY_LOCK_HELD && (!onPath("flock", env) || !ensureLockFile(lock))) {
+    return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "host-resource guard: heavy-command admission unavailable (flock or shared lock); this command did not run" };
+  }
   let wrapped;
   const hand = verdict.action === "serialize" && verdict.locked ? handWrappedHeavy(command, lock) : undefined;
   if (!watch && verdict.action === "serialize" && (!verdict.locked || hand) && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
@@ -1200,7 +1356,8 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
     wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
   }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
-  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
+  const selfChecked = wrapped === undefined && !watch && isSelfCheckedRemoval(command);
+  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && !selfChecked && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
   if (contain) wrapped = containedCommand(wrapped ?? command, { recorder: { node: process.execPath, script: fileURLToPath(new URL("./scope-failure-record.mjs", import.meta.url)) } });
   if (wrapped === undefined) return undefined;
   const output = { hookEventName: "PreToolUse", updatedInput: { ...toolInput, command: wrapped } };
@@ -1240,12 +1397,17 @@ export function hostResourceControl({ node, codex = true }) {
   return Object.freeze({ source, files, hooks: hookEntries(source) });
 }
 
-/** Retain unrelated hooks; replace only this guard's original copies and owning reference. */
+/** Retain unrelated hooks; replace every copy of this guard, from whichever install wrote it (a source
+ *  checkout, an app's dependencies, a release), so a node runs the guard once. */
 export function mergeHostResourceHooks(existing, entries, node, { retiredSources = [] } = {}) {
-  const sources = [fileURLToPath(import.meta.url), path.join(node, ".claude/hooks/host-resource-hook.mjs"), path.join(node, ".codex/hooks/host-resource-hook.mjs"), ...retiredSources];
+  const sources = [fileURLToPath(import.meta.url), ...retiredSources];
+  const guard = /\/host-resource-hook\.mjs['"]?(?:\s|$)/u;
   const hooks = { ...existing };
   hooks.PreToolUse = (hooks.PreToolUse ?? []).flatMap(group => {
-    const held = (group.hooks ?? []).filter(handler => !sources.some(source => String(handler.command ?? "").includes(source)));
+    const held = (group.hooks ?? []).filter(handler => {
+      const command = String(handler.command ?? "");
+      return !guard.test(command) && !sources.some(source => command.includes(source));
+    });
     return held.length === 0 ? [] : [{ ...group, hooks: held }];
   });
   hooks.PreToolUse.push(...(entries.PreToolUse ?? []));
@@ -1271,7 +1433,7 @@ function enabledHooksConfiguration(text) {
 }
 
 /** Actual local projection, never a Codex trust admission or a claim about an already running session. */
-export function writeHostResourceControl({ node, providers = ["claude", "codex"] }) {
+export function writeHostResourceControl({ node, providers = ["claude", "codex"], retiredSources = [], dryRun = false }) {
   node = path.resolve(node);
   if (providers.some(provider => !["claude", "codex"].includes(provider))) throw new TypeError("unknown resource-hook provider");
   const source = fileURLToPath(import.meta.url);
@@ -1287,7 +1449,7 @@ export function writeHostResourceControl({ node, providers = ["claude", "codex"]
   for (const provider of providers) {
     const relative = provider === "claude" ? ".claude/settings.local.json" : ".codex/hooks.json";
     const held = JSON.parse(read(relative) ?? "{}");
-    pending.set(relative, `${JSON.stringify({ ...held, hooks: mergeHostResourceHooks(held.hooks, hookEntries(source, { provider }), node) }, null, 2)}\n`);
+    pending.set(relative, `${JSON.stringify({ ...held, hooks: mergeHostResourceHooks(held.hooks, hookEntries(source, { provider }), node, { retiredSources }) }, null, 2)}\n`);
     if (provider === "codex") pending.set(".codex/config.toml", enabledHooksConfiguration(read(".codex/config.toml") ?? ""));
   }
   // Validate all input before any configuration write; preserve another author's concurrent edit.
@@ -1298,10 +1460,11 @@ export function writeHostResourceControl({ node, providers = ["claude", "codex"]
   }
   for (const [relative, text] of pending) {
     if (expected.get(relative) === text) continue;
+    written.push(relative);
+    if (dryRun) continue;
     const file = path.join(node, relative);
     mkdirSync(path.dirname(file), { recursive: true });
     writeFileSync(file, text, { mode: 0o600 });
-    written.push(relative);
   }
   return Object.freeze({ source, written, codexTrustRequired: providers.includes("codex"), activeSessionGuarded: false });
 }
@@ -1315,6 +1478,11 @@ export const hookSettingsArguments = (hookPath) => ["--settings", JSON.stringify
  * leaves the command untouched. The hook never waits on the lock; the rewritten command does.
  */
 function main() {
+  if (process.argv[2] === "--lock-status") {
+    try { process.stdout.write(JSON.stringify(heavyLockStatus(process.argv.slice(3))) + "\n"); }
+    catch { process.stdout.write('{"kind":"agent-heavy.lock-status.v1","state":"observation-unavailable","snapshot":true}\n'); }
+    return;
+  }
   const guard = setTimeout(() => process.exit(0), LIMITS.guardMilliseconds);
   guard.unref();
   const chunks = [];
