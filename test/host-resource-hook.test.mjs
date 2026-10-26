@@ -29,6 +29,7 @@ const dirs = {
   linked: path.join(home, "linked"),
   many: path.join(home, "many"),
   few: path.join(home, "few"),
+  super: path.join(home, "super"),
   srv: "/srv/work/proj",
   srvScratch: "/srv/work/scratchpad/harness",
 };
@@ -51,6 +52,15 @@ function countedRepository(dir, entries, size) {
 }
 countedRepository(dirs.many, 25_000, 1024);
 countedRepository(dirs.few, 100, 6 * MiB);
+// A superrepo of submodules: its own index is a handful of gitlinks, the checkouts under it are not.
+countedRepository(dirs.super, 6, 1024);
+writeFileSync(path.join(dirs.super, ".gitmodules"), '[submodule "a"]\n\tpath = sections/a\n[submodule "b"]\n\tpath = sections/b\n[submodule "outer"]\n\tpath = outer\n');
+countedRepository(path.join(dirs.super, "sections", "a"), 12_000, 1024);
+countedRepository(path.join(dirs.super, "sections", "b"), 12_000, 1024);
+countedRepository(path.join(dirs.super, "outer"), 40, 1024);
+writeFileSync(path.join(dirs.super, "outer", ".gitmodules"), '[submodule "inner"]\n\tpath = services/inner\n');
+countedRepository(path.join(dirs.super, "outer", "services", "inner"), 25_000, 1024);
+mkdirSync(path.join(dirs.super, "docs"), { recursive: true });
 mkdirSync(dirs.plain, { recursive: true });
 mkdirSync(dirs.sub, { recursive: true });
 // A linked worktree keeps a `.git` file naming the git directory that holds its index.
@@ -229,6 +239,15 @@ const TABLE = [
   ["git log | rg foo", "big", "allow"],
   ["grep foo notes.txt", "big", "allow"],
   ["grep -rn foo lib", "big", "allow"],
+  // a superrepo is as large as the checkouts beneath it, nested submodules included
+  ["grep -rl -e foo sections outer", "super", "deny", "large working tree"],
+  ["grep -rn foo .", "super", "deny"],
+  ["rg foo sections", "super", "deny"],
+  ["grep -r foo outer", "super", "deny"],
+  ["timeout 60 grep -rl --include=*.json -e foo outer/services", "super", "deny"],
+  ["grep -rn foo sections/a", "super", "allow"],
+  ["grep -rn foo docs", "super", "allow"],
+  ["find . -name x", "super", "deny"],
   ["ls -la", "big", "allow"],
   // disk- and CPU-heavy tools
   ["du -sh .", "plain", "serialize"],
