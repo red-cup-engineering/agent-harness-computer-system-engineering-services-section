@@ -414,13 +414,47 @@ function resolveDir(word, cwd, ctx) {
 
 const SYSTEM_TREES = new Set(["/", "/home", "/mnt", "/Users", "/gnu", "/nix", "/proc", "/sys"]);
 
+/** The checkout paths a repository's `.gitmodules` declares, absolute. */
+function submodulePaths(top) {
+  let text;
+  try { text = readFileSync(path.join(top, ".gitmodules"), "utf8"); } catch { return []; }
+  return [...text.matchAll(/^\s*path\s*=\s*(.+?)\s*$/gmu)].map((match) => path.resolve(top, match[1]));
+}
+
+/**
+ * Whether the repositories checked out at or beneath `dir` together track more files than a large
+ * repository. A superrepo of submodules has a tiny index of gitlinks, so its own size says nothing of
+ * the checkouts under it: `grep -r` from the Bare Cedar Fog root or its `services/` walked every
+ * section's tree and exhausted the host (2026-10-26). The declared submodules are followed, nested
+ * ones too, and the count stops once it is large.
+ */
+function holdsLargeTrees(dir, repo, ctx) {
+  let files = repo.top === dir ? repo.entries ?? repo.indexBytes / 100 : 0;
+  const pending = submodulePaths(repo.top);
+  for (let visited = 0; pending.length > 0 && visited < 512; visited += 1) {
+    const at = pending.pop();
+    if (!within(at, dir) && !within(dir, at)) continue;
+    const nested = repoOf(at, ctx);
+    if (nested === undefined || nested.top !== at) continue;
+    if (within(at, dir)) {
+      if (nested.large) return true;
+      files += nested.entries ?? nested.indexBytes / 100;
+      if (files > ctx.largeRepoFiles) return true;
+    }
+    pending.push(...submodulePaths(at));
+  }
+  return false;
+}
+
 /** Whether scanning `dir` recursively walks a disk, a home or a large working tree. */
 function isBroad(dir, ctx) {
   if (SYSTEM_TREES.has(dir)) return true;
   if (dir === ctx.home || ctx.home.startsWith(`${dir}/`)) return true;
   if (/^\/mnt\/[^/]+$/u.test(dir) || /^\/(home|Users)\/[^/]+$/u.test(dir)) return true;
   const repo = repoOf(dir, ctx);
-  return repo !== undefined && repo.top === dir && repo.large;
+  if (repo === undefined) return false;
+  if (repo.top === dir && repo.large) return true;
+  return holdsLargeTrees(dir, repo, ctx);
 }
 
 const within = (dir, root) => dir === root || dir.startsWith(root.endsWith("/") ? root : `${root}/`);
