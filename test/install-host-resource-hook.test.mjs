@@ -10,7 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { CONTAINMENT_SLICE, WORK_SLICE, containmentLimits, launcherScript, sessionLimits, shellQuote, sliceUnit } from "../src/host-resource-hook.mjs";
-import { installContainment, installHostResourceHook } from "../scripts/install-host-resource-hook.mjs";
+import { EDITOR_SETTINGS, installContainment, installHostResourceHook } from "../scripts/install-host-resource-hook.mjs";
 
 const SCRIPT = fileURLToPath(new URL("../scripts/install-host-resource-hook.mjs", import.meta.url));
 const root = mkdtempSync(path.join(tmpdir(), "install-host-resource-hook-"));
@@ -110,7 +110,7 @@ test("the command line installs and prints what it did, and refuses the retired 
   assert.match(retired.stderr, /--dest is retired/u);
 });
 
-test("containment installs the slice unit, the launcher and VS Code's wrapper setting, once", () => {
+test("containment installs the slice unit, the launcher and VS Code's wrapper and editor settings, once", () => {
   const environment = { HOME: path.join(root, "contain-home"), XDG_CONFIG_HOME: path.join(root, "contain-config"), XDG_DATA_HOME: path.join(root, "contain-data") };
   const vscodeSettings = path.join(root, "vscode", "settings.json");
   mkdirSync(path.dirname(vscodeSettings), { recursive: true });
@@ -125,10 +125,24 @@ test("containment installs the slice unit, the launcher and VS Code's wrapper se
   assert.equal(first.launcher, path.join(root, "contain-data", "agent-harness", "claude-contained"));
   assert.equal(readFileSync(first.launcher, "utf8"), launcherScript());
   assert.equal(statSync(first.launcher).mode & 0o777, 0o755);
-  assert.deepEqual(JSON.parse(readFileSync(vscodeSettings, "utf8")), { "claudeCode.initialPermissionMode": "bypassPermissions", "claudeCode.claudeProcessWrapper": first.launcher });
+  assert.deepEqual(JSON.parse(readFileSync(vscodeSettings, "utf8")), { "claudeCode.initialPermissionMode": "bypassPermissions", "claudeCode.claudeProcessWrapper": first.launcher, ...EDITOR_SETTINGS });
   assert.deepEqual([first.vscode, first.reloaded, first.changed, reloads], ["set", true, true, 1]);
   const again = installContainment({ environment, vscodeSettings, reload });
   assert.deepEqual([again.vscode, again.reloaded, again.changed, reloads], ["unchanged", false, false, 1]);
+});
+
+test("a machine that already carries the wrapper still receives the editor settings, and keeps its own", () => {
+  const environment = { HOME: path.join(root, "editor-home"), XDG_CONFIG_HOME: path.join(root, "editor-config"), XDG_DATA_HOME: path.join(root, "editor-data") };
+  const vscodeSettings = path.join(root, "editor", "settings.json");
+  mkdirSync(path.dirname(vscodeSettings), { recursive: true });
+  const launcher = path.join(root, "editor-data", "agent-harness", "claude-contained");
+  writeFileSync(vscodeSettings, JSON.stringify({ "workbench.list.openMode": "doubleClick", "claudeCode.claudeProcessWrapper": launcher, "github.copilot.chat.localIndex.enabled": true }));
+  const first = installContainment({ environment, vscodeSettings, reload: () => true });
+  assert.equal(first.vscode, "set");
+  const written = JSON.parse(readFileSync(vscodeSettings, "utf8"));
+  assert.deepEqual(written, { "workbench.list.openMode": "doubleClick", "claudeCode.claudeProcessWrapper": launcher, ...EDITOR_SETTINGS });
+  assert.deepEqual(written["files.watcherExclude"], { "**": true });
+  assert.equal(installContainment({ environment, vscodeSettings, reload: () => true }).vscode, "unchanged");
 });
 
 test("VS Code settings that are not plain JSON are left alone, and a machine without VS Code is skipped", () => {

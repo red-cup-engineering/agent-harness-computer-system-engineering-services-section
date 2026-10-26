@@ -18,7 +18,8 @@
  * for their commands, reloaded into the user manager; the
  * launcher `claude-contained` in the user's agent-harness data directory; and, on a machine with a
  * VS Code server, the machine setting `claudeCode.claudeProcessWrapper` naming that launcher, so
- * every session VS Code starts runs inside the slice. `--no-containment` leaves all three alone.
+ * every session VS Code starts runs inside the slice, together with `EDITOR_SETTINGS`, which keep the
+ * editor itself from crawling the tree. `--no-containment` leaves all three alone.
  */
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -30,6 +31,21 @@ import { CONTAINMENT_SLICE, WORK_SLICE, containmentLimits, hookEntries, hostReso
 
 const LAUNCHER_FILE = "claude-contained";
 const WRAPPER_SETTING = "claudeCode.claudeProcessWrapper";
+
+/**
+ * Machine settings that keep VS Code from holding the opened tree in memory. On Bare Cedar Fog
+ * (2026-10-25) the watcher process held 2.6 GB resident and 0.8 GB swapped, 13 minutes after start,
+ * crawling the `node_modules` under a section's `data/logs`, though the workspace already excluded
+ * every path from watching: the bundled Copilot `ExternalIngestIndex` searches every workspace
+ * folder for all its files without a result limit, then watches that same recursive pattern; its
+ * local index searches the folder the same way. The house's carriers are Codex and Claude Code, so
+ * both indexes are off, and the watcher exclusion holds for every folder this server opens.
+ */
+export const EDITOR_SETTINGS = Object.freeze({
+  "files.watcherExclude": Object.freeze({ "**": true }),
+  "github.copilot.chat.workspace.codeSearchExternalIngest.enabled": false,
+  "github.copilot.chat.localIndex.enabled": false,
+});
 
 /** Write `text` to `file` atomically, if it differs; whether it did. */
 function writeIfChanged(file, text, { dryRun, mode } = {}) {
@@ -69,11 +85,12 @@ export function installContainment({ environment = process.env, vscodeSettings, 
     const before = existsSync(machineSettings) ? readFileSync(machineSettings, "utf8") : "";
     let current;
     try { current = before.trim() === "" ? {} : JSON.parse(before); } catch { current = undefined; }
+    const wanted = { [WRAPPER_SETTING]: launcher, ...EDITOR_SETTINGS };
     if (current === null || typeof current !== "object" || Array.isArray(current)) vscode = "left alone";
-    else if (current[WRAPPER_SETTING] === launcher) vscode = "unchanged";
+    else if (Object.entries(wanted).every(([key, value]) => JSON.stringify(current[key]) === JSON.stringify(value))) vscode = "unchanged";
     else {
       vscode = "set";
-      writeIfChanged(machineSettings, `${JSON.stringify({ ...current, [WRAPPER_SETTING]: launcher }, null, 2)}\n`, { dryRun });
+      writeIfChanged(machineSettings, `${JSON.stringify({ ...current, ...wanted }, null, 2)}\n`, { dryRun });
     }
   }
   return Object.freeze({ unit, workUnit, launcher, vscodeSettings: machineSettings, vscode, reloaded, changed: unitChanged || launcherChanged || vscode === "set" });
