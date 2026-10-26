@@ -41,14 +41,14 @@ const DEFAULT_MACHINE_NAME = "bare-cedar-fog";
 const DEFAULT_MEASURED_AT = "2026-09-01T00:00:00Z";
 
 const CLAUDE_GENESIS_PATH = inTree(
-  "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/harness/actor-genesis.json",
+  "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/harness/actor-genesis.json",
 );
 const CODEX_GENESIS_PATH = inTree(
-  "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/actor-genesis.json",
+  "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/actor-genesis.json",
 );
 const CLAUDE_MCP_CONFIG_PATH = inTree(".mcp.json");
 const CODEX_AGENT_HARNESS_PATH = inTree(
-  "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/codex-agent-harness.json",
+  "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/agents/harness/codex-agent-harness.json",
 );
 
 /**

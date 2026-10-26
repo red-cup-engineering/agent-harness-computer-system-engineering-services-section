@@ -26,7 +26,7 @@ const DEPLOYMENT_ENGINE_APP_PATH =
 // The path look.scm reads (data/state/world-state/world.eavt); null when run from an installed package with no tree.
 const DEFAULT_TRACE_PATH = repoRoot === null ? null : path.join(repoRoot, DEPLOYMENT_ENGINE_APP_PATH, "data/state/world-state/world.eavt");
 const HARNESS_SECTIONS_PREFIX =
-  "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services";
+  "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-inference-services-section/services";
 
 /**
  * The journal roots this fold reads by default: each harness section's own directory.
