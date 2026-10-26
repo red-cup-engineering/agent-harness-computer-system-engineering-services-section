@@ -36,7 +36,7 @@ import { hostResourceControl, mergeHostResourceHooks } from "../../../src/host-r
 
 const SETTINGS = ".claude/settings.local.json";
 const MCP = ".mcp.json";
-const ECOSYSTEM_NOTE = "lib/emsenn/services/561-group/services/561-group-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team/content/text/documents/articles/notes/2026/09/23/2026-09-23-note-on-the-software-ecosystem.md";
+const ECOSYSTEM_NOTE = "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team/content/text/documents/articles/notes/2026/09/23/2026-09-23-note-on-the-software-ecosystem.md";
 
 /**
  * What a session may hold in context. A session keeps the model's full window: study that spans
