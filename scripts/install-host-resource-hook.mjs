@@ -34,14 +34,19 @@ const WRAPPER_SETTING = "claudeCode.claudeProcessWrapper";
 
 /**
  * Machine settings that keep VS Code from holding the opened tree in memory. On Bare Cedar Fog
- * (2026-10-25) the watcher process held 2.6 GB resident and 0.8 GB swapped, 13 minutes after start,
- * crawling the `node_modules` under a section's `data/logs`, though the workspace already excluded
- * every path from watching: the bundled Copilot `ExternalIngestIndex` searches every workspace
- * folder for all its files without a result limit, then watches that same recursive pattern; its
- * local index searches the folder the same way. The house's carriers are Codex and Claude Code, so
- * both indexes are off, and the watcher exclusion holds for every folder this server opens.
+ * (2026-10-26, Trace log) the crawl came from VS Code's agent host, not from an extension: every
+ * window load creates a Copilot CLI chat session there, and the agent host watches each session's
+ * working directory recursively (`AgentHostFileMonitorService`, from `_ensureRootWatcher`) with a
+ * fixed exclusion of git internals only. It never reads `files.watcherExclude`, so it walked the
+ * whole hub, `node_modules` under a section's `data/logs` included: 112 to 346 MB in six minutes,
+ * charged to the cgroup the Claude sessions run in. `chat.disableAIFeatures` (window scope, so it
+ * holds from machine settings) turns off the built-in Copilot features that create those sessions;
+ * the house's carriers are Codex and Claude Code, which reach VS Code through their own extensions.
+ * The watcher exclusion holds for every folder this server opens, and Copilot's two whole-folder
+ * searches stay off.
  */
 export const EDITOR_SETTINGS = Object.freeze({
+  "chat.disableAIFeatures": true,
   "files.watcherExclude": Object.freeze({ "**": true }),
   "github.copilot.chat.workspace.codeSearchExternalIngest.enabled": false,
   "github.copilot.chat.localIndex.enabled": false,

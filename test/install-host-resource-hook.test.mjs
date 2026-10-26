@@ -142,6 +142,7 @@ test("a machine that already carries the wrapper still receives the editor setti
   const written = JSON.parse(readFileSync(vscodeSettings, "utf8"));
   assert.deepEqual(written, { "workbench.list.openMode": "doubleClick", "claudeCode.claudeProcessWrapper": launcher, ...EDITOR_SETTINGS });
   assert.deepEqual(written["files.watcherExclude"], { "**": true });
+  assert.equal(written["chat.disableAIFeatures"], true);
   assert.equal(installContainment({ environment, vscodeSettings, reload: () => true }).vscode, "unchanged");
 });
 
