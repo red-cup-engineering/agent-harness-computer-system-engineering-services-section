@@ -1180,3 +1180,12 @@ test("the hook's rewrite carries the room gate unless it is switched off", { ski
   assert.match(gated, /--wait-for-room .*--deadline "\$_AH_DEADLINE" --need-mb 100 /u);
   assert.doesNotMatch(rewritten("du -s /dev/null >/dev/null", env), /--wait-for-room/u);
 });
+
+test("the room gate can be run by a service that is not a Bash command: its own environment sets the room, --within the budget", { timeout: 30_000 }, async () => {
+  const run = (extra) => exited(spawn(process.execPath, [HOOK, "--wait-for-room", ...extra], { env: { ...env, AGENT_HEAVY_ROOM: undefined, AGENT_HEAVY_ROOM_MB: "0" }, stdio: ["ignore", "ignore", "pipe"] }));
+  assert.equal((await run(["--within", "1"])).code, 0, "with nothing to hold it to, it admits");
+  const full = cgroupTree("room-k", { slice: { current: 1900 } });
+  const refused = await run(["--cgroup-root", full.base, "--directory", full.work, "--need-mb", "500", "--pressure", "1000", "--within", "1"]);
+  assert.equal(refused.code, NO_ROOM_EXIT_CODE);
+  assert.match(refused.stderr, /no room for this command/u);
+});

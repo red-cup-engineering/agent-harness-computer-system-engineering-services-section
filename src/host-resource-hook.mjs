@@ -1602,10 +1602,17 @@ export const hookSettingsArguments = (hookPath) => ["--settings", JSON.stringify
  */
 function main() {
   if (process.argv[2] === "--wait-for-room") {
+    // `--wait-for-room --within <seconds>` is for a caller that is not a Bash command (a timer-driven service): the
+    // room it is held to is this process's own environment's, as the hook would set it. The flags below spell it out.
     const args = process.argv.slice(3);
     const value = (name) => args[args.indexOf(name) + 1];
-    const settings = { directory: args.includes("--directory") ? value("--directory") : undefined, cgroupRoot: args.includes("--cgroup-root") ? value("--cgroup-root") : undefined, needMiB: Number(value("--need-mb")), pressure: Number(value("--pressure")) };
-    waitForRoom(settings, { deadline: Number(value("--deadline")) }).then((verdict) => {
+    const explicit = args.includes("--need-mb");
+    const settings = explicit
+      ? { directory: args.includes("--directory") ? value("--directory") : undefined, cgroupRoot: args.includes("--cgroup-root") ? value("--cgroup-root") : undefined, needMiB: Number(value("--need-mb")), pressure: Number(value("--pressure")) }
+      : roomSettings(process.env);
+    if (settings === undefined) process.exit(0);
+    const deadline = args.includes("--deadline") ? Number(value("--deadline")) : Date.now() / 1000 + (Number(value("--within")) || 0);
+    waitForRoom(settings, { deadline }).then((verdict) => {
       if (!verdict.ok) process.stderr.write(`agent-heavy: no room for this command: ${verdict.reason}. It did not run; it waited for a running command to end and none did. Retry when the other work has finished, or narrow it.\n`);
       process.exit(verdict.ok ? 0 : NO_ROOM_EXIT_CODE);
     }, () => process.exit(0));
