@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUSY_EXIT_CODE, LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
+import { BUSY_EXIT_CODE, NO_ROOM_EXIT_CODE, cgroupRoom, roomSettings, roomVerdict, waitForRoom, workSliceDirectory, LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
 
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
@@ -62,7 +62,7 @@ writeFileSync(path.join(dirs.linked, ".git"), `gitdir: ${path.join(root, "gitdir
 
 const lock = path.join(root, "run", "agent-heavy.lock");
 // One slot and no pressure gate, so the serialization contracts below hold on any host; the slot tests set their own.
-const env = { HOME: home, PATH: process.env.PATH, AGENT_HEAVY_LOCK: lock, AGENT_HEAVY_SLOTS: "1", AGENT_HEAVY_PRESSURE: "1000" };
+const env = { HOME: home, PATH: process.env.PATH, AGENT_HEAVY_LOCK: lock, AGENT_HEAVY_SLOTS: "1", AGENT_HEAVY_PRESSURE: "1000", AGENT_HEAVY_ROOM: "off" };
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 
 const verdict = (command, cwd = "plain") => classify(command, { cwd: dirs[cwd] ?? cwd, env, home });
@@ -1077,4 +1077,106 @@ test("the partial-worktree check is bounded: where git cannot answer in time the
   const overflow = (command, args) => (args.includes("config") ? { status: 1, stdout: "" } : { status: null, stdout: "a\0b\0", truncated: true });
   assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: overflow }).action, "deny");
   assert.ok(LIMITS.massDeletion.worktreeMilliseconds + LIMITS.massDeletion.worktreeMilliseconds < 15_000);
+});
+
+// ---------------------------------------------------------------------------------------------
+// Room: heavy work is admitted by the free memory of the agent work slice and its ancestors, and by memory pressure.
+// ---------------------------------------------------------------------------------------------
+
+/** A fake cgroup tree: user.slice (high 4000 MiB) > agent.slice > agent-work.slice (max 2000 MiB). Sizes in MiB. */
+function cgroupTree(name, { slice = {}, parent = {} } = {}) {
+  const base = path.join(root, name), top = path.join(base, "user.slice"), work = path.join(top, "agent.slice", "agent-work.slice");
+  mkdirSync(work, { recursive: true });
+  const write = (dir, v) => {
+    for (const [file, text] of Object.entries({ "memory.max": "max", "memory.high": "max", "memory.current": "0", "memory.stat": "anon 0\ninactive_file 0\n", "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n", "memory.events": "max 0\n" })) writeFileSync(path.join(dir, file), text);
+    for (const [k, n] of Object.entries(v)) writeFileSync(path.join(dir, k === "inactive" ? "memory.stat" : `memory.${k}`), k === "inactive" ? `anon 0\ninactive_file ${n * MiB}\n` : String(n * MiB));
+  };
+  write(top, { high: 4000, current: 0, ...parent });
+  write(path.join(top, "agent.slice"), {});
+  write(work, { max: 2000, current: 0, ...slice });
+  return { base, top, work };
+}
+
+test("room is the tightest ceiling less working set; inactive file cache is room, raw memory.current is not used", () => {
+  const { base, work } = cgroupTree("room-a", { slice: { current: 1990, inactive: 1500 }, parent: { current: 3900, inactive: 100 } });
+  const room = cgroupRoom({ directory: work, cgroupRoot: base });
+  assert.equal(room.free, 200 * MiB, "user.slice: 4000 high - (3900 - 100) working set binds before the slice's 2000 - 490");
+  assert.equal(room.cgroup, "user.slice");
+  assert.equal(room.sliceCeiling, 2000 * MiB);
+  const { base: base2, work: work2 } = cgroupTree("room-b", { slice: { current: 2000, inactive: 1900 } });
+  assert.equal(cgroupRoom({ directory: work2, cgroupRoot: base2 }).free, 1900 * MiB, "a slice full of cache has room");
+  assert.equal(cgroupRoom({ directory: path.join(root, "nowhere", "x"), cgroupRoot: path.join(root, "nowhere") }), undefined);
+  assert.match(workSliceDirectory({ uid: 1000 }), /user@1000\.service\/agent\.slice\/agent-work\.slice$/u);
+});
+
+test("the room a command is held to is 15% of the slice (256 MiB to 1 GiB), set or switched off by the environment", () => {
+  const { base, work } = cgroupTree("room-c");
+  assert.equal(roomSettings({}, { directory: work, cgroupRoot: base }).needMiB, 300);
+  assert.equal(roomSettings({ AGENT_HEAVY_ROOM_MB: "0" }, { directory: work, cgroupRoot: base }).needMiB, 0);
+  assert.equal(roomSettings({ AGENT_HEAVY_ROOM_MB: "700", AGENT_HEAVY_PRESSURE: "5" }, { directory: work, cgroupRoot: base }).pressure, 5);
+  assert.equal(roomSettings({ AGENT_HEAVY_ROOM: "off" }, { directory: work, cgroupRoot: base }), undefined);
+  assert.equal(roomSettings({}, { directory: work, cgroupRoot: base }).pressure, 10);
+});
+
+test("a verdict names what is short: room, or tasks stalled on memory in the slice or the machine", () => {
+  const { base, work } = cgroupTree("room-d", { slice: { current: 1800 } });
+  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 10 };
+  const short = roomVerdict(settings, { hostPressure: 0 });
+  assert.equal(short.ok, false);
+  assert.match(short.reason, /agent-work\.slice has 200 MiB of room .*held to 500 MiB/u);
+  writeFileSync(path.join(work, "memory.current"), String(500 * MiB));
+  assert.equal(roomVerdict(settings, { hostPressure: 0 }).ok, true);
+  const stalled = roomVerdict(settings, { hostPressure: 12 });
+  assert.equal(stalled.ok, false);
+  assert.match(stalled.reason, /stalled on memory 12% .*limit 10%/u);
+  writeFileSync(path.join(work, "memory.pressure"), "some avg10=30.00 avg60=0 avg300=0 total=0\nfull avg10=25.00 avg60=0 avg300=0 total=0\n");
+  assert.match(roomVerdict(settings, { hostPressure: 0 }).reason, /25%/u);
+});
+
+test("waiting for room is woken by the kernel's notification that a scope of the slice ended, not by a clock", { timeout: 30_000 }, async () => {
+  const { base, work } = cgroupTree("room-e", { slice: { current: 1800 } });
+  const scope = path.join(work, "run-1.scope");
+  mkdirSync(scope);
+  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 1000 };
+  const started = Date.now();
+  // The slice frees its memory and the scope ends only after the waiter has armed; the waiter's deadline is far away.
+  setTimeout(() => { writeFileSync(path.join(work, "memory.current"), String(100 * MiB)); rmSync(scope, { recursive: true }); }, 300);
+  const verdict = await waitForRoom(settings, { deadline: Date.now() / 1000 + 20, hostPressure: () => 0 });
+  assert.equal(verdict.ok, true);
+  assert.ok(Date.now() - started < 10_000, "woken by the notification, long before the deadline");
+});
+
+test("waiting for room ends at the caller's deadline with the last verdict, and returns at once when there is already room", { timeout: 30_000 }, async () => {
+  const { base, work } = cgroupTree("room-f", { slice: { current: 1900 } });
+  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 1000 };
+  const late = await waitForRoom(settings, { deadline: Date.now() / 1000 + 1, hostPressure: () => 0 });
+  assert.equal(late.ok, false);
+  assert.match(late.reason, /held to 500 MiB/u);
+  assert.equal((await waitForRoom(settings, { deadline: 0, hostPressure: () => 0 })).ok, false, "a spent budget is one measurement");
+  const { base: b2, work: w2 } = cgroupTree("room-g", { slice: { current: 100 } });
+  assert.equal((await waitForRoom({ ...settings, directory: w2, cgroupRoot: b2 }, { deadline: 0, hostPressure: () => 0 })).ok, true);
+});
+
+test("a heavy command holding a slot runs where the slice has room, and does not run, saying so with exit 75, where it has none", { skip: !haveFlock, timeout: 60_000 }, async () => {
+  const log = path.join(root, "room.log");
+  const free = cgroupTree("room-h", { slice: { current: 100 } }), full = cgroupTree("room-i", { slice: { current: 1900 } });
+  const wrap = (tree) => serializedCommand(`echo ran >> ${shellQuote(log)}`, { lock: path.join(root, "run", "room.lock"), wait: 2, nice: false, ionice: false,
+    room: { directory: tree.work, cgroupRoot: tree.base, needMiB: 500, pressure: 1000 } });
+  mkdirSync(path.join(root, "run"), { recursive: true });
+  writeFileSync(path.join(root, "run", "room.lock"), "");
+  const ok = await exited(spawn("bash", ["-c", wrap(free)], { env, stdio: ["ignore", "ignore", "pipe"] }));
+  assert.equal(ok.code, 0);
+  assert.equal(readFileSync(log, "utf8"), "ran\n");
+  const none = await exited(spawn("bash", ["-c", wrap(full)], { env, stdio: ["ignore", "ignore", "pipe"] }));
+  assert.equal(none.code, NO_ROOM_EXIT_CODE);
+  assert.match(none.stderr, /agent-heavy: no room for this command: \S*agent-work\.slice has 100 MiB of room/u);
+  assert.doesNotMatch(none.stderr, /waited .* heavy-command slot/u, "room is not mistaken for a busy slot");
+  assert.equal(readFileSync(log, "utf8"), "ran\n", "the command did not run the second time");
+});
+
+test("the hook's rewrite carries the room gate unless it is switched off", { skip: !haveFlock }, () => {
+  const gated = rewritten("du -s /dev/null >/dev/null", { ...env, AGENT_HEAVY_ROOM: undefined, AGENT_HEAVY_ROOM_MB: "100" });
+  if (roomSettings({ AGENT_HEAVY_ROOM_MB: "100" }) === undefined) return;
+  assert.match(gated, /--wait-for-room .*--deadline "\$_AH_DEADLINE" --need-mb 100 /u);
+  assert.doesNotMatch(rewritten("du -s /dev/null >/dev/null", env), /--wait-for-room/u);
 });

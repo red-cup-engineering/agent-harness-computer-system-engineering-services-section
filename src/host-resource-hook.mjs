@@ -25,7 +25,9 @@
  *              explicitly overrides), and ONE while memory or I/O is under pressure: when every task stalled on memory
  *              for at least AGENT_HEAVY_PRESSURE percent (default 10) of the last ten seconds
  *              (/proc/pressure/memory, "full avg10"), admitting more heavy work only deepens the stall.
- *              A command takes the first free slot, else waits on one;
+ *              A command takes the first free slot, else waits on one. Holding a slot it is ADMITTED
+ *              only when the agent work slice has room (see "Room" below), else it waits for the kernel
+ *              to say a scope of the slice ended, never on a timer;
  *   allow      everything else, untouched (no output).
  *
  * The lock is the kernel's, so a crashed or killed holder releases it at once and nothing can be
@@ -49,11 +51,12 @@
  * executable that runs the projecting harness. It reads a handful of stat results and no repository state, so it adds only node's
  * own start-up time. Settings are read from the hook's own process environment (the harness's, which
  * an agent's command cannot change): AGENT_HOST_GUARD=off disables it; AGENT_CONTAINMENT=off leaves
- * commands outside the slice; AGENT_HEAVY_LOCK, AGENT_HEAVY_WAIT_SECONDS, AGENT_HEAVY_LARGE_REPO_FILES
+ * commands outside the slice; AGENT_HEAVY_ROOM=off turns the room gate off and AGENT_HEAVY_ROOM_MB sets the room
+ * (MiB) a heavy command is held to; AGENT_HEAVY_LOCK, AGENT_HEAVY_WAIT_SECONDS, AGENT_HEAVY_LARGE_REPO_FILES
  * and AGENT_HEAVY_LARGE_REPO_INDEX_BYTES tune it.
  */
 import { spawnSync } from "node:child_process";
-import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, watch, writeFileSync } from "node:fs";
 import { homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -990,6 +993,102 @@ export function heavySlots({ env = process.env, pressure = memoryPressure(), ioP
 /** The lock files of `slots` slots: the first is `lock` itself, so a command an agent wraps in `flock <lock>` by hand holds slot one. */
 export const slotLocks = (lock, slots = 1) => Array.from({ length: Math.max(1, slots) }, (_, i) => (i === 0 ? lock : `${lock}.${i}`));
 
+// ---------------------------------------------------------------------------------------------
+// Room: a heavy command starts only where the memory it will take exists.
+// ---------------------------------------------------------------------------------------------
+
+/** Exit status of the room gate when the work slice never had room for the command inside its wait. */
+export const NO_ROOM_EXIT_CODE = BUSY_EXIT_CODE;
+/** The share of a ceiling a heavy command is assumed to need free, within these bounds (MiB). */
+export const ROOM_SHARE = Object.freeze({ fraction: 0.15, floorMiB: 256, capMiB: 1024 });
+
+/** The cgroup of the slice every contained command runs in, under the user manager of `uid`. */
+export const workSliceDirectory = ({ uid = process.getuid?.(), cgroupRoot = "/sys/fs/cgroup" } = {}) =>
+  Number.isSafeInteger(uid) ? path.join(cgroupRoot, "user.slice", `user-${uid}.slice`, `user@${uid}.service`, "agent.slice", WORK_SLICE) : undefined;
+
+const cgroupNumber = (text) => (/^[0-9]+$/u.test(String(text).trim()) ? Number(text) : undefined);
+
+/**
+ * The room in `directory` (a cgroup) and in every ancestor below `cgroupRoot` that has a ceiling: for each,
+ * `ceiling - workingSet`, the ceiling being its memory.max or, sooner, its memory.high (above which the kernel
+ * throttles every task under it) and the working set its memory.current less the inactive file cache the kernel
+ * hands back on demand (what Kubernetes calls the working set). Raw memory.current is not used: a slice
+ * that has read files all day sits at its ceiling on cache alone. Returns the tightest level, with the memory
+ * pressure ("full avg10", percent) of the slice and, if `host`, of the machine. undefined where no level has a ceiling.
+ */
+export function cgroupRoom({ directory, cgroupRoot = "/sys/fs/cgroup", read = (file) => readFileSync(file, "utf8") } = {}) {
+  const get = (file) => { try { return read(file); } catch { return undefined; } };
+  const levels = [];
+  for (let dir = directory; dir && dir.startsWith(cgroupRoot + path.sep); dir = path.dirname(dir)) {
+    const ceilings = ["memory.max", "memory.high"].map((name) => cgroupNumber(get(path.join(dir, name)) ?? "")).filter((n) => n !== undefined);
+    const current = cgroupNumber(get(path.join(dir, "memory.current")) ?? "");
+    if (ceilings.length === 0 || current === undefined) continue;
+    const inactive = cgroupNumber(/^inactive_file (\d+)$/mu.exec(get(path.join(dir, "memory.stat")) ?? "")?.[1] ?? "") ?? 0;
+    const ceiling = Math.min(...ceilings), workingSet = Math.max(0, current - inactive);
+    levels.push({ cgroup: path.relative(cgroupRoot, dir), ceiling, workingSet, free: ceiling - workingSet });
+  }
+  if (levels.length === 0) return undefined;
+  const tightest = levels.reduce((a, b) => (b.free < a.free ? b : a));
+  const slice = levels[0];
+  const pressure = memoryPressure(() => get(path.join(directory, "memory.pressure")) ?? "");
+  return { ...tightest, sliceCeiling: slice.ceiling, pressure };
+}
+
+/** What the gate holds a heavy command to: `{ directory, needMiB, pressure }`, or undefined where AGENT_HEAVY_ROOM=off or nothing can be measured. */
+export function roomSettings(env = process.env, { directory = workSliceDirectory(), cgroupRoot, read } = {}) {
+  if (env.AGENT_HEAVY_ROOM === "off") return undefined;
+  const state = directory ? cgroupRoom({ directory, cgroupRoot, read }) : undefined;
+  const configured = Number(env.AGENT_HEAVY_ROOM_MB);
+  const needMiB = env.AGENT_HEAVY_ROOM_MB !== undefined && env.AGENT_HEAVY_ROOM_MB !== "" && Number.isFinite(configured) && configured >= 0
+    ? Math.floor(configured)
+    : state ? Math.min(ROOM_SHARE.capMiB, Math.max(ROOM_SHARE.floorMiB, Math.floor((state.sliceCeiling * ROOM_SHARE.fraction) / (1024 * 1024)))) : 0;
+  const threshold = Number(env.AGENT_HEAVY_PRESSURE);
+  const pressure = env.AGENT_HEAVY_PRESSURE !== undefined && env.AGENT_HEAVY_PRESSURE !== "" && Number.isFinite(threshold) ? threshold : PRESSURE_PERCENT;
+  if (!state && memoryPressure() === undefined) return undefined;
+  return { directory: state ? directory : undefined, needMiB, pressure, ...(cgroupRoot ? { cgroupRoot } : {}) };
+}
+
+/** Whether `settings` are met now: `{ ok, reason }`, the reason naming the figures when not. */
+export function roomVerdict(settings, { read, hostPressure = memoryPressure() } = {}) {
+  const state = settings.directory ? cgroupRoom({ directory: settings.directory, cgroupRoot: settings.cgroupRoot, read }) : undefined;
+  const need = settings.needMiB * 1024 * 1024;
+  const stalls = [hostPressure, state?.pressure].filter((p) => p !== undefined);
+  const stalled = stalls.length > 0 && Math.max(...stalls) >= settings.pressure;
+  const short = state !== undefined && need > 0 && state.free < need;
+  const MiB = (n) => Math.round(n / (1024 * 1024));
+  const reasons = [
+    ...(short ? [`${state.cgroup} has ${MiB(Math.max(0, state.free))} MiB of room (ceiling ${MiB(state.ceiling)} MiB, working set ${MiB(state.workingSet)} MiB) and this command is held to ${settings.needMiB} MiB`] : []),
+    ...(stalled ? [`tasks stalled on memory ${Math.max(...stalls)}% of the last ten seconds (limit ${settings.pressure}%)`] : []),
+  ];
+  return { ok: reasons.length === 0, reason: reasons.join("; ") };
+}
+
+/**
+ * Resolve once `settings` are met, waiting on the kernel's own notifications and not on a timer: inotify on
+ * the work slice's directory (a scope of any command starting or ending in it) and on the memory.events of each
+ * level (a ceiling breached). Every notification re-measures. `deadline` (epoch seconds) is the end of the
+ * caller's budget, not an interval: past it the answer is the last verdict, `ok: false`.
+ */
+export function waitForRoom(settings, { deadline, read, hostPressure = () => memoryPressure(), watcher = watch, now = () => Date.now() } = {}) {
+  return new Promise((resolve) => {
+    const watchers = [];
+    let budget;
+    const finish = (verdict) => { clearTimeout(budget); for (const w of watchers) try { w.close(); } catch { /* already closed */ } resolve(verdict); };
+    const measure = () => roomVerdict(settings, { read, hostPressure: hostPressure() });
+    let verdict = measure();
+    if (verdict.ok || !settings.directory) return finish(verdict);
+    const left = deadline * 1000 - now();
+    if (!(left > 0)) return finish(verdict);
+    const recheck = () => { verdict = measure(); if (verdict.ok) finish(verdict); };
+    const targets = [settings.directory];
+    const base = settings.cgroupRoot ?? "/sys/fs/cgroup";
+    for (let dir = settings.directory; dir.startsWith(base + path.sep); dir = path.dirname(dir)) targets.push(path.join(dir, "memory.events"));
+    for (const target of targets) try { watchers.push(watcher(target, recheck)); } catch { /* an unwatchable file only means fewer notifications */ }
+    // The caller's budget is one deadline, armed once; re-measuring is driven by the notifications above.
+    budget = setTimeout(() => finish(verdict), left);
+  });
+}
+
 // Contention testimony comes from the existing kernel locks, not another
 // ownership journal. In particular, a missing PID never licenses lock removal.
 function boundedLockReading(file, maximum) {
@@ -1116,6 +1215,11 @@ export function waitSeconds(toolInput, env = process.env) {
   return Math.min(LIMITS.maxWaitSeconds, Math.max(LIMITS.minWaitSeconds, Math.floor(seconds)));
 }
 
+const roomGate = ({ directory, needMiB, pressure, cgroupRoot }) => {
+  const args = ["--wait-for-room", ...(cgroupRoot ? ["--cgroup-root", shellQuote(cgroupRoot)] : []), "--deadline", '"$_AH_DEADLINE"', "--need-mb", needMiB, "--pressure", pressure, ...(directory ? ["--directory", shellQuote(directory)] : [])];
+  return `${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} ${args.join(" ")}; [ "$?" -ne ${NO_ROOM_EXIT_CODE} ] || { echo room >"$_AH_RAN"; exit ${BUSY_EXIT_CODE}; }; `;
+};
+
 /**
  * `original` run in one of the host's heavy slots (`locks`, from `slotLocks`): at `nice -n 10`, idle
  * I/O class. It takes the first slot that is free (`flock -n`), else waits up to `wait` seconds on
@@ -1123,14 +1227,21 @@ export function waitSeconds(toolInput, env = process.env) {
  * the command with exit 75 and a message to the agent. A marker the command touches first tells a slot
  * that was busy from a command that ran and itself exited 75, so a command never runs twice. A lock
  * file the command's sandbox cannot read refuses admission; it never runs unlocked.
+ *
+ * With `room` (from `roomSettings`) the command, once it holds a slot and before it is marked as run, is held
+ * until the work slice has room (`--wait-for-room`, which waits on kernel notifications) within the same
+ * deadline as the slot wait. No room is also exit 75, said so, and the command does not run; room is global,
+ * so no other slot is tried. The slot is held while waiting, which queues the waiters in the kernel's order
+ * and lets each be measured alone. A gate that fails for any other reason lets the command through.
  */
-export function serializedCommand(original, { lock, locks = [lock], wait, nice = true, ionice = true, waitOn = locks[Math.floor(Math.random() * locks.length)] }) {
+export function serializedCommand(original, { lock, locks = [lock], wait, nice = true, ionice = true, room, waitOn = locks[Math.floor(Math.random() * locks.length)] }) {
   const runner = (flockArgs, file) => ["AGENT_HEAVY_LOCK_HELD=1", nice ? "nice -n 10" : "", ionice ? "$_ah_io" : "", `flock ${flockArgs} -E ${BUSY_EXIT_CODE} ${file} bash -c "$_ah_c"`].filter(Boolean).join(" ");
   const ran = `[ -s "$_AH_RAN" ]`;
   const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
   const diagnose = `timeout --signal=KILL 2s ${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} --lock-status ${locks.map(shellQuote).join(" ")} >&2 || true`;
   return [
-    `_ah_c=${shellQuote(`echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
+    `_ah_c=${shellQuote(`${room ? roomGate(room) : ""}echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
+    ...(room ? [`_AH_DEADLINE=$(( $(date +%s) + ${Math.max(0, Math.floor(wait))} )); export _AH_DEADLINE`] : []),
     ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
     // Missing admission infrastructure cannot turn into unbounded work.
     '_ah_readable=',
@@ -1365,7 +1476,7 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   if (!watch && verdict.action === "serialize" && (!verdict.locked || hand) && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
     const locks = slotLocks(lock, heavySlots({ env })).filter((file, i) => i === 0 || ensureLockFile(file));
     const wait = Math.min(LIMITS.maxWaitSeconds * 4, Math.max(waitSeconds(toolInput, env), hand?.wait ?? 0));
-    wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
+    wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, room: roomSettings(env), nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
   }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
   const selfChecked = wrapped === undefined && !watch && isSelfCheckedRemoval(command);
@@ -1490,6 +1601,16 @@ export const hookSettingsArguments = (hookPath) => ["--settings", JSON.stringify
  * leaves the command untouched. The hook never waits on the lock; the rewritten command does.
  */
 function main() {
+  if (process.argv[2] === "--wait-for-room") {
+    const args = process.argv.slice(3);
+    const value = (name) => args[args.indexOf(name) + 1];
+    const settings = { directory: args.includes("--directory") ? value("--directory") : undefined, cgroupRoot: args.includes("--cgroup-root") ? value("--cgroup-root") : undefined, needMiB: Number(value("--need-mb")), pressure: Number(value("--pressure")) };
+    waitForRoom(settings, { deadline: Number(value("--deadline")) }).then((verdict) => {
+      if (!verdict.ok) process.stderr.write(`agent-heavy: no room for this command: ${verdict.reason}. It did not run; it waited for a running command to end and none did. Retry when the other work has finished, or narrow it.\n`);
+      process.exit(verdict.ok ? 0 : NO_ROOM_EXIT_CODE);
+    }, () => process.exit(0));
+    return;
+  }
   if (process.argv[2] === "--lock-status") {
     try { process.stdout.write(JSON.stringify(heavyLockStatus(process.argv.slice(3))) + "\n"); }
     catch { process.stdout.write('{"kind":"agent-heavy.lock-status.v1","state":"observation-unavailable","snapshot":true}\n'); }
