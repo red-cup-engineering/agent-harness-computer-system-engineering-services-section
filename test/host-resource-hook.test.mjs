@@ -78,6 +78,8 @@ process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 const verdict = (command, cwd = "plain") => classify(command, { cwd: dirs[cwd] ?? cwd, env, home });
 
 // [command, cwd, expected action, a piece of the denial reason when it is a deny]
+// Heavy commands run without a host-wide queue (Leader, 2026-10-26: "fuck this heavy-command slot
+// slop"; #38): a heavy command that is not denied is allowed as written.
 const TABLE = [
   // find: rooted at the disk, a home or a large tree, unbounded
   ["find / -name x", "plain", "deny", "walks the whole disk"],
@@ -110,20 +112,20 @@ const TABLE = [
   ["find . -name x", "small", "allow"],
   ["find lib -name x", "big", "allow"],
   // git worktree add
-  ["git worktree add ../w", "plain", "deny", "blobless sparse clone"],
+  ["git worktree add ../w", "plain", "deny", "own checkout inside the colony"],
   ["git worktree add -b topic ../w HEAD", "small", "deny"],
   ["git worktree list", "plain", "allow"],
   ["git worktree remove ../w", "plain", "allow"],
-  // git clone: only into a scratchpad/tmp directory, and then under the lock
-  ["git clone https://example.com/o/r.git", "srv", "deny", "outside a scratchpad/tmp"],
+  // git clone: only inside the colony directory (~/<colony>), never into scratch, and then under the lock
+  ["git clone https://example.com/o/r.git", "plain", "allow"],
+  ["gh repo clone o/r", "plain", "allow"],
+  ["git clone https://example.com/o/r.git", "srv", "deny", "outside the colony directory"],
   ["git clone https://example.com/o/r.git ./r", "srv", "deny"],
-  ["git clone -b main --depth 1 https://example.com/o/r.git /srv/work/x", "srv", "deny"],
   ["gh repo clone o/r", "srv", "deny"],
-  ["git clone --filter=blob:none --sparse --depth=50 https://example.com/o/r.git", "srvScratch", "serialize"],
-  ["git clone https://example.com/o/r.git /tmp/r", "srv", "serialize"],
-  ["git clone --depth 1 -b main git@example.com:o/r.git /var/tmp/r", "srv", "serialize"],
-  ["gh repo clone o/r", "srvScratch", "serialize"],
-  ["gh repo clone o/r -- --depth=1", "srvScratch", "serialize"],
+  ["git clone --filter=blob:none --sparse --depth=50 https://example.com/o/r.git", "srvScratch", "deny"],
+  ["git clone https://example.com/o/r.git /tmp/r", "plain", "deny", "outside the colony directory"],
+  ["git clone --depth 1 -b main git@example.com:o/r.git /var/tmp/r", "plain", "deny"],
+  ["git clone https://example.com/o/r.git scratch/r", "plain", "deny"],
   // an unscoped status / log --all / ls-files in a large repository
   ["git status", "big", "deny", "pathspec"],
   ["git status -s", "big", "deny"],
@@ -158,17 +160,17 @@ const TABLE = [
   ["git submodule foreach 'git status'", "big", "deny", "submodule foreach"],
   ["git submodule foreach --recursive git fetch", "many", "deny"],
   [`git -C ${dirs.big} submodule update --init`, "plain", "deny"],
-  ["git submodule update --init --recursive -- deps/x", "big", "serialize"],
-  ["git submodule update --init", "sub", "serialize"],
-  ["git submodule update --init --recursive", "small", "serialize"],
-  ["git submodule sync", "big", "serialize"],
+  ["git submodule update --init --recursive -- deps/x", "big", "allow"],
+  ["git submodule update --init", "sub", "allow"],
+  ["git submodule update --init --recursive", "small", "allow"],
+  ["git submodule sync", "big", "allow"],
   ["git submodule status", "big", "allow"],
   // gh commands that read the local checkout run an implicit git status of it
-  ["gh pr create --title t --body b", "big", "serialize"],
-  ["gh pr checkout 12", "big", "serialize"],
-  ["gh pr status", "sub", "serialize"],
-  ["gh pr diff 3", "big", "serialize"],
-  ["gh repo sync", "big", "serialize"],
+  ["gh pr create --title t --body b", "big", "allow"],
+  ["gh pr checkout 12", "big", "allow"],
+  ["gh pr status", "sub", "allow"],
+  ["gh pr diff 3", "big", "allow"],
+  ["gh repo sync", "big", "allow"],
   ["gh pr create --title t -R o/r", "big", "allow"],
   ["gh pr create --repo=o/r --title t", "big", "allow"],
   ["gh pr create -Ro/r", "big", "allow"],
@@ -183,31 +185,31 @@ const TABLE = [
   ["git fetch origin", "small", "allow"],
   ["git push origin main", "small", "allow"],
   ["git pull --ff-only", "small", "allow"],
-  ["git fetch origin", "big", "serialize"],
-  ["git push origin main", "big", "serialize"],
-  ["git push origin main", "plain", "serialize"],
-  ["git fetch --unshallow origin", "small", "serialize"],
-  ["git fetch --deepen=100 origin", "small", "serialize"],
-  ["git push --mirror origin", "small", "serialize"],
-  ["git push --tags origin", "small", "serialize"],
-  ["git gc --aggressive", "small", "serialize"],
-  ["git repack -ad", "small", "serialize"],
-  ["git archive HEAD -o /tmp/x.tar", "small", "serialize"],
-  ["git ls-tree -r HEAD", "small", "serialize"],
-  ["git ls-tree -rl HEAD lib", "small", "serialize"],
-  ["git cat-file --batch-check", "small", "serialize"],
-  ["git rev-list --all --objects", "small", "serialize"],
-  ["git -c core.x=1 -C . fetch --all", "small", "serialize"],
-  ["git diff", "big", "serialize"],
-  ["git grep foo", "big", "serialize"],
-  ["git add -A", "big", "serialize"],
-  ["git add .", "big", "serialize"],
-  ["git commit -am wip", "big", "serialize"],
-  ["git checkout main", "big", "serialize"],
-  ["git stash", "big", "serialize"],
-  ["git reset --hard", "big", "serialize"],
-  ["git log --all -- lib", "big", "serialize"],
-  ["git ls-files", "sub", "serialize"],
+  ["git fetch origin", "big", "allow"],
+  ["git push origin main", "big", "allow"],
+  ["git push origin main", "plain", "allow"],
+  ["git fetch --unshallow origin", "small", "allow"],
+  ["git fetch --deepen=100 origin", "small", "allow"],
+  ["git push --mirror origin", "small", "allow"],
+  ["git push --tags origin", "small", "allow"],
+  ["git gc --aggressive", "small", "allow"],
+  ["git repack -ad", "small", "allow"],
+  ["git archive HEAD -o /tmp/x.tar", "small", "allow"],
+  ["git ls-tree -r HEAD", "small", "allow"],
+  ["git ls-tree -rl HEAD lib", "small", "allow"],
+  ["git cat-file --batch-check", "small", "allow"],
+  ["git rev-list --all --objects", "small", "allow"],
+  ["git -c core.x=1 -C . fetch --all", "small", "allow"],
+  ["git diff", "big", "allow"],
+  ["git grep foo", "big", "allow"],
+  ["git add -A", "big", "allow"],
+  ["git add .", "big", "allow"],
+  ["git commit -am wip", "big", "allow"],
+  ["git checkout main", "big", "allow"],
+  ["git stash", "big", "allow"],
+  ["git reset --hard", "big", "allow"],
+  ["git log --all -- lib", "big", "allow"],
+  ["git ls-files", "sub", "allow"],
   ["git diff --stat -- lib", "big", "allow"],
   ["git diff HEAD~1 HEAD", "big", "allow"],
   ["git diff main..topic", "big", "allow"],
@@ -250,33 +252,33 @@ const TABLE = [
   ["find . -name x", "super", "deny"],
   ["ls -la", "big", "allow"],
   // disk- and CPU-heavy tools
-  ["du -sh .", "plain", "serialize"],
-  ["tar czf a.tgz b", "plain", "serialize"],
-  ["rsync -a a/ b/", "plain", "serialize"],
-  ["npm install", "plain", "serialize"],
-  ["npm i left-pad", "plain", "serialize"],
-  ["pnpm install --frozen-lockfile", "plain", "serialize"],
-  ["pnpm --filter x install", "plain", "serialize"],
-  ["pnpm -r add y", "plain", "serialize"],
-  ["yarn", "plain", "serialize"],
-  ["pip install x", "plain", "serialize"],
-  ["uv sync", "plain", "serialize"],
-  ["guix build hello", "plain", "serialize"],
-  ["guix pull", "plain", "serialize"],
-  ["guix shell hello -- hello", "plain", "serialize"],
-  ["lake build", "plain", "serialize"],
-  ["cargo build --release", "plain", "serialize"],
-  ["cargo +nightly test", "plain", "serialize"],
-  ["make -j4", "plain", "serialize"],
-  ["docker build .", "plain", "serialize"],
-  ["bash -c 'tar xf a.tar'", "plain", "serialize"],
-  ["ls && tar tf x.tar", "plain", "serialize"],
-  ["nice -n 5 tar xf a.tar", "plain", "serialize"],
-  ["sudo du -sh /", "plain", "serialize"],
-  ["time cargo check", "plain", "serialize"],
-  ["npm test", "plain", "serialize"],
-  ["npm run build", "plain", "serialize"],
-  ["pnpm run test", "plain", "serialize"],
+  ["du -sh .", "plain", "allow"],
+  ["tar czf a.tgz b", "plain", "allow"],
+  ["rsync -a a/ b/", "plain", "allow"],
+  ["npm install", "plain", "allow"],
+  ["npm i left-pad", "plain", "allow"],
+  ["pnpm install --frozen-lockfile", "plain", "allow"],
+  ["pnpm --filter x install", "plain", "allow"],
+  ["pnpm -r add y", "plain", "allow"],
+  ["yarn", "plain", "allow"],
+  ["pip install x", "plain", "allow"],
+  ["uv sync", "plain", "allow"],
+  ["guix build hello", "plain", "allow"],
+  ["guix pull", "plain", "allow"],
+  ["guix shell hello -- hello", "plain", "allow"],
+  ["lake build", "plain", "allow"],
+  ["cargo build --release", "plain", "allow"],
+  ["cargo +nightly test", "plain", "allow"],
+  ["make -j4", "plain", "allow"],
+  ["docker build .", "plain", "allow"],
+  ["bash -c 'tar xf a.tar'", "plain", "allow"],
+  ["ls && tar tf x.tar", "plain", "allow"],
+  ["nice -n 5 tar xf a.tar", "plain", "allow"],
+  ["sudo du -sh /", "plain", "allow"],
+  ["time cargo check", "plain", "allow"],
+  ["npm test", "plain", "allow"],
+  ["npm run build", "plain", "allow"],
+  ["pnpm run test", "plain", "allow"],
   ["cargo --version", "plain", "allow"],
   ["lake --version", "plain", "allow"],
   ["guix --version", "plain", "allow"],
@@ -285,7 +287,7 @@ const TABLE = [
   ["ls", "plain", "allow"],
   ["cat README.md", "plain", "allow"],
   ["echo hi", "plain", "allow"],
-  ["node --test test/a.test.mjs", "plain", "serialize"],
+  ["node --test test/a.test.mjs", "plain", "allow"],
   ['echo "find / -name x"', "plain", "allow"],
   ['grep "find /" notes.txt', "plain", "allow"],
   ["cat <<'EOF'\nfind / -name x\ntar czf a b\nEOF", "plain", "allow"],
@@ -310,13 +312,13 @@ test("a command run inside a held slot is not wrapped again; one hand-wrapped on
   assert.equal(decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: "tar xf a.tar" } }, { env: { ...env, AGENT_HEAVY_LOCK_HELD: "1" }, home }), undefined);
 });
 
-test("a clone into the user's home, or the tmp-named directory of a working tree, is judged by its resolved path", () => {
+test("a clone is judged by its resolved path: inside a colony directory it runs, in tmp, scratch or a dot directory it is refused", () => {
   const user = { env: { ...env, HOME: "/home/someone" }, home: "/home/someone" };
-  assert.equal(classify("git clone https://example.com/o/r.git $HOME/code/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
-  assert.equal(classify("git clone https://example.com/o/r.git ~/code/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
-  assert.equal(classify("git clone https://example.com/o/r.git ../../../tmp/r", { cwd: "/srv/work/proj", ...user }).action, "serialize");
-  assert.equal(classify("git clone https://example.com/o/r.git ../r", { cwd: "/srv/work/scratchpad/harness", ...user }).action, "serialize");
-  assert.equal(classify("git clone https://example.com/o/r.git /home/someone/.cache/scratch/r", { cwd: "/srv/work/proj", ...user }).action, "serialize");
+  assert.equal(classify("git clone https://example.com/o/r.git $HOME/code/r", { cwd: "/srv/work/proj", ...user }).action, "allow", "inside a colony directory");
+  assert.equal(classify("git clone https://example.com/o/r.git ~/code/r", { cwd: "/srv/work/proj", ...user }).action, "allow");
+  assert.equal(classify("git clone https://example.com/o/r.git ../../../tmp/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
+  assert.equal(classify("git clone https://example.com/o/r.git ../r", { cwd: "/srv/work/scratchpad/harness", ...user }).action, "deny");
+  assert.equal(classify("git clone https://example.com/o/r.git /home/someone/.cache/scratch/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
 });
 
 test("clone custody refuses a missing cd and unresolved destinations before executing Git", () => {
@@ -342,7 +344,7 @@ test("clone custody refuses a missing cd and unresolved destinations before exec
 });
 
 test("clone custody preserves valid targets and intentional cd failure recovery without shell rewrites", () => {
-  const scratch = path.join(home, "scratch", "clone-custody");
+  const scratch = path.join(home, "colony", "clone-custody");
   const bin = path.join(scratch, "bin");
   mkdirSync(bin, { recursive: true });
   const marker = path.join(scratch, "git-effects");
