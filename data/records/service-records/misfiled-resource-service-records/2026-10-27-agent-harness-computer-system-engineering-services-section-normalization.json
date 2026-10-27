@@ -1,0 +1,216 @@
+{
+  "id": "2026-10-27-agent-harness-computer-system-engineering-services-section-normalization",
+  "kind": "misfiled-resources-register",
+  "by": "apply-services-section-normalization",
+  "date": "2026-10-27",
+  "moved": [
+    {
+      "from": "content/requirements/a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches.json",
+      "to": "data/records/service-records/requirements-management-service-records/a-claude-code-session-opens-and-moves-work-for-each-agent-it-dispatches.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "66a5cdccd82bf8ab8f4ed9a51b8ee391b2dc3c8345ccff3b5b1f561c6dd4f9ab",
+      "destinationSha256": "66a5cdccd82bf8ab8f4ed9a51b8ee391b2dc3c8345ccff3b5b1f561c6dd4f9ab",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/a-swarm-topology-sensor-die-on-every-host.json",
+      "to": "data/records/service-records/requirements-management-service-records/a-swarm-topology-sensor-die-on-every-host.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "fd5fea5d08109254bae683653adfa67af23e9a65aa7f7fd30d38edb633ded331",
+      "destinationSha256": "fd5fea5d08109254bae683653adfa67af23e9a65aa7f7fd30d38edb633ded331",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/agent-root-instructions-are-template-fills.json",
+      "to": "data/records/service-records/requirements-management-service-records/agent-root-instructions-are-template-fills.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "d6eed94e014d1e625dc4c1cb23a4f43ac65d7642b30b807be0603690146203d5",
+      "destinationSha256": "d6eed94e014d1e625dc4c1cb23a4f43ac65d7642b30b807be0603690146203d5",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/host-work-runs-on-deterministic-scripts.json",
+      "to": "data/records/service-records/requirements-management-service-records/host-work-runs-on-deterministic-scripts.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "24b5d32cfb5d3c050efd7e6203b46b4e257664ecd7d30f57c76982d337a0a918",
+      "destinationSha256": "24b5d32cfb5d3c050efd7e6203b46b4e257664ecd7d30f57c76982d337a0a918",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence.json",
+      "to": "data/records/service-records/requirements-management-service-records/make-agents-aware-of-the-live-swarm-with-distributed-cloud-presence.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "9858288a9380e23f11a327387eedfeeaea84ad434108cd7d95804420bf4d0e3b",
+      "destinationSha256": "9858288a9380e23f11a327387eedfeeaea84ad434108cd7d95804420bf4d0e3b",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/save-reasoning-blocks-as-data.json",
+      "to": "data/records/service-records/requirements-management-service-records/save-reasoning-blocks-as-data.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "64bfe0fb56262706e55680ea23d8d68830ac59e6e0d7d2353e5042734256fad1",
+      "destinationSha256": "64bfe0fb56262706e55680ea23d8d68830ac59e6e0d7d2353e5042734256fad1",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/session-start-human-change-reconciliation.json",
+      "to": "data/records/service-records/requirements-management-service-records/session-start-human-change-reconciliation.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "1892823b5dcb0c5ce5ee52f2502b6a3a102f78f89a8537747652e3dc97fb711c",
+      "destinationSha256": "1892823b5dcb0c5ce5ee52f2502b6a3a102f78f89a8537747652e3dc97fb711c",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/the-agent-harness-is-one-platform-in-use.json",
+      "to": "data/records/service-records/requirements-management-service-records/the-agent-harness-is-one-platform-in-use.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "e06730bd38b10db79fe296705b8fb1d465f8483f6bdc081b989a60c2449cd48b",
+      "destinationSha256": "e06730bd38b10db79fe296705b8fb1d465f8483f6bdc081b989a60c2449cd48b",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/the-agent-harness-refuses-mass-deletion.json",
+      "to": "data/records/service-records/requirements-management-service-records/the-agent-harness-refuses-mass-deletion.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "4677975ac7fe8d6206c5ef20f705af505d63647860ce42eaddf10617dc5c50f4",
+      "destinationSha256": "4677975ac7fe8d6206c5ef20f705af505d63647860ce42eaddf10617dc5c50f4",
+      "byteIdentical": true
+    },
+    {
+      "from": "content/requirements/the-session-charge-is-delivered-by-the-harness.json",
+      "to": "data/records/service-records/requirements-management-service-records/the-session-charge-is-delivered-by-the-harness.json",
+      "rule": "requirements-are-service-records",
+      "sourceSha256": "86f616d82d629999446444f1e7597e29b4b27c692a50dd1970064fd22072707e",
+      "destinationSha256": "86f616d82d629999446444f1e7597e29b4b27c692a50dd1970064fd22072707e",
+      "byteIdentical": true
+    }
+  ],
+  "owed": [
+    {
+      "rule": "stray-top-level",
+      "reason": ".npmrc/ is not an entry the services-section law knows; its owner decides where it belongs",
+      "directory": ".",
+      "count": 1
+    },
+    {
+      "rule": "stray-top-level",
+      "reason": "LICENSE/ is not an entry the services-section law knows; its owner decides where it belongs",
+      "directory": ".",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/2026/03/31",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/2026/08/28",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/archive/agent-harnesses/character/_archive",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/_archive",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/content/character-as-a-claude-configuration",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/content/character-memory/_archive",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/content/character-memory",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/content/character-memory/doing/working/loading-the-character-memory",
+      "count": 1
+    },
+    {
+      "rule": "recovered-means-restored",
+      "reason": "Leader, 2026-10-25: \"we need to actually recover these\"; each is restored to the record or code it came from",
+      "directory": "content/text/documents/articles/notes/recovered/history/content/assets/legacy/agent-harnesses/character/content/character-resource-file",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/agents-md-specification/curricula",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/agents-md-specification",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/claude-md-specification/curricula",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/claude-md-specification",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/readme-md-specification/curricula",
+      "count": 1
+    },
+    {
+      "rule": "specifications-have-the-ietf-form-and-live-in-engineering",
+      "reason": "Leader, 2026-10-25: \"literally not a ONE of these is a specification\"; each is reclassified by its owner and real specifications move to engineering",
+      "directory": "content/text/documents/articles/specifications/readme-md-specification",
+      "count": 1
+    },
+    {
+      "rule": "data-fits-no-service-directory",
+      "reason": "measurements is not <service>-records",
+      "directory": "data/records/measurements/2026-10-19-pr-removed-file-share",
+      "count": 5
+    },
+    {
+      "rule": "data-fits-no-service-directory",
+      "reason": "schema is not <service>-records",
+      "directory": "data/records/schema",
+      "count": 3
+    },
+    {
+      "rule": "stray-top-level",
+      "reason": "specifications/ is not an entry the services-section law knows; its owner decides where it belongs",
+      "directory": "specifications",
+      "count": 1
+    }
+  ]
+}
