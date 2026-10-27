@@ -11,7 +11,7 @@
  * instruction; for one that is not, the hook places its commands there itself.
  *
  *   deny       the command reads or writes far more than it can be worth (`find`, or a recursive
- *              `grep`/`rg`/`ag`/`ack`/`fd`/`tree`, over the disk, a home or a large working tree, `git worktree add`, `git clone` into a working directory, an
+ *              `grep`/`rg`/`ag`/`ack`/`fd`/`tree`, over the disk, a home or a large working tree, `git worktree add`, `git clone` outside the colony directory (~/<colony>), an
  *              unscoped `git status`/`git log --all`/`git ls-files` and `git submodule update|foreach`
  *              in a large repository, `rm .git/index.lock` while a git process works there); the
  *              reason, shown to the agent, names the safe alternative;
@@ -647,7 +647,7 @@ function git(argv, state, ctx, report) {
     if (why !== undefined) { report.deny(partialReason(sub === "commit" ? "git commit -a" : "git add -A/-u", why)); return; }
   }
   if (sub === "worktree") {
-    if (args[0] === "add") report.deny("git worktree add checks out a full working tree on disk: use a blobless sparse clone in the scratchpad instead (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>, then git sparse-checkout set <dirs>).");
+    if (args[0] === "add") report.deny("git worktree add makes a second working tree of a repository the colony already holds: work in that section's own checkout inside the colony directory (~/<colony>), on a branch.");
     return;
   }
   if (sub === "clone") {
@@ -725,11 +725,21 @@ function clone(words, state, ctx, report) {
   report.heavy("git clone");
   const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
   if (resolved === undefined) {
-    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination within the permitted session scratchpad/tmp custody.");
+    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory (~/<colony>).");
     return;
   }
-  if (isScratch(resolved, ctx)) return;
-  report.deny(`git clone into ${resolved} is outside a scratchpad/tmp directory: clone into the session scratchpad or /tmp (git clone --filter=blob:none --sparse --depth=50 <url> <scratchpad>/<name>) and delete the clone when done.`);
+  // Everything the Group writes stays inside the colony directory (~/<colony>, e.g. ~/bare-cedar-fog);
+  // a clone in /tmp, a scratchpad, ~/.cache or anywhere outside it is the data flood the Leader names.
+  const colony = colonyOf(resolved, ctx);
+  if (colony !== undefined && !isScratch(resolved, ctx)) return;
+  report.deny(`git clone into ${resolved} is outside the colony directory: clone a repository only to its section's path inside ~/<colony> (${colonyOf(state.cloneCwd ?? "", ctx) ?? "~/<colony>"}), or work in the checkout the colony already holds. Never clone into /tmp, a scratchpad or a dot directory.`);
+}
+
+/** The colony directory holding `dir`: the first non-dot directory under the user's home, or undefined. */
+function colonyOf(dir, ctx) {
+  if (typeof dir !== "string" || !ctx.home || !within(dir, ctx.home) || dir === ctx.home) return undefined;
+  const first = dir.slice(ctx.home.length + 1).split("/")[0];
+  return first && !first.startsWith(".") ? path.join(ctx.home, first) : undefined;
 }
 
 /** A running git process whose working directory is inside `top`, or undefined. Bounded in time: past the bound the answer is "none seen". */
