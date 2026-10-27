@@ -1,7 +1,7 @@
-// host-resource-hook.test: the PreToolUse controller that denies runaway commands and runs the heavy
-// ones one at a time under a host-wide kernel lock. Classification is a table over real fixture
-// repositories (a `.git/index` of the size that makes a repository large); serialization is shown by
-// running the hook's own rewrite concurrently and reading the order it admitted them in.
+// host-resource-hook.test: the PreToolUse controller that denies runaway commands and places the rest
+// in the work slice. Classification is a table over real fixture repositories (a `.git/index` of the
+// size that makes a repository large); containment is shown by running the hook's own rewrite with a
+// fake systemd-run.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -12,11 +12,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUSY_EXIT_CODE, NO_ROOM_EXIT_CODE, cgroupRoom, roomSettings, roomVerdict, waitForRoom, workSliceDirectory, LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLICE, handWrappedHeavy, heavySlots, memoryPressure, serializedCommand, sessionLimits, slotLocks, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, lockPath, parseShell, run, shellQuote, sliceUnit, waitSeconds } from "../src/host-resource-hook.mjs";
+import { LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLICE, sessionLimits, classify, containedCommand, containmentLimits, decide, hookEntries, hostResourceControl, isContained, launcherScript, parseShell, run, shellQuote, sliceUnit } from "../src/host-resource-hook.mjs";
 
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
-const haveFlock = spawnSync("flock", ["--version"]).status === 0;
 
 const root = realpathSync(mkdtempSync(path.join(tmpdir(), "host-resource-hook-")));
 const home = path.join(root, "home");
@@ -70,16 +69,13 @@ writeFileSync(path.join(root, "gitdirs", "linked", "index"), "");
 truncateSync(path.join(root, "gitdirs", "linked", "index"), 6 * MiB);
 writeFileSync(path.join(dirs.linked, ".git"), `gitdir: ${path.join(root, "gitdirs", "linked")}\n`);
 
-const lock = path.join(root, "run", "agent-heavy.lock");
-// One slot and no pressure gate, so the serialization contracts below hold on any host; the slot tests set their own.
-const env = { HOME: home, PATH: process.env.PATH, AGENT_HEAVY_LOCK: lock, AGENT_HEAVY_SLOTS: "1", AGENT_HEAVY_PRESSURE: "1000", AGENT_HEAVY_ROOM: "off" };
+const env = { HOME: home, PATH: process.env.PATH };
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 
 const verdict = (command, cwd = "plain") => classify(command, { cwd: dirs[cwd] ?? cwd, env, home });
 
 // [command, cwd, expected action, a piece of the denial reason when it is a deny]
-// Heavy commands run without a host-wide queue (Leader, 2026-10-26: "fuck this heavy-command slot
-// slop"; #38): a heavy command that is not denied is allowed as written.
+// Nothing is queued (Leader, 2026-10-26: "fuck this heavy-command slot slop"; #38): what is not denied is allowed.
 const TABLE = [
   // find: rooted at the disk, a home or a large tree, unbounded
   ["find / -name x", "plain", "deny", "walks the whole disk"],
@@ -116,7 +112,7 @@ const TABLE = [
   ["git worktree add -b topic ../w HEAD", "small", "deny"],
   ["git worktree list", "plain", "allow"],
   ["git worktree remove ../w", "plain", "allow"],
-  // git clone: only inside the colony directory (~/<colony>), never into scratch, and then under the lock
+  // git clone: only inside the colony directory (~/<colony>), never into scratch
   ["git clone https://example.com/o/r.git", "plain", "allow"],
   ["gh repo clone o/r", "plain", "allow"],
   ["git clone https://example.com/o/r.git", "srv", "deny", "outside the colony directory"],
@@ -165,67 +161,25 @@ const TABLE = [
   ["git submodule update --init --recursive", "small", "allow"],
   ["git submodule sync", "big", "allow"],
   ["git submodule status", "big", "allow"],
-  // gh commands that read the local checkout run an implicit git status of it
-  ["gh pr create --title t --body b", "big", "allow"],
-  ["gh pr checkout 12", "big", "allow"],
-  ["gh pr status", "sub", "allow"],
-  ["gh pr diff 3", "big", "allow"],
-  ["gh repo sync", "big", "allow"],
-  ["gh pr create --title t -R o/r", "big", "allow"],
-  ["gh pr create --repo=o/r --title t", "big", "allow"],
-  ["gh pr create -Ro/r", "big", "allow"],
-  ["gh pr create --title t", "small", "allow"],
-  ["gh pr create --title t", "plain", "allow"],
-  ["gh pr view 3", "big", "allow"],
-  ["gh pr list", "big", "allow"],
-  ["gh api repos/o/r/pulls", "big", "allow"],
+  // transfers and whole-tree git in a large repository are not denied, and nothing queues them
+  ["gh pr create --title t", "big", "allow"],
   ["gh pr merge 3 -R o/r", "big", "allow"],
-  // heavy git: always under the lock; a large repository's whole-tree work too
-  // a transfer serializes by the history it moves: light from a small repository, heavy from a large or unknown one
-  ["git fetch origin", "small", "allow"],
-  ["git push origin main", "small", "allow"],
-  ["git pull --ff-only", "small", "allow"],
   ["git fetch origin", "big", "allow"],
   ["git push origin main", "big", "allow"],
-  ["git push origin main", "plain", "allow"],
-  ["git fetch --unshallow origin", "small", "allow"],
-  ["git fetch --deepen=100 origin", "small", "allow"],
-  ["git push --mirror origin", "small", "allow"],
-  ["git push --tags origin", "small", "allow"],
-  ["git gc --aggressive", "small", "allow"],
-  ["git repack -ad", "small", "allow"],
-  ["git archive HEAD -o /tmp/x.tar", "small", "allow"],
-  ["git ls-tree -r HEAD", "small", "allow"],
-  ["git ls-tree -rl HEAD lib", "small", "allow"],
-  ["git cat-file --batch-check", "small", "allow"],
-  ["git rev-list --all --objects", "small", "allow"],
-  ["git -c core.x=1 -C . fetch --all", "small", "allow"],
   ["git diff", "big", "allow"],
   ["git grep foo", "big", "allow"],
   ["git add -A", "big", "allow"],
-  ["git add .", "big", "allow"],
   ["git commit -am wip", "big", "allow"],
   ["git checkout main", "big", "allow"],
   ["git stash", "big", "allow"],
-  ["git reset --hard", "big", "allow"],
   ["git log --all -- lib", "big", "allow"],
   ["git ls-files", "sub", "allow"],
   ["git diff --stat -- lib", "big", "allow"],
-  ["git diff HEAD~1 HEAD", "big", "allow"],
-  ["git diff main..topic", "big", "allow"],
   ["git diff --cached", "big", "allow"],
   ["git grep foo -- lib", "big", "allow"],
-  ["git add lib/a.mjs", "big", "allow"],
-  ["git commit -m wip", "big", "allow"],
-  ["git diff", "small", "allow"],
-  ["git grep foo", "small", "allow"],
-  ["git ls-tree HEAD lib", "big", "allow"],
-  ["git cat-file -p HEAD", "big", "allow"],
-  ["git log -n 5", "plain", "allow"],
   ["git show HEAD", "big", "allow"],
-  ["git branch --show-current", "big", "allow"],
   ["git rev-parse HEAD", "big", "allow"],
-  // recursive reads of a large tree are denied (rule no-whole-tree-scans), not merely serialized
+  // recursive reads of a large tree are denied (rule no-whole-tree-scans)
   ["rg foo", "big", "deny"],
   ["rg --files", "big", "deny"],
   [`rg foo ${home}`, "plain", "deny"],
@@ -251,38 +205,11 @@ const TABLE = [
   ["grep -rn foo docs", "super", "allow"],
   ["find . -name x", "super", "deny"],
   ["ls -la", "big", "allow"],
-  // disk- and CPU-heavy tools
-  ["du -sh .", "plain", "allow"],
-  ["tar czf a.tgz b", "plain", "allow"],
-  ["rsync -a a/ b/", "plain", "allow"],
+  // installs and builds are not denied
   ["npm install", "plain", "allow"],
-  ["npm i left-pad", "plain", "allow"],
-  ["pnpm install --frozen-lockfile", "plain", "allow"],
-  ["pnpm --filter x install", "plain", "allow"],
-  ["pnpm -r add y", "plain", "allow"],
-  ["yarn", "plain", "allow"],
-  ["pip install x", "plain", "allow"],
-  ["uv sync", "plain", "allow"],
-  ["guix build hello", "plain", "allow"],
-  ["guix pull", "plain", "allow"],
-  ["guix shell hello -- hello", "plain", "allow"],
-  ["lake build", "plain", "allow"],
-  ["cargo build --release", "plain", "allow"],
-  ["cargo +nightly test", "plain", "allow"],
   ["make -j4", "plain", "allow"],
-  ["docker build .", "plain", "allow"],
-  ["bash -c 'tar xf a.tar'", "plain", "allow"],
-  ["ls && tar tf x.tar", "plain", "allow"],
-  ["nice -n 5 tar xf a.tar", "plain", "allow"],
   ["sudo du -sh /", "plain", "allow"],
-  ["time cargo check", "plain", "allow"],
-  ["npm test", "plain", "allow"],
-  ["npm run build", "plain", "allow"],
-  ["pnpm run test", "plain", "allow"],
-  ["cargo --version", "plain", "allow"],
-  ["lake --version", "plain", "allow"],
-  ["guix --version", "plain", "allow"],
-  ["make --version", "plain", "allow"],
+
   // everything else, and words that only look like commands
   ["ls", "plain", "allow"],
   ["cat README.md", "plain", "allow"],
@@ -304,13 +231,6 @@ for (const [command, cwd, action, reason] of TABLE) {
     if (action === "deny") assert.doesNotMatch(result.reason, /\n/u, "the reason is one line");
   });
 }
-
-test("a command run inside a held slot is not wrapped again; one hand-wrapped on the heavy lock is admitted through the slots", () => {
-  assert.equal(verdict(`flock ${lock} du -sh .`).locked, true);
-  const hand = decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: `flock -w 5 ${lock} tar xf a.tar` } }, { env, home });
-  assert.ok(hand.updatedInput.command.includes("tar xf a.tar") && !hand.updatedInput.command.startsWith("flock"));
-  assert.equal(decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: "tar xf a.tar" } }, { env: { ...env, AGENT_HEAVY_LOCK_HELD: "1" }, home }), undefined);
-});
 
 test("a clone is judged by its resolved path: inside a colony directory it runs, in tmp, scratch or a dot directory it is refused", () => {
   const user = { env: { ...env, HOME: "/home/someone" }, home: "/home/someone" };
@@ -384,17 +304,10 @@ test("a session confined to an allow-list is denied what is runaway but never re
   assert.equal(confined("git log -n 3"), undefined);
 });
 
-test("a deny still applies under the lock", () => {
-  assert.equal(verdict(`flock ${lock} find / -name x`).action, "deny");
-  assert.equal(verdict(`flock -w 5 -E 75 ${lock} bash -c 'find / -name x'`).action, "deny");
-  assert.equal(verdict(`flock ${lock} -c 'find / -name x'`).action, "deny");
-});
-
-test("gh on a large checkout is serialized with the way around it in the reason", () => {
-  const result = verdict("gh pr create --title t", "big");
-  assert.equal(result.action, "serialize");
-  assert.match(result.heavy[0], /implicit git status/u);
-  assert.match(result.heavy[0], /gh api, or -R owner\/repo, avoids/u);
+test("a deny still applies under flock", () => {
+  assert.equal(verdict("flock /run/user/1000/agent-heavy.lock find / -name x").action, "deny");
+  assert.equal(verdict("flock -w 5 -E 75 /run/user/1000/agent-heavy.lock bash -c 'find / -name x'").action, "deny");
+  assert.equal(verdict("flock /run/user/1000/agent-heavy.lock -c 'find / -name x'").action, "deny");
 });
 
 test("the shell parser keeps quotes, substitutions, subshells and heredocs apart", () => {
@@ -420,25 +333,8 @@ test("a denied command leaves a one-line permissionDecisionReason on stdout and 
   assert.doesNotMatch(output.permissionDecisionReason, /\n/u);
 });
 
-test("a heavy command is rewritten with every other tool input field carried over", { skip: !haveFlock }, () => {
-  const result = hook(event("du -sh .", { description: "size", timeout: 300000, run_in_background: false }));
-  assert.equal(result.status, 0);
-  const { updatedInput, permissionDecision } = JSON.parse(result.stdout).hookSpecificOutput;
-  assert.equal(permissionDecision, undefined, "Claude Code applies updatedInput without taking over the permission decision");
-  assert.deepEqual({ ...updatedInput, command: undefined }, { command: undefined, description: "size", timeout: 300000, run_in_background: false });
-  assert.match(updatedInput.command, /flock -w 290 -E 75 /u);
-  assert.match(updatedInput.command, /nice -n 10 \$_ah_io flock /u);
-  assert.match(updatedInput.command, /_ah_io='ionice -c3'/u);
-  assert.ok(updatedInput.command.includes("du -sh ."), "the command is carried verbatim");
-  assert.ok(updatedInput.command.includes('_AH_RAN'), "with the marker that keeps it from running twice");
-  assert.ok(existsSync(lock), "the hook created the lock file");
-});
-
-test("for Codex the rewrite carries the explicit allow its contract requires", { skip: !haveFlock }, () => {
-  const result = hook(event("du -sh ."), env, ["--provider", "codex"]);
-  const output = JSON.parse(result.stdout).hookSpecificOutput;
-  assert.equal(output.permissionDecision, "allow");
-  assert.equal(typeof output.updatedInput.command, "string");
+test("AGENT_HOST_GUARD=off leaves even a runaway command untouched", () => {
+  assert.equal(hook(event("find / -name x"), { ...env, AGENT_HOST_GUARD: "off" }).stdout, "");
 });
 
 test("an allowed command leaves no output at all", () => {
@@ -463,19 +359,6 @@ test("the hook fails open: garbage, empty, partial and foreign events change not
   // A cwd that is not a path is simply unknown: the command is still judged by what it says.
   const odd = hook(JSON.stringify({ tool_name: "Bash", cwd: 7, tool_input: { command: "find / -name x" } }));
   assert.equal(JSON.parse(odd.stdout).hookSpecificOutput.permissionDecision, "deny");
-});
-
-test("known heavy work refuses without admission infrastructure; the explicit off switch remains", () => {
-  assert.equal(JSON.parse(hook(event("du -sh ."), { ...env, PATH: "/nonexistent" }).stdout).hookSpecificOutput.permissionDecision, "deny");
-  assert.equal(hook(event("find / -name x"), { ...env, AGENT_HOST_GUARD: "off" }).stdout, "");
-  // A lock under /proc once sent node's recursive mkdir into an endless loop at full CPU.
-  for (const unwritable of ["/proc/no-such-dir/agent-heavy.lock", "/proc/self/no/such/dir/agent-heavy.lock", "/sys/no-such-dir/agent-heavy.lock", "/dev/null/agent-heavy.lock"]) {
-    const started = Date.now();
-    const result = spawnSync(process.execPath, [HOOK], { input: event("du -sh ."), env: { ...env, AGENT_HEAVY_LOCK: unwritable }, encoding: "utf8", timeout: 20_000 });
-    assert.equal(result.signal, null, `${unwritable} hung the hook for ${Date.now() - started} ms`);
-    assert.equal(result.status, 0);
-    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
-  }
 });
 
 // The hook is the one thing that may never be slow: its own time, over the time node needs to start,
@@ -538,126 +421,20 @@ test("the hook costs a few milliseconds of CPU per command", () => {
   assert.ok(perCommand < 2, `${perCommand.toFixed(3)} ms of CPU per command`);
 });
 
-test("a lock path is the user's runtime directory, else the state directory, unless named", () => {
-  assert.equal(lockPath({ AGENT_HEAVY_LOCK: "/x/y.lock" }), "/x/y.lock");
-  assert.equal(lockPath({ XDG_RUNTIME_DIR: root }), path.join(root, "agent-heavy.lock"));
-  assert.equal(lockPath({ XDG_RUNTIME_DIR: "/nonexistent", XDG_STATE_HOME: "/s" }, -1), "/s/agent-harness/agent-heavy.lock");
-  assert.equal(waitSeconds({ timeout: 600000 }, {}), 590);
-  assert.equal(waitSeconds({}, {}), 110);
-  assert.equal(waitSeconds({ timeout: 1000 }, {}), 20);
-  assert.equal(waitSeconds({ timeout: 600000 }, { AGENT_HEAVY_WAIT_SECONDS: "3" }), 3);
-});
+// --- helpers -----------------------------------------------------------------------------------
 
-// --- the lock itself ---------------------------------------------------------------------------
-
-const rewritten = (command, hookEnv = env) => {
-  const result = hook(event(command), hookEnv);
-  const output = JSON.parse(result.stdout).hookSpecificOutput;
-  return output.updatedInput.command;
-};
 const exited = (child) => new Promise((resolve) => {
   let stderr = "";
   child.stderr.on("data", (chunk) => { stderr += chunk; });
   child.on("close", (code) => resolve({ code, stderr }));
 });
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
-// `flock lock sleep N` forks sleep, which inherits the lock: the holder is the pair, so it is killed as a group.
-const holdLock = (seconds) => spawn("flock", [lock, "sleep", String(seconds)], { stdio: "ignore", detached: true });
-const killGroup = (child) => { try { process.kill(-child.pid, "SIGKILL"); } catch { /* already gone */ } };
-const lockHeld = () => spawnSync("flock", ["-n", lock, "true"]).status !== 0;
 // Wait for a fact about another process rather than for a guessed time: a busy host starts processes late.
 const until = async (predicate, timeout = 15_000) => {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) { if (predicate()) return true; await sleep(50); }
   return predicate();
 };
-
-test("three heavy commands started together run one after another under the hook's lock", { skip: !haveFlock, timeout: 120_000 }, async () => {
-  const log = path.join(root, "serial.log");
-  writeFileSync(log, "");
-  const original = `du -s /dev/null >/dev/null; echo "start $$" >> ${shellQuote(log)}; sleep 0.4; echo "end $$" >> ${shellQuote(log)}`;
-  const wrapped = rewritten(original, { ...env, AGENT_HEAVY_WAIT_SECONDS: "60" });
-  const children = [1, 2, 3].map(() => spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  const results = await Promise.all(children.map(exited));
-  assert.deepEqual(results.map((result) => result.code), [0, 0, 0], results.map((result) => result.stderr).join());
-  const lines = readFileSync(log, "utf8").trim().split("\n");
-  assert.equal(lines.length, 6);
-  for (let pair = 0; pair < 3; pair += 1) {
-    const [start, pid] = lines[2 * pair].split(" ");
-    assert.equal(start, "start");
-    assert.equal(lines[2 * pair + 1], `end ${pid}`, `run ${pair} ended before the next began: ${lines.join(" | ")}`);
-  }
-  assert.equal(new Set(lines.map((line) => line.split(" ")[1])).size, 3);
-});
-
-test("the same three commands without the lock overlap, so the test can see overlap", { skip: !haveFlock, timeout: 120_000 }, async () => {
-  const log = path.join(root, "free.log");
-  writeFileSync(log, "");
-  const original = `echo "start $$" >> ${shellQuote(log)}; sleep 0.4; echo "end $$" >> ${shellQuote(log)}`;
-  const results = await Promise.all([1, 2, 3].map(() => exited(spawn("bash", ["-c", original], { env, stdio: ["ignore", "ignore", "pipe"] }))));
-  assert.deepEqual(results.map((result) => result.code), [0, 0, 0]);
-  const lines = readFileSync(log, "utf8").trim().split("\n");
-  assert.ok(lines[1].startsWith("start"), `no overlap seen: ${lines.join(" | ")}`);
-});
-
-test("a command keeps its exit status, output and working directory under the lock", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const wrapped = rewritten("du -s /dev/null >/dev/null; pwd; echo out; echo err >&2; exit 7");
-  const child = spawn("bash", ["-c", wrapped], { env, cwd: dirs.plain, stdio: ["ignore", "pipe", "pipe"] });
-  let stdout = "";
-  child.stdout.on("data", (chunk) => { stdout += chunk; });
-  const { code, stderr } = await exited(child);
-  assert.equal(code, 7);
-  assert.equal(stdout, `${dirs.plain}\nout\n`);
-  assert.equal(stderr, "err\n");
-});
-
-test("a busy slot ends the waiting command with exit 75 and says why, and it does not run", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const log = path.join(root, "busy.log");
-  const wrapped = rewritten(`du -s /dev/null >/dev/null; echo ran >> ${shellQuote(log)}`, { ...env, AGENT_HEAVY_WAIT_SECONDS: "1" });
-  assert.match(wrapped, /flock -w 1 -E 75 /u);
-  const holder = holdLock(5);
-  try {
-    assert.ok(await until(lockHeld), "the holder took the lock");
-    const { code, stderr } = await exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
-    assert.equal(code, BUSY_EXIT_CODE);
-    assert.match(stderr, /^agent-heavy: waited 1s for one of the host's 1 heavy-command slot \(/u);
-    assert.equal(existsSync(log), false);
-  } finally { killGroup(holder); }
-});
-
-test("the lock dies with its holder: a killed holder frees the slot at once", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const holder = holdLock(30);
-  assert.ok(await until(lockHeld), "held");
-  killGroup(holder);
-  assert.ok(await until(() => !lockHeld()), "freed");
-});
-
-test("a lock removed after admission refuses instead of running the heavy command unlocked", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const gone = path.join(root, "gone", "agent-heavy.lock");
-  const log = path.join(root, "unlocked.log");
-  const wrapped = rewritten(`du -s /dev/null >/dev/null; echo ran >> ${shellQuote(log)}`, { ...env, AGENT_HEAVY_LOCK: gone });
-  rmSync(path.dirname(gone), { recursive: true });
-  const { code } = await exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal(code, BUSY_EXIT_CODE);
-  assert.equal(existsSync(log), false);
-});
-
-test("the original survives quoting whatever it contains", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const nasty = `du -s /dev/null >/dev/null; printf '%s|' "it's" 'a"b' '$HOME' "$(echo sub)" \`echo tick\`; cat <<'EOF'\nline with 'quotes' and $VARS\nEOF\n# trailing comment`;
-  const wrapped = rewritten(nasty);
-  const direct = spawnSync("bash", ["-c", nasty], { env, encoding: "utf8" });
-  const locked = spawnSync("bash", ["-c", wrapped], { env, encoding: "utf8" });
-  assert.equal(locked.status, 0, locked.stderr);
-  assert.equal(locked.stdout, direct.stdout);
-  assert.ok(locked.stdout.includes("it's|a\"b|$HOME|sub|tick|"));
-});
-
-test("a heavy command under the lock sees the lock is held, so a nested hook does not wait on its parent", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const wrapped = rewritten('du -s /dev/null >/dev/null; printf "%s" "$AGENT_HEAVY_LOCK_HELD"');
-  const result = spawnSync("bash", ["-c", wrapped], { env, encoding: "utf8" });
-  assert.equal(result.stdout, "1");
-  assert.equal(decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: "tar xf a.tar" } }, { env: { ...env, AGENT_HEAVY_LOCK_HELD: result.stdout }, home }), undefined);
-});
 
 test("rm of index.lock is denied only while a git process works in that repository", { skip: !existsSync("/proc/self/comm"), timeout: 60_000 }, async () => {
   const sleeper = spawnSync("sh", ["-c", "command -v sleep"], { encoding: "utf8" }).stdout.trim();
@@ -696,7 +473,7 @@ test("a node's projection references the owning source for Claude Code and Codex
   assert.deepEqual(hookEntries("/a b/it's.mjs", { node: "node" }).PreToolUse[0].hooks[0].command, "'node' '/a b/it'\\''s.mjs'");
 });
 
-test("run() answers a bare event the way the process does", { skip: !haveFlock }, () => {
+test("run() answers a bare event the way the process does", () => {
   const direct = run(event("find / -name x"), { env });
   assert.equal(JSON.parse(direct).hookSpecificOutput.permissionDecision, "deny");
   assert.equal(run("nonsense", { env }), undefined);
@@ -748,7 +525,7 @@ test("the work slice yields the CPU by weight and retains the 60% hard bound wit
   for (const [key, value] of Object.entries(limits)) assert.ok(unit.includes(`\n${key}=${value}\n`), key);
 });
 
-test("commands go to the work slice, from a session outside the slices or inside its own; a command already there is left alone", { skip: !haveFlock }, async () => {
+test("commands go to the work slice, from a session outside the slices or inside its own; a command already there is left alone", async () => {
   await withBus(async (runtime) => {
     const live = { ...env, XDG_RUNTIME_DIR: runtime, PATH: `${fakeBin}:${env.PATH}` };
     const slice = `--slice=${WORK_SLICE} --`;
@@ -760,21 +537,23 @@ test("commands go to the work slice, from a session outside the slices or inside
     assert.equal(answer(shellEvent(removal, "bypassPermissions")), undefined);
     assert.equal(answer(shellEvent(`${"r" + "mdir"} a/b && ${"r" + "mdir"} a`, "bypassPermissions")), undefined);
     assert.ok(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")).includes(slice), "a removal beside other work is contained");
-    // With them, only what is already rewritten, so no allow rule stops matching a light command.
+    // With them, only a watch, so no allow rule stops matching an ordinary command.
     assert.equal(answer(shellEvent("ls -la", "default")), undefined);
-    const heavy = answer(shellEvent("git fetch origin", "default"));
-    assert.ok(heavy.includes(slice) && heavy.includes("flock"), "a heavy command is serialized and contained");
-    // A watch is contained but never takes the heavy slot.
-    const watch = answer(shellEvent("git fetch origin; sleep 60", "default", "Monitor"));
-    assert.ok(watch.includes(slice) && !watch.includes("flock"));
+    assert.equal(answer(shellEvent("git fetch origin", "default")), undefined);
+    assert.ok(answer(shellEvent("git fetch origin; sleep 60", "default", "Monitor")).includes(slice));
     // A session inside its own slice still sends its commands to the work slice, so a command's memory never counts against it.
-    assert.ok(answer(shellEvent("git fetch origin", "default"), INSIDE).includes(slice));
-    // Already inside the work slice: serialization only.
+    assert.ok(answer(shellEvent("git fetch origin", "bypassPermissions"), INSIDE).includes(slice));
+    // Already inside the work slice: left alone.
     assert.equal(answer(shellEvent("ls -la", "bypassPermissions"), IN_WORK), undefined);
-    assert.ok(!answer(shellEvent("git fetch origin", "bypassPermissions"), IN_WORK).includes("systemd-run"));
-    // Never for an allow-list session, for Codex, or when switched off; a denial still wins.
+    assert.equal(answer(shellEvent("git fetch origin", "bypassPermissions"), IN_WORK), undefined);
+    // Never for an allow-list session or for Codex; a denial still wins.
     assert.equal(answer(shellEvent("git fetch origin", "dontAsk")), undefined);
-    assert.ok(!answer(shellEvent("git fetch origin", "bypassPermissions"), OUTSIDE, "codex").includes("systemd-run"));
+    assert.equal(answer(shellEvent("git fetch origin", "bypassPermissions"), OUTSIDE, "codex"), undefined);
+    // The rewrite carries every other tool input field over and takes no permission decision.
+    const carried = decide({ ...shellEvent("ls -la", "bypassPermissions"), tool_input: { command: "ls -la", description: "d", timeout: 300000, run_in_background: false } }, { env: live, cgroup: OUTSIDE });
+    assert.equal(carried.permissionDecision, undefined);
+    assert.deepEqual({ ...carried.updatedInput, command: undefined }, { command: undefined, description: "d", timeout: 300000, run_in_background: false });
+    assert.ok(carried.updatedInput.command.includes("ls -la"), "the command is carried verbatim");
     assert.equal(decide(shellEvent("ls", "bypassPermissions", "Monitor"), { env: live, provider: "codex", cgroup: OUTSIDE }), undefined);
     assert.equal(decide(shellEvent("ls", "bypassPermissions"), { env: { ...live, AGENT_CONTAINMENT: "off" }, cgroup: OUTSIDE }), undefined);
     assert.equal(decide(shellEvent("find / -name x", "bypassPermissions"), { env: live, cgroup: OUTSIDE }).permissionDecision, "deny");
@@ -826,106 +605,6 @@ test("the launcher starts the executable it is handed inside the slice, or direc
   const bare = spawnSync(launcher, ["/bin/echo", "ok"], { encoding: "utf8", env: { ...process.env, XDG_RUNTIME_DIR: path.join(root, "no-runtime") } });
   assert.equal(bare.stdout, "ok\n");
   if (!inside) assert.match(bare.stderr, /runs uncontained/u);
-});
-
-test("disk-heavy work is serial by default and explicit parallelism yields to memory or I/O pressure", () => {
-  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 0, ioPressure: 0 }), 1);
-  assert.equal(heavySlots({ env: {}, cpus: 2, pressure: undefined }), 1);
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "6" }, cpus: 16, pressure: 2, ioPressure: 0 }), 6);
-  assert.equal(heavySlots({ env: {}, cpus: 16, pressure: 10 }), 1, "every task stalled on memory a tenth of the time");
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4", AGENT_HEAVY_PRESSURE: "25" }, cpus: 16, pressure: 10, ioPressure: 0 }), 4);
-  assert.equal(heavySlots({ env: { AGENT_HEAVY_SLOTS: "4" }, pressure: 0, ioPressure: 10 }), 1);
-  assert.equal(memoryPressure(() => "some avg10=5.10 avg60=2.82 avg300=14.13 total=1\nfull avg10=4.99 avg60=2.70 avg300=13.45 total=1\n"), 4.99);
-  assert.equal(memoryPressure(() => { throw new Error("no PSI"); }), undefined);
-  assert.deepEqual(slotLocks("/run/l", 3), ["/run/l", "/run/l.1", "/run/l.2"]);
-});
-
-test("with two slots, three heavy commands started together run at most two at a time", { skip: !haveFlock, timeout: 120_000 }, async () => {
-  const log = path.join(root, "two-slots.log"), locks = slotLocks(path.join(root, "run", "two.lock"), 2);
-  writeFileSync(log, ""); for (const file of locks) writeFileSync(file, "");
-  const wrapped = serializedCommand(`echo "start $$" >> ${shellQuote(log)}; sleep 0.6; echo "end $$" >> ${shellQuote(log)}`, { locks, wait: 60, nice: false, ionice: false });
-  const results = await Promise.all([1, 2, 3].map(() => exited(spawn("bash", ["-c", wrapped], { env, stdio: ["ignore", "ignore", "pipe"] }))));
-  assert.deepEqual(results.map((result) => result.code), [0, 0, 0], results.map((result) => result.stderr).join());
-  let running = 0, most = 0;
-  for (const line of readFileSync(log, "utf8").trim().split("\n")) { running += line.startsWith("start") ? 1 : -1; most = Math.max(most, running); }
-  assert.equal(most, 2, "two ran together, never three");
-});
-
-test("a command that itself exits 75 runs once: a later slot never runs it again", { skip: !haveFlock }, () => {
-  const log = path.join(root, "once.log"), locks = slotLocks(path.join(root, "run", "once.lock"), 3);
-  for (const file of locks) writeFileSync(file, "");
-  const wrapped = serializedCommand(`echo ran >> ${shellQuote(log)}; exit 75`, { locks, wait: 5, nice: false, ionice: false });
-  const result = spawnSync("bash", ["-c", wrapped], { env, encoding: "utf8" });
-  assert.equal(result.status, 75);
-  assert.equal(readFileSync(log, "utf8"), "ran\n");
-  assert.doesNotMatch(result.stderr, /did not run/u);
-});
-
-test("tar and du confined to scratch are light; elsewhere they are heavy", () => {
-  const scratchpad = path.join(root, "pad");
-  assert.equal(classify("tar xzf pkg.tgz && grep -n x package/a.mjs", { cwd: scratchpad, env, home, scratchpad }).action, "allow");
-  assert.equal(classify(`tar -C ${scratchpad}/out -xzf ${scratchpad}/a.tgz`, { cwd: dirs.plain, env, home, scratchpad }).action, "allow");
-  assert.equal(classify(`du -sb ${scratchpad}`, { cwd: dirs.plain, env, home, scratchpad }).action, "allow");
-  assert.equal(classify(`tar czf ${scratchpad}/a.tgz ${dirs.plain}`, { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
-  assert.equal(classify("du -sh .", { cwd: dirs.plain, env, home, scratchpad }).action, "serialize");
-});
-
-test("a command an agent wrapped in flock on the heavy lock by hand is admitted through the slots, not pinned to the first", () => {
-  assert.deepEqual(handWrappedHeavy(`flock ${lock} du -sh .`, lock), { prefix: "", inner: "du -sh .", wait: undefined });
-  assert.deepEqual(handWrappedHeavy(`cd /x && flock -w 3000 ${lock} sh -c 'npm install; npm test'`, lock), { prefix: "cd /x && ", inner: "sh -c 'npm install; npm test'", wait: 3000 });
-  assert.equal(handWrappedHeavy(`flock /run/other.lock du -sh .`, lock), undefined, "another lock is the agent's own business");
-  assert.equal(handWrappedHeavy(`flock ${lock} -c 'du -sh .'`, lock), undefined);
-  const slots = { ...env, AGENT_HEAVY_SLOTS: "3" };
-  const output = decide({ tool_name: "Bash", cwd: dirs.plain, tool_input: { command: `flock -w 900 ${lock} du -sh .`, timeout: 120000 } }, { env: slots, home });
-  assert.ok(output.updatedInput.command.includes(`${lock}.2`), "every slot is offered");
-  assert.match(output.updatedInput.command, /flock -w 900 -E 75 /u, "the longer wait the agent asked for is kept");
-  assert.ok(!output.updatedInput.command.startsWith("flock"), "the hand-written lock is gone");
-});
-
-test("the run-once marker sits beside the slot locks, so a missing XDG_RUNTIME_DIR does not disable it", { skip: !haveFlock }, () => {
-  const dir = path.join(root, "run", "marker"); mkdirSync(dir, { recursive: true });
-  const locks = slotLocks(path.join(dir, "heavy.lock"), 2), log = path.join(root, "marker.log");
-  for (const file of locks) writeFileSync(file, "");
-  const wrapped = serializedCommand(`echo ran >> ${shellQuote(log)}; exit 75`, { locks, wait: 5, nice: false, ionice: false });
-  assert.ok(wrapped.includes(shellQuote(dir)));
-  const result = spawnSync("bash", ["-c", wrapped], { env: { ...env, XDG_RUNTIME_DIR: path.join(root, "not-there") }, encoding: "utf8" });
-  assert.equal(result.status, 75);
-  assert.equal(readFileSync(log, "utf8"), "ran\n", "ran once although XDG_RUNTIME_DIR does not exist");
-  assert.doesNotMatch(result.stderr, /No such file or directory/u);
-});
-
-test("concurrent commands own distinct run-once markers and remove only their allocations", { skip: !haveFlock, timeout: 15_000 }, async () => {
-  const dir = path.join(root, "run", "exclusive-markers"); mkdirSync(dir, { recursive: true });
-  const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
-  for (const file of locks) writeFileSync(file, "");
-  const before = readdirSync(dir).sort();
-  const wrapped = serializedCommand('printf "%s\\n" "$_AH_RAN"; sleep 0.1; exit 75', { locks, wait: 5, nice: false, ionice: false });
-  const results = await Promise.all([1, 2, 3].map(() => new Promise((resolve, reject) => {
-    const child = spawn("bash", ["-c", wrapped], { env });
-    let stdout = "", stderr = "";
-    child.stdout.on("data", data => { stdout += data; }); child.stderr.on("data", data => { stderr += data; });
-    child.on("error", reject); child.on("close", code => resolve({ code, stdout, stderr }));
-  })));
-  assert.deepEqual(results.map(result => result.code), [75, 75, 75]);
-  const markers = results.map(result => result.stdout.trim());
-  assert.equal(new Set(markers).size, 3);
-  for (const marker of markers) assert.equal(path.dirname(marker), dir);
-  assert.deepEqual(readdirSync(dir).sort(), before, "locks survive and every private marker allocation is gone");
-  for (const result of results) assert.equal(result.stderr, "");
-});
-
-test("an unavailable marker allocator cannot execute or retry the original command", { skip: !haveFlock }, () => {
-  const dir = path.join(root, "run", "marker-refusal"); mkdirSync(dir);
-  const markerBin = path.join(dir, "bin"); mkdirSync(markerBin);
-  writeFileSync(path.join(markerBin, "mktemp"), "#!/bin/sh\nexit 1\n", { mode: 0o755 });
-  const locks = slotLocks(path.join(dir, "heavy.lock"), 2);
-  for (const file of locks) writeFileSync(file, "");
-  const log = path.join(dir, "executed");
-  const wrapped = serializedCommand(`printf ran > ${shellQuote(log)}`, { locks, wait: 0, nice: false, ionice: false });
-  const result = spawnSync("bash", ["-c", wrapped], { env: { ...env, PATH: `${markerBin}:${env.PATH}` }, encoding: "utf8", timeout: 3000 });
-  assert.equal(result.status, 1);
-  assert.equal(existsSync(log), false);
-  assert.deepEqual(readdirSync(dir).sort(), ["bin", "heavy.lock", "heavy.lock.1"]);
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -1098,115 +777,4 @@ test("the partial-worktree check is bounded: where git cannot answer in time the
   const overflow = (command, args) => (args.includes("config") ? { status: 1, stdout: "" } : { status: null, stdout: "a\0b\0", truncated: true });
   assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: overflow }).action, "deny");
   assert.ok(LIMITS.massDeletion.worktreeMilliseconds + LIMITS.massDeletion.worktreeMilliseconds < 15_000);
-});
-
-// ---------------------------------------------------------------------------------------------
-// Room: heavy work is admitted by the free memory of the agent work slice and its ancestors, and by memory pressure.
-// ---------------------------------------------------------------------------------------------
-
-/** A fake cgroup tree: user.slice (high 4000 MiB) > agent.slice > agent-work.slice (max 2000 MiB). Sizes in MiB. */
-function cgroupTree(name, { slice = {}, parent = {} } = {}) {
-  const base = path.join(root, name), top = path.join(base, "user.slice"), work = path.join(top, "agent.slice", "agent-work.slice");
-  mkdirSync(work, { recursive: true });
-  const write = (dir, v) => {
-    for (const [file, text] of Object.entries({ "memory.max": "max", "memory.high": "max", "memory.current": "0", "memory.stat": "anon 0\ninactive_file 0\n", "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n", "memory.events": "max 0\n" })) writeFileSync(path.join(dir, file), text);
-    for (const [k, n] of Object.entries(v)) writeFileSync(path.join(dir, k === "inactive" ? "memory.stat" : `memory.${k}`), k === "inactive" ? `anon 0\ninactive_file ${n * MiB}\n` : String(n * MiB));
-  };
-  write(top, { high: 4000, current: 0, ...parent });
-  write(path.join(top, "agent.slice"), {});
-  write(work, { max: 2000, current: 0, ...slice });
-  return { base, top, work };
-}
-
-test("room is the tightest ceiling less working set; inactive file cache is room, raw memory.current is not used", () => {
-  const { base, work } = cgroupTree("room-a", { slice: { current: 1990, inactive: 1500 }, parent: { current: 3900, inactive: 100 } });
-  const room = cgroupRoom({ directory: work, cgroupRoot: base });
-  assert.equal(room.free, 200 * MiB, "user.slice: 4000 high - (3900 - 100) working set binds before the slice's 2000 - 490");
-  assert.equal(room.cgroup, "user.slice");
-  assert.equal(room.sliceCeiling, 2000 * MiB);
-  const { base: base2, work: work2 } = cgroupTree("room-b", { slice: { current: 2000, inactive: 1900 } });
-  assert.equal(cgroupRoom({ directory: work2, cgroupRoot: base2 }).free, 1900 * MiB, "a slice full of cache has room");
-  assert.equal(cgroupRoom({ directory: path.join(root, "nowhere", "x"), cgroupRoot: path.join(root, "nowhere") }), undefined);
-  assert.match(workSliceDirectory({ uid: 1000 }), /user@1000\.service\/agent\.slice\/agent-work\.slice$/u);
-});
-
-test("the room a command is held to is 15% of the slice (256 MiB to 1 GiB), set or switched off by the environment", () => {
-  const { base, work } = cgroupTree("room-c");
-  assert.equal(roomSettings({}, { directory: work, cgroupRoot: base }).needMiB, 300);
-  assert.equal(roomSettings({ AGENT_HEAVY_ROOM_MB: "0" }, { directory: work, cgroupRoot: base }).needMiB, 0);
-  assert.equal(roomSettings({ AGENT_HEAVY_ROOM_MB: "700", AGENT_HEAVY_PRESSURE: "5" }, { directory: work, cgroupRoot: base }).pressure, 5);
-  assert.equal(roomSettings({ AGENT_HEAVY_ROOM: "off" }, { directory: work, cgroupRoot: base }), undefined);
-  assert.equal(roomSettings({}, { directory: work, cgroupRoot: base }).pressure, 10);
-});
-
-test("a verdict names what is short: room, or tasks stalled on memory in the slice or the machine", () => {
-  const { base, work } = cgroupTree("room-d", { slice: { current: 1800 } });
-  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 10 };
-  const short = roomVerdict(settings, { hostPressure: 0 });
-  assert.equal(short.ok, false);
-  assert.match(short.reason, /agent-work\.slice has 200 MiB of room .*held to 500 MiB/u);
-  writeFileSync(path.join(work, "memory.current"), String(500 * MiB));
-  assert.equal(roomVerdict(settings, { hostPressure: 0 }).ok, true);
-  const stalled = roomVerdict(settings, { hostPressure: 12 });
-  assert.equal(stalled.ok, false);
-  assert.match(stalled.reason, /stalled on memory 12% .*limit 10%/u);
-  writeFileSync(path.join(work, "memory.pressure"), "some avg10=30.00 avg60=0 avg300=0 total=0\nfull avg10=25.00 avg60=0 avg300=0 total=0\n");
-  assert.match(roomVerdict(settings, { hostPressure: 0 }).reason, /25%/u);
-});
-
-test("waiting for room is woken by the kernel's notification that a scope of the slice ended, not by a clock", { timeout: 30_000 }, async () => {
-  const { base, work } = cgroupTree("room-e", { slice: { current: 1800 } });
-  const scope = path.join(work, "run-1.scope");
-  mkdirSync(scope);
-  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 1000 };
-  const started = Date.now();
-  // The slice frees its memory and the scope ends only after the waiter has armed; the waiter's deadline is far away.
-  setTimeout(() => { writeFileSync(path.join(work, "memory.current"), String(100 * MiB)); rmSync(scope, { recursive: true }); }, 300);
-  const verdict = await waitForRoom(settings, { deadline: Date.now() / 1000 + 20, hostPressure: () => 0 });
-  assert.equal(verdict.ok, true);
-  assert.ok(Date.now() - started < 10_000, "woken by the notification, long before the deadline");
-});
-
-test("waiting for room ends at the caller's deadline with the last verdict, and returns at once when there is already room", { timeout: 30_000 }, async () => {
-  const { base, work } = cgroupTree("room-f", { slice: { current: 1900 } });
-  const settings = { directory: work, cgroupRoot: base, needMiB: 500, pressure: 1000 };
-  const late = await waitForRoom(settings, { deadline: Date.now() / 1000 + 1, hostPressure: () => 0 });
-  assert.equal(late.ok, false);
-  assert.match(late.reason, /held to 500 MiB/u);
-  assert.equal((await waitForRoom(settings, { deadline: 0, hostPressure: () => 0 })).ok, false, "a spent budget is one measurement");
-  const { base: b2, work: w2 } = cgroupTree("room-g", { slice: { current: 100 } });
-  assert.equal((await waitForRoom({ ...settings, directory: w2, cgroupRoot: b2 }, { deadline: 0, hostPressure: () => 0 })).ok, true);
-});
-
-test("a heavy command holding a slot runs where the slice has room, and does not run, saying so with exit 75, where it has none", { skip: !haveFlock, timeout: 60_000 }, async () => {
-  const log = path.join(root, "room.log");
-  const free = cgroupTree("room-h", { slice: { current: 100 } }), full = cgroupTree("room-i", { slice: { current: 1900 } });
-  const wrap = (tree) => serializedCommand(`echo ran >> ${shellQuote(log)}`, { lock: path.join(root, "run", "room.lock"), wait: 2, nice: false, ionice: false,
-    room: { directory: tree.work, cgroupRoot: tree.base, needMiB: 500, pressure: 1000 } });
-  mkdirSync(path.join(root, "run"), { recursive: true });
-  writeFileSync(path.join(root, "run", "room.lock"), "");
-  const ok = await exited(spawn("bash", ["-c", wrap(free)], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal(ok.code, 0);
-  assert.equal(readFileSync(log, "utf8"), "ran\n");
-  const none = await exited(spawn("bash", ["-c", wrap(full)], { env, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal(none.code, NO_ROOM_EXIT_CODE);
-  assert.match(none.stderr, /agent-heavy: no room for this command: \S*agent-work\.slice has 100 MiB of room/u);
-  assert.doesNotMatch(none.stderr, /waited .* heavy-command slot/u, "room is not mistaken for a busy slot");
-  assert.equal(readFileSync(log, "utf8"), "ran\n", "the command did not run the second time");
-});
-
-test("the hook's rewrite carries the room gate unless it is switched off", { skip: !haveFlock }, () => {
-  const gated = rewritten("du -s /dev/null >/dev/null", { ...env, AGENT_HEAVY_ROOM: undefined, AGENT_HEAVY_ROOM_MB: "100" });
-  if (roomSettings({ AGENT_HEAVY_ROOM_MB: "100" }) === undefined) return;
-  assert.match(gated, /--wait-for-room .*--deadline "\$_AH_DEADLINE" --need-mb 100 /u);
-  assert.doesNotMatch(rewritten("du -s /dev/null >/dev/null", env), /--wait-for-room/u);
-});
-
-test("the room gate can be run by a service that is not a Bash command: its own environment sets the room, --within the budget", { timeout: 30_000 }, async () => {
-  const run = (extra) => exited(spawn(process.execPath, [HOOK, "--wait-for-room", ...extra], { env: { ...env, AGENT_HEAVY_ROOM: undefined, AGENT_HEAVY_ROOM_MB: "0" }, stdio: ["ignore", "ignore", "pipe"] }));
-  assert.equal((await run(["--within", "1"])).code, 0, "with nothing to hold it to, it admits");
-  const full = cgroupTree("room-k", { slice: { current: 1900 } });
-  const refused = await run(["--cgroup-root", full.base, "--directory", full.work, "--need-mb", "500", "--pressure", "1000", "--within", "1"]);
-  assert.equal(refused.code, NO_ROOM_EXIT_CODE);
-  assert.match(refused.stderr, /no room for this command/u);
 });
