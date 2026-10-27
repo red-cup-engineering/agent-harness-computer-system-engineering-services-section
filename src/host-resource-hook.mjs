@@ -3,69 +3,50 @@
  * The host-resource controller: one PreToolUse hook that mediates the Bash commands of every agent
  * session on a machine, so that no number of concurrent sessions, subagents or Codex processes can
  * exhaust its disk or memory. The control is software in the harness and not an instruction an agent
- * is trusted to follow: the harness hands the hook each command before it runs, and the hook answers
- * one of three ways. Beneath it sits a kernel cap (see "Containment" below): every process a Claude
- * Code session runs lives in one user-manager slice, `agent-claude.slice`, whose cgroup limits bind
- * the sum of all of it to a share of the host, however many sessions and subagents there are. A
- * session started by the launcher `launcherScript` writes is inside the slice from its first
- * instruction; for one that is not, the hook places its commands there itself.
+ * is trusted to follow: the harness hands the hook each command before it runs, and the hook either
+ * denies it or lets it run, placed in the work slice. Beneath it sits a kernel cap (see "Containment"
+ * below): every process a Claude Code session runs lives in one user-manager slice,
+ * `agent-claude.slice`, whose cgroup limits bind the sum of all of it to a share of the host, however
+ * many sessions and subagents there are. A session started by the launcher `launcherScript` writes is
+ * inside the slice from its first instruction; for one that is not, the hook places its commands in
+ * the work slice itself.
  *
- *   deny       the command reads or writes far more than it can be worth (`find`, or a recursive
- *              `grep`/`rg`/`ag`/`ack`/`fd`/`tree`, over the disk, a home or a large working tree, `git worktree add`, `git clone` outside the colony directory (~/<colony>), an
- *              unscoped `git status`/`git log --all`/`git ls-files` and `git submodule update|foreach`
- *              in a large repository, `rm .git/index.lock` while a git process works there); the
- *              reason, shown to the agent, names the safe alternative;
- *   serialize  the command is disk- or CPU-heavy (clone, a fetch or push in a large repository or of all
- *              history, gc, repack, archive, recursive
- *              tree reads, du/tar/rsync outside scratch, package installs, guix, lake,
- *              cargo, make, and git or gh operations that stat a large working tree). It is rewritten
- *              (`updatedInput.command`) to run in one of the host's heavy SLOTS, each a kernel lock
- *              (`flock(1)` on a file every process of the user shares), at `nice -n 10` and idle I/O
- *              class. The host admits one heavy command by default (AGENT_HEAVY_SLOTS
- *              explicitly overrides), and ONE while memory or I/O is under pressure: when every task stalled on memory
- *              for at least AGENT_HEAVY_PRESSURE percent (default 10) of the last ten seconds
- *              (/proc/pressure/memory, "full avg10"), admitting more heavy work only deepens the stall.
- *              A command takes the first free slot, else waits on one. Holding a slot it is ADMITTED
- *              only when the agent work slice has room (see "Room" below), else it waits for the kernel
- *              to say a scope of the slice ended, never on a timer;
- *   allow      everything else, untouched (no output).
- *
- * The lock is the kernel's, so a crashed or killed holder releases it at once and nothing can be
- * left stale or raced, which a lease kept in a JSON file cannot promise. (The carrier's own
- * provider-capacity lease, `carrier/session.mjs`, admits whole agent sessions through slot records
- * guarded by the same `flock`; it meters the number of sessions, this meters the weight of what
- * each runs, and the two compose.)
+ *   deny    the command reads or writes far more than it can be worth (`find`, or a recursive
+ *           `grep`/`rg`/`ag`/`ack`/`fd`/`tree`, over the disk, a home or a large working tree, `git worktree add`,
+ *           `git clone` outside the colony directory (~/<colony>), an unscoped `git status`/`git log --all`/
+ *           `git ls-files` and `git submodule update|foreach` in a large repository, `git commit -a` in a
+ *           partial working tree, a `gh pr merge` that deletes most of a repository, `rm .git/index.lock`
+ *           while a git process works there); the reason, shown to the agent, names the safe alternative;
+ *   allow   everything else. In a Claude Code session that is not already in the work slice, every
+ *           command of a `bypassPermissions` session (except the removals the harness checks itself) and
+ *           every `Monitor` watch is rewritten (`updatedInput.command`) to run in a transient scope of
+ *           `agent-work.slice`, keeping its exit status and working directory; any other command is
+ *           untouched (no output). Nothing is queued: no command waits on another.
  *
  * Contract (Claude Code and Codex share it): the event arrives as JSON on stdin (`tool_name`,
  * `tool_input.command`, `cwd`); a decision leaves as `hookSpecificOutput` on stdout with exit 0. A
  * deny is `permissionDecision: "deny"` plus `permissionDecisionReason`; a rewrite is `updatedInput`
  * (it replaces the whole input, so unchanged fields are carried over). The hook FAILS OPEN: on any
- * internal error, malformed input, a missing `flock` or an unwritable lock it prints nothing and
- * exits 0, and the command runs as if the hook were absent. A hook is a guardrail on a cooperative
- * agent, not a security boundary, and it must never be the reason work stops. It never waits on
- * anything: the lock is taken by the rewritten command, not by the hook, and a 200 ms timer ends the
- * process if stdin never closes. The one exception is the mass-deletion guard (`gh pr merge`, `git commit -a`):
- * it asks gh and git, within a ten-second budget, and allows the command when it cannot find out.
+ * internal error, malformed input or a missing `systemd-run` it prints nothing and exits 0, and the
+ * command runs as if the hook were absent. A hook is a guardrail on a cooperative agent, not a
+ * security boundary, and it must never be the reason work stops. It never waits on anything: a 200 ms
+ * timer ends the process if stdin never closes. The one exception is the mass-deletion guard (`gh pr
+ * merge`, `git commit -a`): it asks gh and git, within a ten-second budget, and allows the command when
+ * it cannot find out.
  *
  * Zero dependencies: projections reference this one owning source file and the verified Node
  * executable that runs the projecting harness. It reads a handful of stat results and no repository state, so it adds only node's
  * own start-up time. Settings are read from the hook's own process environment (the harness's, which
  * an agent's command cannot change): AGENT_HOST_GUARD=off disables it; AGENT_CONTAINMENT=off leaves
- * commands outside the slice; AGENT_HEAVY_ROOM=off turns the room gate off and AGENT_HEAVY_ROOM_MB sets the room
- * (MiB) a heavy command is held to; AGENT_HEAVY_LOCK, AGENT_HEAVY_WAIT_SECONDS, AGENT_HEAVY_LARGE_REPO_FILES
- * and AGENT_HEAVY_LARGE_REPO_INDEX_BYTES tune it.
+ * commands outside the slice; AGENT_HEAVY_LARGE_REPO_FILES and AGENT_HEAVY_LARGE_REPO_INDEX_BYTES tune
+ * what counts as a large repository.
  */
 import { spawnSync } from "node:child_process";
-import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, watch, writeFileSync } from "node:fs";
+import { accessSync, closeSync, constants, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir, totalmem } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const LOCK_FILE = "agent-heavy.lock";
-/** Memory pressure (percent of the last ten seconds every task stalled on memory) at which the host admits one heavy command at a time. */
-export const PRESSURE_PERCENT = 10;
-/** The exit status of a heavy command that never ran because the host's one heavy slot stayed busy. */
-export const BUSY_EXIT_CODE = 75;
 // GNU timeout otherwise sends TERM once and can wait forever for a process
 // that ignores it. Keep each caller's requested deadline, finish termination
 // after ten seconds, and let an explicit later --kill-after option win.
@@ -78,9 +59,6 @@ export const LIMITS = Object.freeze({
   largeRepoIndexBytes: 5 * 1024 * 1024,
   /** `find` rooted at a broad directory must be bounded to this depth. */
   findMaxDepth: 3,
-  waitSeconds: 110,
-  minWaitSeconds: 20,
-  maxWaitSeconds: 900,
   maxCommandLength: 200_000,
   maxShellDepth: 3,
   /** The parser gives up (and the hook allows the command) after this many milliseconds, and the whole process after `guardMilliseconds`. */
@@ -493,8 +471,8 @@ const WRAPPERS = {
 };
 const isAssignment = (word) => /^[A-Za-z_][A-Za-z0-9_]*=/u.test(word);
 
-/** The command a line really runs: leading assignments, keywords and wrappers (sudo, env, nice, timeout, xargs, flock...) removed. `onLock` is told the lock file of a flock. */
-function unwrap(argv, onLock) {
+/** The command a line really runs: leading assignments, keywords and wrappers (sudo, env, nice, timeout, xargs, flock...) removed. */
+function unwrap(argv) {
   let words = argv;
   for (let guard = 0; guard < 8; guard += 1) {
     while (words.length > 0 && (isAssignment(words[0]) || KEYWORDS.has(words[0]))) words = words.slice(1);
@@ -511,7 +489,6 @@ function unwrap(argv, onLock) {
       if (word.startsWith("-") && word.length > 1) { i += value.has(word) ? 2 : 1; continue; }
       break;
     }
-    if (wrapper === "flock" && words[i] !== undefined) onLock?.(words[i]);
     words = words.slice(i + (spec.positional ?? 0));
     if (wrapper === "flock" && (words[0] === "-c" || words[0] === "--command")) words = ["bash", "-c", words[1] ?? ""];
   }
@@ -564,19 +541,6 @@ const SCANNERS = {
   ls: { recursive: (args) => hasFlag(args, "R", ["--recursive"]), value: ["-I", "--ignore", "-w", "--width", "-T", "--tabsize", "--sort", "--time", "--format", "--color", "--block-size", "--hide", "--indicator-style", "--time-style", "--quoting-style"], depth: [], noPattern: [], pattern: false },
 };
 
-const NPM_INSTALL = new Set(["install", "i", "add", "ci", "update", "up", "upgrade", "rebuild", "dedupe", "ddp", "link", "ln", "prune", "fetch", "import", "install-test", "it"]);
-const GUIX_HEAVY = new Set(["build", "pull", "shell", "environment", "package", "install", "upgrade", "gc", "system", "home", "deploy", "time-machine", "archive", "copy", "weather", "lint", "refresh", "challenge"]);
-const LAKE_HEAVY = new Set(["build", "update", "exe", "test", "lint", "clean", "check-build", "cache", "upload", "pack", "unpack"]);
-const CARGO_LIGHT = new Set(["version", "help", "locate-project", "pkgid", "read-manifest", "config", "search", "login", "logout", "owner", "yank", "verify-project", "fmt", "metadata"]);
-const DOCKER_HEAVY = new Set(["build", "pull", "push", "load", "save", "import", "export", "buildx", "builder"]);
-// A transfer costs the history it packs or unpacks, not the crossing of the network: a few commits pushed from a
-// small clone are light, and holding them behind the host's one heavy slot only starves the work that made them
-// (2026-10-26: a two-file push waited 15 minutes behind another session's job). A large or unrecognized repository,
-// or a transfer of every ref or the whole history, still serializes.
-const GIT_TRANSFERS = new Set(["fetch", "push", "pull"]);
-const WHOLE_HISTORY_TRANSFER = new Set(["--all", "--mirror", "--unshallow", "--tags", "--recurse-submodules", "--recurse-submodules=yes", "--recurse-submodules=on-demand"]);
-const GIT_ALWAYS_HEAVY = new Set(["gc", "repack", "archive", "prune", "maintenance", "bundle", "fsck", "index-pack", "pack-objects", "unpack-objects", "fast-import", "fast-export", "filter-branch", "filter-repo", "commit-graph", "multi-pack-index", "lfs", "prune-packed", "pack-refs", "bisect"]);
-const GIT_WORKTREE_WIDE = new Set(["stash", "checkout", "switch", "reset", "clean", "merge", "rebase", "cherry-pick", "revert"]);
 const CLONE_VALUE_OPTIONS = ["-b", "--branch", "--depth", "--filter", "-o", "--origin", "--reference", "--reference-if-able", "-c", "--config", "-j", "--jobs", "--template", "--separate-git-dir", "-u", "--upload-pack", "--server-option", "--shallow-since", "--shallow-exclude", "--bundle-uri", "--ref-format", "--revision"];
 
 // ---------------------------------------------------------------------------------------------
@@ -656,22 +620,12 @@ function git(argv, state, ctx, report) {
     clone(positionals(args, CLONE_VALUE_OPTIONS), { cloneCwd }, ctx, report);
     return;
   }
-  if (GIT_ALWAYS_HEAVY.has(sub)) { report.heavy(`git ${sub}`); return; }
-  if (GIT_TRANSFERS.has(sub)) {
-    const whole = args.some((arg) => WHOLE_HISTORY_TRANSFER.has(arg) || arg.startsWith("--deepen") || arg.startsWith("--shallow-since") || arg.startsWith("--shallow-exclude"));
-    if (repo?.large !== false || whole) report.heavy(`git ${sub}${size}`);
-    return;
-  }
-  if (sub === "ls-tree") { if (hasFlag(args, "r", ["--recursive"])) report.heavy("git ls-tree -r"); return; }
-  if (sub === "cat-file") { if (args.some((arg) => arg.startsWith("--batch"))) report.heavy("git cat-file --batch"); return; }
-  if (sub === "rev-list") { if (args.some((arg) => ["--all", "--objects", "--objects-edge", "--branches"].includes(arg))) report.heavy("git rev-list over all history"); return; }
-  if (sub === "remote") { if (args[0] === "update") report.heavy("git remote update"); return; }
   if (sub === "submodule") {
     const action = positionals(args)[0];
     const split = args.indexOf("--");
     if (["update", "foreach"].includes(action) && repo?.large === true && cwd === repo.top && !(split >= 0 && split < args.length - 1)) {
       report.deny(`git submodule ${action} at the top of this large repository${size} visits every submodule, checks out each one's recorded commit (detaching nested repositories) and reads all their trees: name the submodule (git submodule ${action} -- <path>) or work inside that submodule's own clone.`);
-    } else if (["update", "foreach", "sync", "init", "add"].includes(action)) report.heavy(`git submodule ${action}`);
+    }
     return;
   }
   if (repo?.large !== true) return;
@@ -681,36 +635,19 @@ function git(argv, state, ctx, report) {
   const limits = (spec) => spec.startsWith(":") || /[*?[]/u.test(spec) || path.resolve(cwd, spec) !== repo.top;
   const limiting = (words, valueOptions = []) => positionals(words, valueOptions).filter(limits);
   const split = args.indexOf("--");
-  const scoped = split >= 0 && args.slice(split + 1).some(limits);
-  const scopedByPath = scoped || positionals(split < 0 ? args : args.slice(0, split)).some((word) => exists(path.resolve(cwd, word)) && limits(word));
+  const scopedByPath = (split >= 0 && args.slice(split + 1).some(limits)) || positionals(split < 0 ? args : args.slice(0, split)).some((word) => exists(path.resolve(cwd, word)) && limits(word));
 
   if (sub === "status") {
     if (limiting(args).length === 0) report.deny(`git status with no pathspec reads this repository's whole index${size} and stats every tracked file: pass a pathspec (git status -- <dir>) or use git diff --stat -- <dir>.`);
   } else if (sub === "ls-files") {
     if (limiting(args, ["-x", "-X", "--exclude", "--exclude-from", "--exclude-per-directory", "--with-tree", "--format"]).length === 0) {
       if (atTop) report.deny(`git ls-files with no pathspec lists every tracked file of this repository${size}: pass a pathspec (git ls-files -- <dir>) or use git ls-tree <ref> <dir>.`);
-      else report.heavy("git ls-files");
     }
   } else if (sub === "log") {
     const bounded = args.some((arg, k) => /^-\d+$/u.test(arg) || /^-n\d+$/u.test(arg) || arg.startsWith("--max-count") || (arg === "-n" && /^\d+$/u.test(args[k + 1] ?? "")));
     if (args.includes("--all") && !bounded) {
-      if (scopedByPath) report.heavy("git log --all -- <path>");
-      else report.deny(`git log --all with no pathspec walks every commit of a large repository${size}: bound it (git log --all -n 20) or scope it (git log -- <path>).`);
+      if (!scopedByPath) report.deny(`git log --all with no pathspec walks every commit of a large repository${size}: bound it (git log --all -n 20) or scope it (git log -- <path>).`);
     }
-  } else if (sub === "diff") {
-    const revisions = positionals(split < 0 ? args : args.slice(0, split)).filter((word) => !exists(path.resolve(cwd, word)));
-    const betweenCommits = hasFlag(args, "", ["--cached", "--staged"]) || revisions.some((word) => word.includes("..")) || revisions.length >= 2;
-    if (!betweenCommits && !scopedByPath) report.heavy("git diff over a large working tree");
-  } else if (sub === "grep") {
-    if (!scoped) report.heavy("git grep over a large working tree");
-  } else if (sub === "add") {
-    if (hasFlag(args, "Au", ["--all", "--update"]) || (positionals(args).length > 0 && limiting(args).length === 0)) report.heavy("git add over a large working tree");
-  } else if (sub === "commit") {
-    if (commitAll(args)) report.heavy("git commit -a over a large working tree");
-  } else if (sub === "restore") {
-    if (limiting(args).length === 0) report.heavy("git restore over a large working tree");
-  } else if (GIT_WORKTREE_WIDE.has(sub)) {
-    if (!scoped) report.heavy(`git ${sub} over a large working tree`);
   }
 }
 
@@ -722,7 +659,6 @@ function clone(words, state, ctx, report) {
     const name = expand(source, state.cloneCwd, ctx)?.replace(/[/:]+$/u, "").split(/[/:]/u).pop()?.replace(/\.git$/u, "");
     destination = name === undefined || name === "" ? undefined : name;
   }
-  report.heavy("git clone");
   const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
   if (resolved === undefined) {
     report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory (~/<colony>).");
@@ -773,8 +709,6 @@ function indexLock(argv, state, ctx, report) {
   }
 }
 
-// gh commands that inspect or change the local checkout (an implicit `git status`) unless told which repository to use.
-const GH_LOCAL = { pr: new Set(["create", "checkout", "status", "diff"]), repo: new Set(["sync", "fork"]) };
 const GH_VALUE = ["-R", "--repo", "-B", "--base", "-H", "--head", "-t", "--title", "-b", "--body", "-F", "--body-file", "-a", "--assignee", "-l", "--label", "-m", "--milestone", "-p", "--project", "-r", "--reviewer", "-q", "--jq", "--template", "-b", "--branch"];
 
 const GH_MERGE_VALUE = ["-R", "--repo", "-A", "--author-email", "--match-head-commit", "-t", "--subject", "-b", "--body", "-F", "--body-file"];
@@ -848,10 +782,6 @@ function github(argv, state, ctx, report) {
       if (target !== undefined) guardMerge({ ...target, cwd: state.cwd }, ctx, report);
     }
   }
-  if (!(Object.hasOwn(GH_LOCAL, group) && GH_LOCAL[group].has(action))) return;
-  if (args.some((word) => word === "-R" || word === "--repo" || word.startsWith("--repo=") || /^-R./u.test(word))) return;
-  const repo = state.cwd === undefined ? undefined : repoOf(state.cwd, ctx);
-  if (repo?.large === true) report.heavy(`gh ${group} ${action} runs an implicit git status over this large repository (${describe(repo)}): gh api, or -R owner/repo, avoids reading the checkout`);
 }
 
 function parseFind(args) {
@@ -900,54 +830,13 @@ function scanner(name, argv, piped, state, ctx, report) {
   for (const word of paths) {
     const dir = resolveDir(word, state.cwd, ctx);
     // Rule no-whole-tree-scans-on-bare-cedar-fog: a recursive scan of a disk, a home or a large working tree is denied like
-    // `find`, not serialized; the settings deny list matches command prefixes, so `cd … && grep -r …` reaches only this hook.
+    // `find`, not run; the settings deny list matches command prefixes, so `cd … && grep -r …` reaches only this hook.
     if (dir !== undefined && isBroad(dir, ctx)) { report.deny(`${name} recursing from ${dir} scans the whole disk or a large working tree (rule no-whole-tree-scans-on-bare-cedar-fog): search a named section's directory, read the file a note or term already cites, or hand a broad sweep to an Explore agent.`); return; }
   }
 }
 
-/** Whether every path a du, tar or rsync names (and the directory it runs in, when it names none) is scratch: unpacking a tarball into the scratchpad is not heavy work. */
-function scratchOnly(args, here, ctx) {
-  if (/^[A-Za-z]+$/u.test(args[0] ?? "")) args = [`-${args[0]}`, ...args.slice(1)]; // tar's bundled old-style options (`tar xzf a.tgz`)
-  const paths = [];
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (["-f", "--file", "-C", "--directory"].includes(arg)) { paths.push(args[i + 1]); i += 1; continue; }
-    const attached = /^--(?:file|directory)=(.+)$/u.exec(arg);
-    if (attached) { paths.push(attached[1]); continue; }
-    if (!arg.startsWith("-")) paths.push(arg);
-  }
-  const dirs = (paths.length > 0 ? paths : ["."]).map((word) => (word === undefined ? undefined : resolveDir(word, here.cwd, ctx)));
-  return dirs.every((dir) => dir !== undefined && isScratch(dir, ctx));
-}
-
-function heavyTool(name, argv, report, here = {}, ctx = undefined) {
-  const args = argv.slice(1);
-  const sub = (valueOptions = []) => positionals(args.filter((arg) => !arg.startsWith("+")), valueOptions)[0];
-  switch (name) {
-    case "du": case "tar": case "bsdtar": case "rsync": if (!(ctx && scratchOnly(args, here, ctx))) report.heavy(name); return;
-    case "updatedb": report.heavy(name); return;
-    case "make": case "gmake": case "ninja": case "cmake": case "bazel": case "bazelisk": case "gradle": case "gradlew": case "mvn": case "mvnw":
-      if (!args.some((arg) => ["--version", "-v", "-h", "--help", "-n", "--dry-run"].includes(arg))) report.heavy(name);
-      return;
-    case "cargo": { const s = sub(); if (s !== undefined && !CARGO_LIGHT.has(s)) report.heavy("cargo"); return; }
-    case "lake": if (LAKE_HEAVY.has(sub())) report.heavy("lake"); return;
-    case "guix": if (GUIX_HEAVY.has(sub(["-L", "--load-path", "-C", "--cores", "-M", "--max-jobs"]))) report.heavy("guix"); return;
-    case "node": case "nodejs": if (args.some(arg => arg === "--test" || arg.startsWith("--test="))) report.heavy("node tests"); return;
-    case "npm": case "pnpm": case "bun": if (NPM_INSTALL.has(sub(["-C", "--dir", "--prefix", "--filter", "-F", "--workspace", "-w"])) || ["run", "run-script", "test", "build", "exec", "x"].includes(sub())) report.heavy(`${name} install or script`); return;
-    case "npx": report.heavy("npx script"); return;
-    case "yarn": { const s = sub(["--cwd"]); if (s === undefined || NPM_INSTALL.has(s)) report.heavy("yarn install"); return; }
-    case "pip": case "pip3": if (sub() === "install") report.heavy("pip install"); return;
-    case "uv": if (["sync", "add", "lock", "pip"].includes(sub())) report.heavy("uv"); return;
-    case "poetry": if (["install", "update", "add"].includes(sub())) report.heavy("poetry"); return;
-    case "docker": case "podman": { const s = sub(); if (DOCKER_HEAVY.has(s) || (s === "compose" && ["build", "pull", "up"].includes(positionals(args)[1]))) report.heavy(name); return; }
-    case "go": if (["build", "test", "install", "get", "generate", "vet", "mod"].includes(sub())) report.heavy("go"); return;
-    case "dotnet": if (["build", "restore", "publish", "test"].includes(sub())) report.heavy("dotnet"); return;
-    default:
-  }
-}
-
-function simple(command, frame, state, ctx, report, depth, lock) {
-  const words = unwrap(withoutRedirections(command.words, command.quoted), (operand) => { if (operand === lock) state.locked = true; });
+function simple(command, frame, ctx, report, depth) {
+  const words = unwrap(withoutRedirections(command.words, command.quoted));
   if (words.length === 0) return;
   const name = path.basename(words[0]);
   if (SKIPPED.has(name)) return;
@@ -971,346 +860,39 @@ function simple(command, frame, state, ctx, report, depth, lock) {
   }
   if (SHELLS.has(name)) {
     const at = words.findIndex((word, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/u.test(word));
-    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd);
+    if (at > 0 && words[at + 1] !== undefined) walk(words[at + 1], here.cwd, ctx, report, depth + 1, here.cloneCwd);
     return;
   }
-  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, state, ctx, report, depth + 1, lock, here.cloneCwd); return; }
+  if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, ctx, report, depth + 1, here.cloneCwd); return; }
   if (name === "find" || name === "bfs") { find(words, here, ctx, report); return; }
   if (name === "git") { git(words, here, ctx, report); return; }
   if (name === "gh") { github(words, here, ctx, report); return; }
   if (name === "rm" || name === "unlink") { indexLock(words, here, ctx, report); return; }
-  if (Object.hasOwn(SCANNERS, name)) { scanner(name, words, command.piped, here, ctx, report); return; }
-  heavyTool(name, words, report, here, ctx);
+  if (Object.hasOwn(SCANNERS, name)) scanner(name, words, command.piped, here, ctx, report);
 }
 
-function walk(source, cwd, state, ctx, report, depth, lock, cloneCwd) {
+function walk(source, cwd, ctx, report, depth, cloneCwd) {
   if (depth > LIMITS.maxShellDepth) return;
   const { commands, scopes } = parseShell(source);
   const frame = { scopes, cwds: new Map([[0, cwd]]), cloneCwds: new Map([[0, cloneCwd]]) };
-  for (const command of commands) simple(command, frame, state, ctx, report, depth, lock);
+  for (const command of commands) simple(command, frame, ctx, report, depth);
 }
 
-/** `{ action: "deny", reason } | { action: "serialize", heavy, locked } | { action: "allow" }` for a command line run in `cwd`. */
-export function classify(command, { cwd, env = process.env, home, scratchpad, lock = lockPath(env), run } = {}) {
+/** `{ action: "deny", reason } | { action: "allow" }` for a command line run in `cwd`. */
+export function classify(command, { cwd, env = process.env, home, scratchpad, run } = {}) {
   const ctx = makeContext({ cwd, scratchpad_dir: scratchpad }, env, { home, run });
   const denied = [];
-  const heavy = [];
-  const state = { locked: false };
-  walk(command, ctx.cwd, state, ctx, { deny: (reason) => denied.push(reason), heavy: (what) => heavy.push(what) }, 0, lock, ctx.cwd);
-  if (denied.length > 0) return { action: "deny", reason: denied[0] };
-  // Heavy commands are no longer queued behind one host-wide slot. Leader, 2026-10-26: "fuck this
-  // heavy-command slot slop": the slot held every session's fetches and pushes for tens of minutes
-  // behind one long command, so no work landed. Whole-tree reads are still denied above.
-  return { action: "allow" };
+  walk(command, ctx.cwd, ctx, { deny: (reason) => denied.push(reason) }, 0, ctx.cwd);
+  return denied.length > 0 ? { action: "deny", reason: denied[0] } : { action: "allow" };
 }
-
-// ---------------------------------------------------------------------------------------------
-// The lock and the rewrite.
-// ---------------------------------------------------------------------------------------------
 
 const isDirectory = (dir) => { try { return statSync(dir).isDirectory(); } catch { return false; } };
-
-/** The one file every agent process of this user locks: `$XDG_RUNTIME_DIR/agent-heavy.lock`, else under the user's state directory. */
-export function lockPath(env = process.env, uid = process.getuid?.()) {
-  if (env.AGENT_HEAVY_LOCK) return path.resolve(env.AGENT_HEAVY_LOCK);
-  for (const dir of [env.XDG_RUNTIME_DIR, uid === undefined ? undefined : `/run/user/${uid}`]) {
-    if (dir && path.isAbsolute(dir) && isDirectory(dir)) return path.join(dir, LOCK_FILE);
-  }
-  return path.join(env.XDG_STATE_HOME || path.join(env.HOME || homedir(), ".local", "state"), "agent-harness", LOCK_FILE);
-}
-
-/** The memory pressure now: "full avg10" of /proc/pressure/memory, or undefined where the kernel does not report it. */
-export function memoryPressure(read = () => readFileSync("/proc/pressure/memory", "utf8")) {
-  try {
-    const match = /^full avg10=([0-9.]+)/mu.exec(read());
-    return match ? Number(match[1]) : undefined;
-  } catch { return undefined; }
-}
-
-/** CPU count does not measure disk capacity. Parallel admission is explicit; pressure always reduces it to one. */
-export function heavySlots({ env = process.env, pressure = memoryPressure(), ioPressure = memoryPressure(() => readFileSync("/proc/pressure/io", "utf8")) } = {}) {
-  const configured = Math.floor(Number(env.AGENT_HEAVY_SLOTS));
-  const slots = Number.isFinite(configured) && configured >= 1 ? configured : 1;
-  const threshold = Number(env.AGENT_HEAVY_PRESSURE);
-  const limit = env.AGENT_HEAVY_PRESSURE !== undefined && env.AGENT_HEAVY_PRESSURE !== "" && Number.isFinite(threshold) ? threshold : PRESSURE_PERCENT;
-  return (pressure !== undefined && pressure >= limit) || (ioPressure !== undefined && ioPressure >= limit) ? 1 : slots;
-}
-
-/** The lock files of `slots` slots: the first is `lock` itself, so a command an agent wraps in `flock <lock>` by hand holds slot one. */
-export const slotLocks = (lock, slots = 1) => Array.from({ length: Math.max(1, slots) }, (_, i) => (i === 0 ? lock : `${lock}.${i}`));
-
-// ---------------------------------------------------------------------------------------------
-// Room: a heavy command starts only where the memory it will take exists.
-// ---------------------------------------------------------------------------------------------
-
-/** Exit status of the room gate when the work slice never had room for the command inside its wait. */
-export const NO_ROOM_EXIT_CODE = BUSY_EXIT_CODE;
-/** The share of a ceiling a heavy command is assumed to need free, within these bounds (MiB). */
-export const ROOM_SHARE = Object.freeze({ fraction: 0.15, floorMiB: 256, capMiB: 1024 });
-
-/** The cgroup of the slice every contained command runs in, under the user manager of `uid`. */
-export const workSliceDirectory = ({ uid = process.getuid?.(), cgroupRoot = "/sys/fs/cgroup" } = {}) =>
-  Number.isSafeInteger(uid) ? path.join(cgroupRoot, "user.slice", `user-${uid}.slice`, `user@${uid}.service`, "agent.slice", WORK_SLICE) : undefined;
-
-const cgroupNumber = (text) => (/^[0-9]+$/u.test(String(text).trim()) ? Number(text) : undefined);
-
-/**
- * The room in `directory` (a cgroup) and in every ancestor below `cgroupRoot` that has a ceiling: for each,
- * `ceiling - workingSet`, the ceiling being its memory.max or, sooner, its memory.high (above which the kernel
- * throttles every task under it) and the working set its memory.current less the inactive file cache the kernel
- * hands back on demand (what Kubernetes calls the working set). Raw memory.current is not used: a slice
- * that has read files all day sits at its ceiling on cache alone. Returns the tightest level, with the memory
- * pressure ("full avg10", percent) of the slice and, if `host`, of the machine. undefined where no level has a ceiling.
- */
-export function cgroupRoom({ directory, cgroupRoot = "/sys/fs/cgroup", read = (file) => readFileSync(file, "utf8") } = {}) {
-  const get = (file) => { try { return read(file); } catch { return undefined; } };
-  const levels = [];
-  for (let dir = directory; dir && dir.startsWith(cgroupRoot + path.sep); dir = path.dirname(dir)) {
-    const ceilings = ["memory.max", "memory.high"].map((name) => cgroupNumber(get(path.join(dir, name)) ?? "")).filter((n) => n !== undefined);
-    const current = cgroupNumber(get(path.join(dir, "memory.current")) ?? "");
-    if (ceilings.length === 0 || current === undefined) continue;
-    const inactive = cgroupNumber(/^inactive_file (\d+)$/mu.exec(get(path.join(dir, "memory.stat")) ?? "")?.[1] ?? "") ?? 0;
-    const ceiling = Math.min(...ceilings), workingSet = Math.max(0, current - inactive);
-    levels.push({ cgroup: path.relative(cgroupRoot, dir), ceiling, workingSet, free: ceiling - workingSet });
-  }
-  if (levels.length === 0) return undefined;
-  const tightest = levels.reduce((a, b) => (b.free < a.free ? b : a));
-  const slice = levels[0];
-  const pressure = memoryPressure(() => get(path.join(directory, "memory.pressure")) ?? "");
-  return { ...tightest, sliceCeiling: slice.ceiling, pressure };
-}
-
-/** What the gate holds a heavy command to: `{ directory, needMiB, pressure }`, or undefined where AGENT_HEAVY_ROOM=off or nothing can be measured. */
-export function roomSettings(env = process.env, { directory = workSliceDirectory(), cgroupRoot, read } = {}) {
-  if (env.AGENT_HEAVY_ROOM === "off") return undefined;
-  const state = directory ? cgroupRoom({ directory, cgroupRoot, read }) : undefined;
-  const configured = Number(env.AGENT_HEAVY_ROOM_MB);
-  const needMiB = env.AGENT_HEAVY_ROOM_MB !== undefined && env.AGENT_HEAVY_ROOM_MB !== "" && Number.isFinite(configured) && configured >= 0
-    ? Math.floor(configured)
-    : state ? Math.min(ROOM_SHARE.capMiB, Math.max(ROOM_SHARE.floorMiB, Math.floor((state.sliceCeiling * ROOM_SHARE.fraction) / (1024 * 1024)))) : 0;
-  const threshold = Number(env.AGENT_HEAVY_PRESSURE);
-  const pressure = env.AGENT_HEAVY_PRESSURE !== undefined && env.AGENT_HEAVY_PRESSURE !== "" && Number.isFinite(threshold) ? threshold : PRESSURE_PERCENT;
-  if (!state && memoryPressure() === undefined) return undefined;
-  return { directory: state ? directory : undefined, needMiB, pressure, ...(cgroupRoot ? { cgroupRoot } : {}) };
-}
-
-/** Whether `settings` are met now: `{ ok, reason }`, the reason naming the figures when not. */
-export function roomVerdict(settings, { read, hostPressure = memoryPressure() } = {}) {
-  const state = settings.directory ? cgroupRoom({ directory: settings.directory, cgroupRoot: settings.cgroupRoot, read }) : undefined;
-  const need = settings.needMiB * 1024 * 1024;
-  const stalls = [hostPressure, state?.pressure].filter((p) => p !== undefined);
-  const stalled = stalls.length > 0 && Math.max(...stalls) >= settings.pressure;
-  const short = state !== undefined && need > 0 && state.free < need;
-  const MiB = (n) => Math.round(n / (1024 * 1024));
-  const reasons = [
-    ...(short ? [`${state.cgroup} has ${MiB(Math.max(0, state.free))} MiB of room (ceiling ${MiB(state.ceiling)} MiB, working set ${MiB(state.workingSet)} MiB) and this command is held to ${settings.needMiB} MiB`] : []),
-    ...(stalled ? [`tasks stalled on memory ${Math.max(...stalls)}% of the last ten seconds (limit ${settings.pressure}%)`] : []),
-  ];
-  return { ok: reasons.length === 0, reason: reasons.join("; ") };
-}
-
-/**
- * Resolve once `settings` are met, waiting on the kernel's own notifications and not on a timer: inotify on
- * the work slice's directory (a scope of any command starting or ending in it) and on the memory.events of each
- * level (a ceiling breached). Every notification re-measures. `deadline` (epoch seconds) is the end of the
- * caller's budget, not an interval: past it the answer is the last verdict, `ok: false`.
- */
-export function waitForRoom(settings, { deadline, read, hostPressure = () => memoryPressure(), watcher = watch, now = () => Date.now() } = {}) {
-  return new Promise((resolve) => {
-    const watchers = [];
-    let budget;
-    const finish = (verdict) => { clearTimeout(budget); for (const w of watchers) try { w.close(); } catch { /* already closed */ } resolve(verdict); };
-    const measure = () => roomVerdict(settings, { read, hostPressure: hostPressure() });
-    let verdict = measure();
-    if (verdict.ok || !settings.directory) return finish(verdict);
-    const left = deadline * 1000 - now();
-    if (!(left > 0)) return finish(verdict);
-    const recheck = () => { verdict = measure(); if (verdict.ok) finish(verdict); };
-    const targets = [settings.directory];
-    const base = settings.cgroupRoot ?? "/sys/fs/cgroup";
-    for (let dir = settings.directory; dir.startsWith(base + path.sep); dir = path.dirname(dir)) targets.push(path.join(dir, "memory.events"));
-    for (const target of targets) try { watchers.push(watcher(target, recheck)); } catch { /* an unwatchable file only means fewer notifications */ }
-    // The caller's budget is one deadline, armed once; re-measuring is driven by the notifications above.
-    budget = setTimeout(() => finish(verdict), left);
-  });
-}
-
-// Contention testimony comes from the existing kernel locks, not another
-// ownership journal. In particular, a missing PID never licenses lock removal.
-function boundedLockReading(file, maximum) {
-  const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
-  try {
-    const bytes = Buffer.alloc(maximum + 1);
-    let used = 0;
-    while (used <= maximum) {
-      const n = readSync(fd, bytes, used, bytes.length - used, null);
-      if (n === 0) return bytes.subarray(0, used).toString("utf8");
-      used += n;
-    }
-    throw new Error("lock observation exceeds allocation");
-  } finally { closeSync(fd); }
-}
-
-function processBirth(stat) {
-  const end = stat.lastIndexOf(")");
-  const fields = end < 0 ? [] : stat.slice(end + 2).trim().split(/\s+/u);
-  return /^\d+$/u.test(fields[19] ?? "") ? fields[19] : null;
-}
-
-/** Deliberately omit every argv value: shell text, credentials and customer
- * input cannot be made safe by a token-name blacklist. */
-function lockProcess(pid, procRoot, includeChildren, budget) {
-  if (budget.remaining <= 0) return { pid, state: "process-budget-exhausted" };
-  budget.remaining -= 1;
-  const root = path.join(procRoot, String(pid));
-  try {
-    const before = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
-    if (before === null) throw new Error("unknown birth");
-    const command = boundedLockReading(path.join(root, "cmdline"), 65536).split("\0").filter(Boolean);
-    const named = path.basename(command[0] ?? "");
-    const executable = ["node", "nodejs", "flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make", "sleep"].includes(named) ? named : "other";
-    const kind = ["node", "nodejs"].includes(executable) && command.includes("--test") ? "node-test"
-      : ["flock", "bash", "sh", "git", "guix", "npm", "pnpm", "cargo", "make"].includes(executable) ? executable : "other";
-    const fullCgroup = boundedLockReading(path.join(root, "cgroup"), 8192).trim();
-    const cgroup = fullCgroup.slice(0, 1024);
-    const childrenText = includeChildren
-      ? boundedLockReading(path.join(root, "task", String(pid), "children"), 4096).trim() : "";
-    const allChildren = childrenText ? childrenText.split(/\s+/u).filter(x => /^[1-9]\d*$/u.test(x)).map(Number) : [];
-    const children = allChildren.slice(0, 4);
-    const after = processBirth(boundedLockReading(path.join(root, "stat"), 8192));
-    if (before !== after) return { pid, state: "identity-changed" };
-    return { pid, state: "observed", startTicks: before, cgroup, cgroupComplete: fullCgroup.length <= 1024,
-      command: { executable, kind, argv: "omitted" },
-      ...(includeChildren ? { childrenComplete: allChildren.length <= Math.min(4, budget.remaining),
-        children: children.slice(0, budget.remaining).map(child => lockProcess(child, procRoot, false, budget)) } : {}) };
-  } catch (error) {
-    return { pid, state: error.code === "ENOENT" || error.code === "ESRCH" ? "exited-or-unavailable" : "unavailable" };
-  }
-}
-
-/** Bounded read-only snapshot for the exact already selected slot files.
- * It neither creates/open-locks a file nor enumerates processes/directories. */
-export function heavyLockStatus(locks, { procRoot = "/proc" } = {}) {
-  if (!Array.isArray(locks) || locks.length < 1 || locks.length > 16 ||
-      locks.some(lock => typeof lock !== "string" || lock.length > 4096 || !path.isAbsolute(lock)))
-    throw new TypeError("one to sixteen exact absolute slot paths required");
-  let rows;
-  try { rows = boundedLockReading(path.join(procRoot, "locks"), 524288).split("\n"); }
-  catch { return { kind: "agent-heavy.lock-status.v1", state: "kernel-locks-unavailable", snapshot: true }; }
-  const processBudget = { remaining: 8 };
-  return { kind: "agent-heavy.lock-status.v1", snapshot: true, authority: "kernel-advisory-lock-snapshot",
-    locks: locks.map(lock => {
-      try {
-        const before = lstatSync(lock, { bigint: true });
-        if (!before.isFile() || before.isSymbolicLink()) throw new Error("not an original regular slot");
-        const major = ((before.dev >> 8n) & 0xfffn) | ((before.dev >> 32n) & 0xfffff000n);
-        const minor = (before.dev & 0xffn) | ((before.dev >> 12n) & 0xffffff00n);
-        const selected = [];
-        for (const row of rows) {
-          const match = /^\s*\d+:\s*(->\s*)?FLOCK\s+ADVISORY\s+(?:WRITE|READ)\s+(-?\d+)\s+([a-f0-9]+):([a-f0-9]+):(\d+)\s/iu.exec(row);
-          if (match && BigInt("0x" + match[3]) === major && BigInt("0x" + match[4]) === minor && BigInt(match[5]) === before.ino)
-            selected.push({ role: match[1] ? "waiter" : "holder", pid: Number(match[2]) });
-        }
-        const after = lstatSync(lock, { bigint: true });
-        if (before.dev !== after.dev || before.ino !== after.ino)
-          return { path: lock, state: "slot-identity-changed" };
-        const retained = selected.slice(0, 8);
-        const processes = retained.map(({ role, pid }) => ({ role,
-          ...(pid > 0 ? lockProcess(pid, procRoot, role === "holder", processBudget) : { pid, state: "kernel-holder-unavailable" }) }));
-        return { path: lock, state: selected.length ? "contended-or-held" : "free-at-snapshot",
-          device: String(before.dev), major: major.toString(16), minor: minor.toString(16), inode: String(before.ino),
-          complete: retained.length === selected.length && !processes.some(p => p.state === "process-budget-exhausted" || p.childrenComplete === false),
-          processes };
-      } catch { return { path: lock, state: "slot-unavailable" }; }
-    }),
-    limitations: "Processes and locks can change after this snapshot; never remove a lock or terminate an owner from this testimony." };
-}
-
-// Never `mkdirSync(..., { recursive: true })` here: on a path whose parent exists but cannot hold
-// the child (anything under /proc) node's recursive mkdir retries forever at full CPU.
-function makeDirectories(dir, levels = 4) {
-  if (isDirectory(dir)) return;
-  if (levels === 0) throw new Error("no directory to hold the lock");
-  makeDirectories(path.dirname(dir), levels - 1);
-  mkdirSync(dir, { mode: 0o700 });
-}
-
-/** The lock file exists and is readable, creating it if need be. Creating it is all the hook does with it: it never takes the lock itself. */
-function ensureLockFile(file) {
-  try { accessSync(file, constants.R_OK); return true; } catch { /* created below */ }
-  try { makeDirectories(path.dirname(file)); } catch { return false; }
-  try {
-    closeSync(openSync(file, "wx", 0o600));
-    return true;
-  } catch (error) { return error?.code === "EEXIST"; } // another process created it first
-}
-
 const onPath = (name, env) => (env.PATH ?? "").split(":").some((dir) => {
   if (dir === "") return false;
   try { accessSync(path.join(dir, name), constants.X_OK); return true; } catch { return false; }
 });
 
 export const shellQuote = (text) => `'${String(text).replaceAll("'", "'\\''")}'`;
-
-export function waitSeconds(toolInput, env = process.env) {
-  const override = Number(env.AGENT_HEAVY_WAIT_SECONDS);
-  if (env.AGENT_HEAVY_WAIT_SECONDS !== undefined && env.AGENT_HEAVY_WAIT_SECONDS !== "" && Number.isFinite(override) && override >= 1) return Math.floor(override);
-  const timeout = Number(toolInput?.timeout);
-  // Wait for the slot a little less than the tool would wait for the command, so the agent is told why.
-  const seconds = Number.isFinite(timeout) && timeout > 0 ? timeout / 1000 - 10 : LIMITS.waitSeconds;
-  return Math.min(LIMITS.maxWaitSeconds, Math.max(LIMITS.minWaitSeconds, Math.floor(seconds)));
-}
-
-const roomGate = ({ directory, needMiB, pressure, cgroupRoot }) => {
-  const args = ["--wait-for-room", ...(cgroupRoot ? ["--cgroup-root", shellQuote(cgroupRoot)] : []), "--deadline", '"$_AH_DEADLINE"', "--need-mb", needMiB, "--pressure", pressure, ...(directory ? ["--directory", shellQuote(directory)] : [])];
-  return `${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} ${args.join(" ")}; [ "$?" -ne ${NO_ROOM_EXIT_CODE} ] || { echo room >"$_AH_RAN"; exit ${BUSY_EXIT_CODE}; }; `;
-};
-
-/**
- * `original` run in one of the host's heavy slots (`locks`, from `slotLocks`): at `nice -n 10`, idle
- * I/O class. It takes the first slot that is free (`flock -n`), else waits up to `wait` seconds on
- * `waitOn` (one of them; spread at random so waiters do not all queue on the first). A busy host ends
- * the command with exit 75 and a message to the agent. A marker the command touches first tells a slot
- * that was busy from a command that ran and itself exited 75, so a command never runs twice. A lock
- * file the command's sandbox cannot read refuses admission; it never runs unlocked.
- *
- * With `room` (from `roomSettings`) the command, once it holds a slot and before it is marked as run, is held
- * until the work slice has room (`--wait-for-room`, which waits on kernel notifications) within the same
- * deadline as the slot wait. No room is also exit 75, said so, and the command does not run; room is global,
- * so no other slot is tried. The slot is held while waiting, which queues the waiters in the kernel's order
- * and lets each be measured alone. A gate that fails for any other reason lets the command through.
- */
-export function serializedCommand(original, { lock, locks = [lock], wait, nice = true, ionice = true, room, waitOn = locks[Math.floor(Math.random() * locks.length)] }) {
-  const runner = (flockArgs, file) => ["AGENT_HEAVY_LOCK_HELD=1", nice ? "nice -n 10" : "", ionice ? "$_ah_io" : "", `flock ${flockArgs} -E ${BUSY_EXIT_CODE} ${file} bash -c "$_ah_c"`].filter(Boolean).join(" ");
-  const ran = `[ -s "$_AH_RAN" ]`;
-  const busy = `agent-heavy: waited ${wait}s for one of the host's ${locks.length} heavy-command slot${locks.length === 1 ? "" : "s"} (${locks[0]}${locks.length === 1 ? "" : ` and .1-.${locks.length - 1}`}); other agents' clones, fetches, builds or tree scans hold ${locks.length === 1 ? "it" : "them"}, so this command did not run. Retry shortly, or narrow it.`;
-  const diagnose = `timeout --signal=KILL 2s ${shellQuote(process.execPath)} ${shellQuote(fileURLToPath(import.meta.url))} --lock-status ${locks.map(shellQuote).join(" ")} >&2 || true`;
-  return [
-    `_ah_c=${shellQuote(`${room ? roomGate(room) : ""}echo >"$_AH_RAN"; ${requestedTimeoutPrelude}; ${original}`)}`,
-    ...(room ? [`_AH_DEADLINE=$(( $(date +%s) + ${Math.max(0, Math.floor(wait))} )); export _AH_DEADLINE`] : []),
-    ...(ionice ? ["_ah_io=", "ionice -c3 true 2>/dev/null && _ah_io='ionice -c3'"] : []),
-    // Missing admission infrastructure cannot turn into unbounded work.
-    '_ah_readable=',
-    `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ ! -r "$_ah_l" ] || _ah_readable=1; done`,
-    // The marker sits beside the slot locks, whose directory the hook has just made sure exists: XDG_RUNTIME_DIR can
-    // name a directory that is not there yet (a host still booting has no /run/user/<uid>), and then the marker could
-    // not be written and a command that itself exits 75 could run again in the next slot.
-    // Allocate an exclusive private marker file: it starts empty and the command's first act makes it non-empty,
-    // so no guessed pathname is deleted. Only our own file is unlinked afterwards; no rm or rmdir appears, which
-    // Claude Code's removal check refuses in a rewritten command.
-    `if [ -z "$_ah_readable" ]; then printf '%s\\n' 'agent-heavy: no readable admission lock; this command did not run' >&2; (exit ${BUSY_EXIT_CODE}); else _AH_RAN=$(mktemp ${shellQuote(path.dirname(locks[0]))}/agent-ran.XXXXXX) && { export _AH_RAN`,
-    `_ah_rc=${BUSY_EXIT_CODE}`,
-    `for _ah_l in ${locks.map(shellQuote).join(" ")}; do [ -r "$_ah_l" ] || continue; ${runner("-n", '"$_ah_l"')}; _ah_rc=$?; { [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}; } || break; done`,
-    `if [ "$_ah_rc" -eq ${BUSY_EXIT_CODE} ] && ! ${ran}`,
-    `then if [ -r ${shellQuote(waitOn)} ]; then ${runner(`-w ${wait}`, shellQuote(waitOn))}; _ah_rc=$?; fi`,
-    "fi",
-    `[ "$_ah_rc" -ne ${BUSY_EXIT_CODE} ] || ${ran} || { printf '%s\\n' ${shellQuote(busy)} >&2; ${diagnose}; }`,
-    'unlink -- "$_AH_RAN"',
-    '(exit "$_ah_rc")',
-    '}',
-    'fi',
-  ].join("; ");
-}
 
 // ---------------------------------------------------------------------------------------------
 // Containment: everything a Claude Code session runs, held by the kernel to a share of the host.
@@ -1320,7 +902,7 @@ export function serializedCommand(original, { lock, locks = [lock], wait, nice =
  * The user-manager slice every process of every Claude Code session runs in. Its cgroup limits bind
  * the sum of all of it (sessions, subagents, monitors, commands, MCP servers), so no number of them
  * can take the machine from the person using it: the cap is the kernel's, not a rule a session is
- * trusted to keep. The lock above orders the heavy commands; the slice bounds everything.
+ * trusted to keep.
  */
 export const CONTAINMENT_SLICE = "agent-claude.slice";
 /**
@@ -1454,24 +1036,8 @@ export function containedCommand(original, { slice = WORK_SLICE, recorder = null
   ].join("; ");
 }
 
-/**
- * A command an agent wrapped by hand in `flock <the heavy lock> …` (optionally after one `cd <dir> &&`): its
- * prefix, the command inside, and the wait it asked for. Such a command is admitted through the slots like any
- * other heavy command, so hand-wrapping never pins it to the first slot. Anything else: undefined.
- */
-export function handWrappedHeavy(command, lock) {
-  const match = /^(\s*cd\s+[^;&|<>`$]+?\s*&&\s*)?flock((?:\s+(?:-[nxs]|-[wE]\s*\d+|--(?:nonblock|exclusive|shared)|--(?:wait|timeout|conflict-exit-code)(?:=|\s+)\d+))*)\s+(\S+)\s+(.+)$/su.exec(command);
-  if (!match) return undefined;
-  const [, prefix = "", options, file, inner] = match;
-  const named = file.replace(/^['"]|['"]$/gu, "");
-  if (named !== lock && path.basename(named) !== path.basename(lock)) return undefined;
-  if (/(^|\s)(-c|--command)(\s|$)/u.test(options) || /^(-c|--command)\s/u.test(inner)) return undefined;
-  const wait = Number(/(?:-w|--wait|--timeout)(?:=|\s*)(\d+)/u.exec(options)?.[1]);
-  return { prefix, inner, wait: Number.isFinite(wait) ? wait : undefined };
-}
-
 const SHELL_TOOLS = /^(Bash|shell|exec_command|local_shell|container\.exec)$/u;
-/** Claude Code's Monitor runs a shell command for as long as it watches: contained, never serialized, since a watch would hold the heavy slot for its whole life. */
+/** Claude Code's Monitor runs a shell command for as long as it watches: always contained. */
 const WATCH_TOOLS = /^Monitor$/u;
 
 /** Programs the harness's own removal check must read as written. Contained, a command is a
@@ -1491,12 +1057,12 @@ export function isSelfCheckedRemoval(command) {
 
 /**
  * The hook's answer to one PreToolUse event: the `hookSpecificOutput` object, or undefined to let
- * the command run untouched. `provider` is "claude" or "codex"; Codex accepts `updatedInput` only
- * together with an explicit allow. `cgroup` is the session's own cgroup (the hook inherits it).
+ * the command run untouched. `provider` is "claude" or "codex"; only a Claude Code session is
+ * rewritten. `cgroup` is the session's own cgroup (the hook inherits it).
  *
  * A Claude Code session outside the slice has its commands placed there: every command when it runs
- * without permission rules (`bypassPermissions`), and otherwise the heavy commands and watches,
- * which are already rewritten, so no command an allow rule admits starts asking because of it.
+ * without permission rules (`bypassPermissions`), and otherwise only the `Monitor` watches,
+ * so no command an allow rule admits starts asking because of it.
  */
 export function decide(input, { env = process.env, provider = "claude", home, cgroup = ownCgroup(), run: runner } = {}) {
   if (env.AGENT_HOST_GUARD === "off") return undefined;
@@ -1506,35 +1072,17 @@ export function decide(input, { env = process.env, provider = "claude", home, cg
   if (!(SHELL_TOOLS.test(tool) || watch) || typeof toolInput?.command !== "string") return undefined;
   const command = toolInput.command;
   if (command.trim() === "" || command.length > LIMITS.maxCommandLength) return undefined;
-  const lock = lockPath(env);
-  const verdict = classify(command, { cwd: input.cwd, env, home, scratchpad: input.scratchpad_dir, lock, run: runner });
+  const verdict = classify(command, { cwd: input.cwd, env, home, scratchpad: input.scratchpad_dir, run: runner });
   if (verdict.action === "deny") {
     return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: `host-resource guard: ${verdict.reason}` };
   }
   // A session confined to an allow-list (`dontAsk`, the carriers') has its permission rules checked
   // against the rewritten command, which no allowed pattern matches: it is denied there, never rewritten.
   if (input.permission_mode === "dontAsk") return undefined;
-  if (!watch && verdict.action === "serialize" && !env.AGENT_HEAVY_LOCK_HELD && (!onPath("flock", env) || !ensureLockFile(lock))) {
-    return { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "host-resource guard: heavy-command admission unavailable (flock or shared lock); this command did not run" };
-  }
-  let wrapped;
-  const hand = verdict.action === "serialize" && verdict.locked ? handWrappedHeavy(command, lock) : undefined;
-  if (!watch && verdict.action === "serialize" && (!verdict.locked || hand) && !env.AGENT_HEAVY_LOCK_HELD && onPath("flock", env) && ensureLockFile(lock)) {
-    const locks = slotLocks(lock, heavySlots({ env })).filter((file, i) => i === 0 || ensureLockFile(file));
-    const wait = Math.min(LIMITS.maxWaitSeconds * 4, Math.max(waitSeconds(toolInput, env), hand?.wait ?? 0));
-    wrapped = `${hand?.prefix ?? ""}${serializedCommand(hand?.inner ?? command, { lock, locks, wait, room: roomSettings(env), nice: onPath("nice", env), ionice: onPath("ionice", env) })}`;
-  }
   // Commands go to the work slice even from a session inside its own slice, so a command's memory never counts against the session.
-  const selfChecked = wrapped === undefined && !watch && isSelfCheckedRemoval(command);
-  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && !selfChecked && (wrapped !== undefined || watch || input.permission_mode === "bypassPermissions") && canContain(env);
-  if (contain) wrapped = containedCommand(wrapped ?? command, { recorder: { node: process.execPath, script: fileURLToPath(new URL("./scope-failure-record.mjs", import.meta.url)) } });
-  if (wrapped === undefined) return undefined;
-  const output = { hookEventName: "PreToolUse", updatedInput: { ...toolInput, command: wrapped } };
-  if (provider === "codex") {
-    output.permissionDecision = "allow";
-    output.permissionDecisionReason = `host-resource guard: ${verdict.heavy.join(", ")} runs in one of the host's heavy-command slots`;
-  }
-  return output;
+  const contain = provider === "claude" && !isContained(cgroup, WORK_SLICE) && (watch || (input.permission_mode === "bypassPermissions" && !isSelfCheckedRemoval(command))) && canContain(env);
+  if (!contain) return undefined;
+  return { hookEventName: "PreToolUse", updatedInput: { ...toolInput, command: containedCommand(command, { recorder: { node: process.execPath, script: fileURLToPath(new URL("./scope-failure-record.mjs", import.meta.url)) } }) } };
 }
 
 /** The stdin of one hook run to its stdout; undefined for an untouched command or any failure. */
@@ -1644,31 +1192,9 @@ export const hookSettingsArguments = (hookPath) => ["--settings", JSON.stringify
 /**
  * The process: the event on stdin to a decision on stdout. Whatever happens, it is gone within
  * `guardMilliseconds` of starting to wait: a stdin that never closes, a closed one or a broken one
- * leaves the command untouched. The hook never waits on the lock; the rewritten command does.
+ * leaves the command untouched.
  */
 function main() {
-  if (process.argv[2] === "--wait-for-room") {
-    // `--wait-for-room --within <seconds>` is for a caller that is not a Bash command (a timer-driven service): the
-    // room it is held to is this process's own environment's, as the hook would set it. The flags below spell it out.
-    const args = process.argv.slice(3);
-    const value = (name) => args[args.indexOf(name) + 1];
-    const explicit = args.includes("--need-mb");
-    const settings = explicit
-      ? { directory: args.includes("--directory") ? value("--directory") : undefined, cgroupRoot: args.includes("--cgroup-root") ? value("--cgroup-root") : undefined, needMiB: Number(value("--need-mb")), pressure: Number(value("--pressure")) }
-      : roomSettings(process.env);
-    if (settings === undefined) process.exit(0);
-    const deadline = args.includes("--deadline") ? Number(value("--deadline")) : Date.now() / 1000 + (Number(value("--within")) || 0);
-    waitForRoom(settings, { deadline }).then((verdict) => {
-      if (!verdict.ok) process.stderr.write(`agent-heavy: no room for this command: ${verdict.reason}. It did not run; it waited for a running command to end and none did. Retry when the other work has finished, or narrow it.\n`);
-      process.exit(verdict.ok ? 0 : NO_ROOM_EXIT_CODE);
-    }, () => process.exit(0));
-    return;
-  }
-  if (process.argv[2] === "--lock-status") {
-    try { process.stdout.write(JSON.stringify(heavyLockStatus(process.argv.slice(3))) + "\n"); }
-    catch { process.stdout.write('{"kind":"agent-heavy.lock-status.v1","state":"observation-unavailable","snapshot":true}\n'); }
-    return;
-  }
   const guard = setTimeout(() => process.exit(0), LIMITS.guardMilliseconds);
   guard.unref();
   const chunks = [];

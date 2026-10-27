@@ -3,9 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn, spawnSync } from "node:child_process";
-import { once } from "node:events";
-import { decide, run, hookEntries, hostResourceControl, writeHostResourceControl, serializedCommand, BUSY_EXIT_CODE, launcherScript, sliceUnit, isContained, mergeHostResourceHooks } from "../src/host-resource-hook.mjs";
+import { spawnSync } from "node:child_process";
+import { decide, run, hookEntries, hostResourceControl, writeHostResourceControl, launcherScript, sliceUnit, isContained, mergeHostResourceHooks } from "../src/host-resource-hook.mjs";
 
 const source = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const scratch = t => {
@@ -58,32 +57,16 @@ test("invalid configuration refuses projection before any write; no trust is man
 });
 
 test("original deny, provider rewrite, malformed event and containment contracts survive source recovery", t => {
-  const root = scratch(t), env = { ...process.env, AGENT_HEAVY_LOCK: join(root, "heavy.lock"), AGENT_CONTAINMENT: "off" };
+  const root = scratch(t), env = { ...process.env, AGENT_CONTAINMENT: "off" };
   const event = { tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } };
   assert.equal(decide(event, { env }).permissionDecision, "deny");
   assert.equal(decide(event, { env, provider: "codex" }).permissionDecision, "deny");
-  const allowed = decide({ ...event, tool_input: { command: "npm install", description: "keep" } }, { env, provider: "codex" });
-  assert.equal(allowed.permissionDecision, "allow"); assert.equal(allowed.updatedInput.description, "keep");
-  assert.ok(allowed.updatedInput.command.includes(env.AGENT_HEAVY_LOCK));
+  assert.equal(decide({ ...event, tool_input: { command: "npm install", description: "keep" } }, { env, provider: "codex" }), undefined);
   assert.equal(run("malformed", { env }), undefined);
   assert.equal(decide({ ...event, tool_input: { command: "echo small" } }, { env }), undefined);
   assert.match(launcherScript(), /--slice=agent-claude.slice/); assert.match(sliceUnit(), /MemorySwapMax=0/);
   assert.equal(isContained("0::/user.slice/agent-claude.slice/agent.scope"), true);
 });
-
-test("the rewritten command observes real busy admission and kernel release after the holder exits", async t => {
-  const root = scratch(t), lock = join(root, "heavy.lock");
-  const holder = spawn("flock", [lock, "sh", "-c", "printf held; read value"], { stdio: ["pipe", "pipe", "pipe"] });
-  t.after(() => holder.kill()); await once(holder.stdout, "data");
-  const original = "printf delivered";
-  const wrapped = serializedCommand(original, { lock, wait: 0, nice: false, ionice: false });
-  const busy = spawnSync("bash", ["-c", wrapped], { encoding: "utf8", timeout: 3000 });
-  assert.equal(busy.status, BUSY_EXIT_CODE); assert.equal(busy.stdout, ""); assert.match(busy.stderr, /this command did not run/);
-  holder.stdin.end("release\n"); await once(holder, "close");
-  const received = spawnSync("bash", ["-c", wrapped], { encoding: "utf8", timeout: 3000 });
-  assert.equal(received.status, 0); assert.equal(received.stdout, "delivered");
-});
-
 
 test("actual Claude projection keeps the local guard without erasing other hooks", async t => {
   const { projectClaudeHarness, writeClaudeHarness, checkClaudeHarness } = await import("../services/claude-code-harness-services-section/src/claude-harness-projection.mjs");

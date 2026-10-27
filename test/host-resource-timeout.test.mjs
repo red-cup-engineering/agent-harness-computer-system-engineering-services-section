@@ -1,25 +1,23 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { serializedCommand } from '../src/host-resource-hook.mjs';
+import { containedCommand } from '../src/host-resource-hook.mjs';
 
 function run(t, original, timeout = 15_000) {
   const root = mkdtempSync(join(tmpdir(), 'requested-timeout-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const lock = join(root, 'heavy.lock');
-  writeFileSync(lock, '');
-  const command = serializedCommand(original, { lock, wait: 1, nice: false, ionice: false });
+  const command = containedCommand(original);
   const started = performance.now();
   const result = spawnSync('bash', ['-c', command], {
-    encoding: 'utf8', timeout, killSignal: 'SIGKILL', maxBuffer: 65_536,
+    encoding: 'utf8', timeout, killSignal: 'SIGKILL', maxBuffer: 65_536, env: { ...process.env, XDG_RUNTIME_DIR: root },
   });
   return { ...result, elapsed: performance.now() - started };
 }
 
-test('an admitted requested timeout finishes a TERM-ignoring process group and never retries it', t => {
+test('a contained requested timeout finishes a TERM-ignoring process group and never retries it', t => {
   const result = run(t, `timeout 0.1s bash -c 'trap "" TERM; printf started; sleep 30'`);
   assert.equal(result.error, undefined);
   assert.equal(result.status, 137);
