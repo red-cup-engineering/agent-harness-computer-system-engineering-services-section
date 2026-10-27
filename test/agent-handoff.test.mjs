@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -63,7 +63,7 @@ test("context and model come from the transcript's last billable request, usage 
 });
 
 test("the command writes the record to its address and prints the successor prompt", () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "handoff-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "handoff-"));
   const inputFile = path.join(dir, "in.json");
   writeFileSync(inputFile, JSON.stringify(input()));
   const transcript = path.join(dir, "t.jsonl");
@@ -149,7 +149,7 @@ test("unknown or invalid context usage never becomes a zero-token or stale measu
 });
 
 test("CLI handoff selects actual transcript meter and current occurrence over stale draft values", () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "handoff-meter-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "handoff-meter-"));
   const draft = input();
   draft.from = { sessionId: "old-s", agentId: "old-a", model: "guessed-model", contextTokens: 1 };
   const inputFile = path.join(dir, "draft.json");
@@ -176,7 +176,7 @@ test("CLI handoff selects actual transcript meter and current occurrence over st
 
 
 test("the original CLI atomically publishes immutable addressed handoff records across repeated Session writes", (t) => {
-  const dir = mkdtempSync(path.join(tmpdir(), "handoff-immutable-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "handoff-immutable-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const inputFile = path.join(dir, "in.json");
   writeFileSync(inputFile, JSON.stringify(input()));

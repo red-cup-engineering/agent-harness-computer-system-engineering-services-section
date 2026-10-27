@@ -13,8 +13,9 @@ import { admitHookEnvelope, isHookEnvelope } from "@red-cup-engineering/agent-ha
 
 import { transportCloudEvent } from "@red-cup-engineering/computer-system-engine/rpc/arrival";
 import { } from "@red-cup-engineering/json-services-section";
-import { append, extend, get, put, readHead } from "@red-cup-engineering/semiotic-eavt-services-section/store";
+import { extend, get, put, readHead } from "@red-cup-engineering/semiotic-eavt-services-section/store";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
+import { appendServiceLog } from "@red-cup-engineering/computer-systems-logging-engine/append-service-log";
 import { appendArrivalAtRoot } from "@red-cup-engineering/computer-system-engine/rpc/arrival-store";
 
 import { agentSessionTokenUsageStatementRows } from "@red-cup-engineering/computer-inference-engine/cost/token-usage/persistence";
@@ -110,7 +111,7 @@ function appendHookTranscriptTokenUsageAtRoot(
   extend(root, TOKEN_USAGE_CHECKPOINT_TYPE, checkpointName(transcriptPath), { at, transcriptPath, session: sessionId, row: Math.max(through, ...fresh.map((event) => event.row).filter(Number.isFinite)) });
 }
 
-/** Append one normalized hook envelope under `$root/data/logs/<kind>-logs/**`. `options.at` (ISO
+/** Append one normalized hook envelope under `$root/data/logs/**` (the hook-event service log and the arrival store). `options.at` (ISO
  *  date-time) is the instant the caller has already read at the kernel edge; when
  *  `options.admitTokenUsage` is true, `options.statPathOrNull`/`options.readFileUtf8` (the same
  *  filesystem effects `defaultFilesystemBinding` bundles onto a binding) are also required, to
@@ -132,14 +133,18 @@ export function appendHookEventAtRoot(
     path: options.harness !== undefined ? "rpc:harness-hook-event-admit" : admission.harness === "claude-code" ? ".claude/settings.local.json#hooks" : ".codex/hooks",
     verb: admission.hookEventName,
   }));
-  // FeltOS's fleet reads the sessions a day's `hook-event` log names: a line is `{at, harness, session, ...}`.
-  append(root, "hook-event", {
+  // One service-log line per hook event: the session it came in (entity), the event (attribute), who sent it and what it touched (value).
+  appendServiceLog({
+    root,
+    service: "hook-event",
     at,
-    harness: admission.harness,
-    hookEventName: admission.hookEventName,
-    ...(admission.sessionId === undefined ? {} : { session: admission.sessionId }),
-    ...(admission.turnId === undefined ? {} : { turn: admission.turnId }),
-    ...(admission.toolName === undefined ? {} : { tool: admission.toolName }),
+    entry: {
+      subject: "hook-event",
+      entity: admission.sessionId ?? "no-session",
+      attribute: admission.hookEventName,
+      value: { harness: admission.harness, ...(admission.turnId === undefined ? {} : { turn: admission.turnId }), ...(admission.toolName === undefined ? {} : { tool: admission.toolName }) },
+      time: at,
+    },
   });
   const receipt = appendArrivalAtRoot(root, event, {
     ...options,

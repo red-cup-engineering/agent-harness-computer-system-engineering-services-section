@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { checkClaudeHarness, writeClaudeHarness } from "../services/claude-code-harness-services-section/src/claude-harness-projection.mjs";
@@ -13,7 +13,7 @@ const projectionAt = (node) => Object.freeze({
 });
 
 test("what the projection no longer yields is found in the directories it owns, with no list of its own writes", (t) => {
-  const node = mkdtempSync(path.join(tmpdir(), "claude-harness-"));
+  const node = mkdtempSync(path.join(scratchRoot(), "claude-harness-"));
   t.after(() => rmSync(node, { recursive: true, force: true }));
   mkdirSync(path.join(node, ".claude", "agents"), { recursive: true });
   writeFileSync(path.join(node, ".claude", "agents", "vacated-office.md"), "an office no longer seated\n");
@@ -28,7 +28,7 @@ test("what the projection no longer yields is found in the directories it owns, 
 });
 
 test("the servers written into .mcp.json are the servers the settings approve, so a session connects without a prompt", (t) => {
-  const node = mkdtempSync(path.join(tmpdir(), "claude-harness-"));
+  const node = mkdtempSync(path.join(scratchRoot(), "claude-harness-"));
   t.after(() => rmSync(node, { recursive: true, force: true }));
   const projection = { ...projectionAt(node), mcpServers: { metroplat: { type: "http", url: "https://metroplat.example/mcp" } } };
   writeClaudeHarness(projection);

@@ -6,14 +6,14 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { once } from "node:events";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { Readable } from "node:stream";
 
 import { handleSessionEnd, main, mergeSessionEndHooks, parseArguments, sessionEndHookEntries, sessionProcess } from "../src/session-end-scratch-hook.mjs";
 import { installSessionEndScratchHook } from "../scripts/install-session-end-scratch-hook.mjs";
 
-const root = mkdtempSync(path.join(tmpdir(), "session-end-scratch-"));
+const root = mkdtempSync(path.join(scratchRoot(), "session-end-scratch-"));
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 const SID = "aaaaaaaa-1111-4111-8111-111111111111";
 const options = parseArguments(["--codex-home", "/svc/codex-home.mjs", "--parameters", "/svc/record.json", "--node", "/bin/node"]);

@@ -9,13 +9,16 @@
  * It reads, without waiting on anything, the bus socket, the manager's cgroup (memory.high, memory.current, memory.max,
  * memory.events, pids.current, the processes in it with their state letters), the host's memory pressure and available memory; an
  * unreadable value is recorded as unreadable with its reason, never as healthy. The record is an OTLP log record in the SEAVT
- * telemetry store when that is installed, else one JSON line in `scope-failures.jsonl` beside it. The hook itself keeps its zero
+ * telemetry store when that is installed, else one line of the harness's `scope-failure` service log. The hook itself keeps its zero
  * dependencies: only this separate entry, run only on the failure path, loads them.
  */
-import { appendFileSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { homedir, hostname } from "node:os";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { hostname } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
+import { appendServiceLog } from "@red-cup-engineering/computer-systems-logging-engine/append-service-log";
+import { SECTION_ROOT } from "./section-root.mjs";
 
 const FILE_BYTES_MAX = 1 << 20;
 const PROCESSES_MAX = 16;
@@ -63,21 +66,19 @@ export function userManagerState({ env = process.env, proc = "/proc", cgroup = "
   };
 }
 
-const stateRoot = (env) => env.AGENT_HARNESS_TELEMETRY_ROOT || path.join(env.XDG_STATE_HOME || path.join(homedir(), ".local", "state"), "561-group", "agent-harness");
-
 /**
  * Keep the failure. Returns `{stored: "telemetry", address}` or `{stored: "jsonl", file}`. `load` imports the telemetry module
  * (injectable); a load or write that fails falls back to the JSON line, and that to a thrown error for the caller to swallow.
  */
-export async function recordScopeFailure({ errorFile, status, env = process.env, state = userManagerState({ env }), now = () => new Date().toISOString(), load = () => import("@red-cup-engineering/semiotic-eavt-services-section/telemetry") } = {}) {
+export async function recordScopeFailure({ errorFile, status, env = process.env, root = SECTION_ROOT, state = userManagerState({ env }), now = () => new Date().toISOString(), load = () => import("@red-cup-engineering/semiotic-eavt-services-section/telemetry") } = {}) {
   const said = attempt(() => { const bytes = readFileSync(errorFile); return bytes.subarray(0, FILE_BYTES_MAX).toString("utf8"); });
   const stderr = typeof said === "string" ? said : `(systemd-run's output was unreadable: ${said.unreadable})`;
   const exit = Number.isInteger(Number(status)) ? Number(status) : null;
-  const root = stateRoot(env);
+  const telemetryRoot = dataKindDirectory(root, "state", "containment-telemetry");
   const slice = "agent-work.slice";
   try {
     const { openTelemetry, systemPorts } = await load();
-    const handle = openTelemetry({ root, channel: "containment", ports: systemPorts(env), service: { name: "agent-harness", namespace: "561-group", instanceId: hostname() } });
+    const handle = openTelemetry({ root: telemetryRoot, channel: "containment", ports: systemPorts(env), service: { name: "agent-harness", namespace: "561-group", instanceId: hostname() } });
     const recorded = handle.recordCommand({
       operation: "agent-harness.containment", command: "systemd-run", args: ["--user", "--scope", "--quiet", "--collect", `--slice=${slice}`, "--", "bash", "-c", "<command>"],
       result: { status: exit, signal: null, stdout: "", stderr },
@@ -85,14 +86,13 @@ export async function recordScopeFailure({ errorFile, status, env = process.env,
     });
     return { stored: "telemetry", address: recorded.address };
   } catch (cause) {
-    const file = path.join(root, "scope-failures.jsonl");
-    mkdirSync(root, { recursive: true });
-    appendFileSync(file, `${JSON.stringify({ type: "AgentHarnessScopeFailure", at: now(), exitStatus: exit, stderr, userManager: state, fallbackReason: String(cause?.message ?? cause) })}\n`);
+    const at = now();
+    const { path: file } = appendServiceLog({ root, service: "scope-failure", at, entry: { subject: "scope-failure", entity: hostname(), attribute: "AgentHarnessScopeFailure", value: { exitStatus: exit, stderr, userManager: JSON.parse(JSON.stringify(state)), fallbackReason: String(cause?.message ?? cause) }, time: at } });
     return { stored: "jsonl", file };
   }
 }
 
 const invoked = process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invoked) {
-  try { await recordScopeFailure({ errorFile: process.argv[2], status: process.argv[3] }); } catch { /* the hook never fails because a record could not be kept */ }
+  try { await recordScopeFailure({ errorFile: process.argv[2], status: process.argv[3], root: process.env.AGENT_HARNESS_SECTION_ROOT || SECTION_ROOT }); } catch { /* the hook never fails because a record could not be kept */ }
 }

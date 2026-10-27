@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { constitute } from "@red-cup-engineering/eavt-services-section/constitute-entity";
 import { appendEavtRow } from "@red-cup-engineering/eavt-services-section/append-eavt-row";
@@ -18,7 +18,7 @@ import { readLifecycleEvents, dutyAttributes, fold } from "../scripts/fold-harne
 const ADMITTED_ACTOR = ADMITTED_HARNESS_ACTORS[0];
 
 function withDir(fn) {
-  const dir = mkdtempSync(path.join(tmpdir(), "lagoon-fold-harness-lifecycle-test-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-fold-harness-lifecycle-test-"));
   try {
     return fn(dir);
   } finally {
@@ -100,7 +100,7 @@ function seedMachineAndOffice(tracePath) {
 test("fold throws when the event's actor occupies no constituted office", () => {
   withDir((root) => {
     recordSkillSelection({ root, actor: ADMITTED_ACTOR, turnId: "turn-1", skill: "test-skill", recordedAt: "2026-08-31T00:00:00.000Z" });
-    const dir = mkdtempSync(path.join(tmpdir(), "lagoon-fold-trace-"));
+    const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-fold-trace-"));
     const tracePath = path.join(dir, "world.eavt");
     try {
       assert.throws(() => fold([root], tracePath), Error);
@@ -114,7 +114,7 @@ test("fold appends a duty entity reported-by its actor and reported-at its offic
   withDir((root) => {
     recordSkillSelection({ root, actor: ADMITTED_ACTOR, turnId: "turn-1", skill: "test-skill", recordedAt: "2026-08-31T00:00:00.000Z" });
 
-    const dir = mkdtempSync(path.join(tmpdir(), "lagoon-fold-trace-"));
+    const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-fold-trace-"));
     const tracePath = path.join(dir, "world.eavt");
     try {
       seedMachineAndOffice(tracePath);
@@ -141,7 +141,7 @@ test("fold is idempotent: re-folding the same events appends nothing new", () =>
   withDir((root) => {
     recordSkillSelection({ root, actor: ADMITTED_ACTOR, turnId: "turn-1", skill: "test-skill", recordedAt: "2026-08-31T00:00:00.000Z" });
 
-    const dir = mkdtempSync(path.join(tmpdir(), "lagoon-fold-trace-"));
+    const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-fold-trace-"));
     const tracePath = path.join(dir, "world.eavt");
     try {
       seedMachineAndOffice(tracePath);

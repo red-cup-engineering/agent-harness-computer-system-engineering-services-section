@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { containedCommand } from '../src/host-resource-hook.mjs';
 
 function run(t, original, timeout = 15_000) {
-  const root = mkdtempSync(join(tmpdir(), 'requested-timeout-'));
+  const root = mkdtempSync(join(scratchRoot(), 'requested-timeout-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const command = containedCommand(original);
   const started = performance.now();

@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import net from "node:net";
 import { closeSync, constants, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, truncateSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -17,7 +17,7 @@ import { LIMITS, isMassDeletion, massDeletionMarker, CONTAINMENT_SLICE, WORK_SLI
 const HOOK = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
 const MiB = 1024 * 1024;
 
-const root = realpathSync(mkdtempSync(path.join(tmpdir(), "host-resource-hook-")));
+const root = realpathSync(mkdtempSync(path.join(scratchRoot(), "host-resource-hook-")));
 const home = path.join(root, "home");
 const dirs = {
   home,

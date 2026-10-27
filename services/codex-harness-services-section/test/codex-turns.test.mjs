@@ -1,7 +1,8 @@
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "../../../test/support/scratch.mjs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
@@ -9,7 +10,7 @@ import test from "node:test";
 import { codexConcurrency } from "../src/codex-exec.mjs";
 
 async function observe(host, count, environment = {}) {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-provider-observe-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-provider-observe-"));
   try {
     const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
     const source = `
@@ -28,7 +29,7 @@ async function observe(host, count, environment = {}) {
     `;
     const child = spawnSync(process.execPath, ["--input-type=module", "-e", source,
       String(count), JSON.stringify(host), JSON.stringify(environment)], {
-      cwd: process.cwd(), env: { ...process.env, HOME: path.join(root, "home") }, encoding: "utf8", timeout: 10_000,
+      cwd: process.cwd(), env: { ...process.env, HOME: path.join(root, "home"), AGENT_HARNESS_SECTION_ROOT: path.join(root, "home") }, encoding: "utf8", timeout: 10_000,
     });
     assert.equal(child.status, 0, child.stderr);
     return JSON.parse(child.stdout.trim());
@@ -59,9 +60,9 @@ test("unknown usage limits use the four-session ceiling", () => {
 
 test("active legacy Codex task units count against the shared provider ceiling", async () => {
   const { reserveCodexProviderTurn, releaseCodexProviderTurn } = await import("../src/codex-exec.mjs");
-  const root = mkdtempSync(path.join(tmpdir(), "codex-legacy-units-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-legacy-units-"));
   const home = path.join(root, "home");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   try {
     mkdirSync(capacity, { recursive: true });
     writeFileSync(path.join(capacity, "slot-0.json"), JSON.stringify({
@@ -74,7 +75,7 @@ test("active legacy Codex task units count against the shared provider ceiling",
       "codex-task-agency-receive-legacy.service loaded active running receiver",
     ].join("\n");
     const lease = await reserveCodexProviderTurn({ scopeKey: "new-scope", executionIdentity: "new-work",
-      environment: { HOME: home, METROPLAT_CODEX_CONCURRENCY: "2" },
+      environment: { HOME: home, AGENT_HARNESS_SECTION_ROOT: home, METROPLAT_CODEX_CONCURRENCY: "2" },
       host: { cores: 4, availableMemoryMB: 6000, usageLimit: 2 },
       systemRunner: async (_command, args) => args.includes("list-units")
         ? { exitCode: 0, stdout: active }
@@ -86,9 +87,9 @@ test("active legacy Codex task units count against the shared provider ceiling",
 
 test("a systemd unit represented by a reservation is not counted twice", async () => {
   const { reserveCodexProviderTurn, releaseCodexProviderTurn } = await import("../src/codex-exec.mjs");
-  const root = mkdtempSync(path.join(tmpdir(), "codex-represented-unit-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-represented-unit-"));
   const home = path.join(root, "home");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   try {
     mkdirSync(capacity, { recursive: true });
     writeFileSync(path.join(capacity, "slot-0.json"), JSON.stringify({
@@ -96,7 +97,7 @@ test("a systemd unit represented by a reservation is not counted twice", async (
       owner: { pid: process.pid, boot: "test", started: "test" }, unit: "codex-task-represented",
     }));
     const lease = await reserveCodexProviderTurn({ scopeKey: "new-scope", executionIdentity: "new-work",
-      environment: { HOME: home, METROPLAT_CODEX_CONCURRENCY: "2" },
+      environment: { HOME: home, AGENT_HARNESS_SECTION_ROOT: home, METROPLAT_CODEX_CONCURRENCY: "2" },
       host: { cores: 4, availableMemoryMB: 6000, usageLimit: 2 },
       systemRunner: async (_command, args) => args.includes("list-units")
         ? { exitCode: 0, stdout: "codex-task-represented.service loaded active running represented\n" }
@@ -109,10 +110,10 @@ test("a systemd unit represented by a reservation is not counted twice", async (
 
 test("an inaccessible systemd user bus does not look like zero active workers", async () => {
   const { reserveCodexProviderTurn } = await import("../src/codex-exec.mjs");
-  const root = mkdtempSync(path.join(tmpdir(), "codex-unknown-units-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-unknown-units-"));
   try {
     const lease = await reserveCodexProviderTurn({ scopeKey: "new-scope", executionIdentity: "new-work",
-      environment: { HOME: path.join(root, "home"), METROPLAT_CODEX_CONCURRENCY: "2" },
+      environment: { HOME: path.join(root, "home"), AGENT_HARNESS_SECTION_ROOT: path.join(root, "home"), METROPLAT_CODEX_CONCURRENCY: "2" },
       host: { cores: 4, availableMemoryMB: 6000, usageLimit: 2 },
       systemRunner: async () => ({ exitCode: 1, stderr: "Failed to connect to bus: No medium found" }) });
     assert.deepEqual({ acquired: lease.acquired, reason: lease.reason },
@@ -127,7 +128,7 @@ test("invalid override falls back to injected resources", () => {
 
 test("an uncertain timeout stop retains the runner completion marker as unknown", async () => {
   const { waitForCodexSession } = await import("../src/codex-exec.mjs");
-  const artifactDir = mkdtempSync(path.join(tmpdir(), "codex-timeout-"));
+  const artifactDir = mkdtempSync(path.join(scratchRoot(), "codex-timeout-"));
   try {
     await waitForCodexSession({ artifactDir, unit: "codex-task-uncertain", timeoutMs: 0,
       systemRunner: async () => ({ exitCode: 1 }) });
@@ -136,7 +137,7 @@ test("an uncertain timeout stop retains the runner completion marker as unknown"
 });
 
 test("a live lease owner keeps capacity after the base session exit marker", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-live-owner-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-live-owner-"));
   const home = path.join(root, "home");
   const artifactDir = path.join(root, "artifacts");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
@@ -157,7 +158,7 @@ test("a live lease owner keeps capacity after the base session exit marker", asy
   let child;
   try {
     child = spawn(process.execPath, ["--input-type=module", "-e", source, "scope-a", artifactDir], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home }, stdio: ["pipe", "pipe", "pipe"],
+      cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, stdio: ["pipe", "pipe", "pipe"],
     });
     const acquired = await new Promise((resolve, reject) => {
       let output = "";
@@ -174,7 +175,7 @@ test("a live lease owner keeps capacity after the base session exit marker", asy
     writeFileSync(path.join(artifactDir, "exit-code"), "0\n");
     const { reserveCodexProviderTurn } = await import("../src/codex-exec.mjs");
     const next = await reserveCodexProviderTurn({ scopeKey: "scope-b", executionIdentity: "allocation-b",
-      environment: { HOME: home, METROPLAT_CODEX_CONCURRENCY: "1" }, host: { cores: 2, availableMemoryMB: 3000, usageLimit: 1 },
+      environment: { HOME: home, AGENT_HARNESS_SECTION_ROOT: home, METROPLAT_CODEX_CONCURRENCY: "1" }, host: { cores: 2, availableMemoryMB: 3000, usageLimit: 1 },
       systemRunner: async (_command, args) => args.includes("list-units")
         ? { exitCode: 0, stdout: "" } : { exitCode: 0, stdout: "" } });
     assert.deepEqual({ acquired: next.acquired, reason: next.reason }, { acquired: false, reason: "provider-capacity-full" });
@@ -187,10 +188,10 @@ test("a live lease owner keeps capacity after the base session exit marker", asy
 });
 
 test("a dead owner does not free a lease while a conflict-resolution unit is active", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-live-resolution-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-live-resolution-"));
   const home = path.join(root, "home");
   const artifactDir = path.join(root, "artifacts");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
   try {
     mkdirSync(path.join(artifactDir, "resolution-1"), { recursive: true });
@@ -211,7 +212,7 @@ test("a dead owner does not free a lease while a conflict-resolution unit is act
       console.log(JSON.stringify({ acquired: lease.acquired, reason: lease.reason }));
     `;
     const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home }, encoding: "utf8", timeout: 10_000,
+      cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, encoding: "utf8", timeout: 10_000,
     });
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(JSON.parse(result.stdout.trim()), { acquired: false, reason: "provider-capacity-full" });
@@ -219,10 +220,10 @@ test("a dead owner does not free a lease while a conflict-resolution unit is act
 });
 
 test("a held resolution unit is represented by its parent lease during capacity accounting", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-represented-resolution-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-represented-resolution-"));
   const home = path.join(root, "home");
   const artifactDir = path.join(root, "artifacts");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
   try {
     mkdirSync(path.join(artifactDir, "resolution-1"), { recursive: true });
@@ -245,7 +246,7 @@ test("a held resolution unit is represented by its parent lease during capacity 
       console.log(JSON.stringify({ acquired: lease.acquired, reason: lease.reason }));
     `;
     const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home }, encoding: "utf8", timeout: 10_000,
+      cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, encoding: "utf8", timeout: 10_000,
     });
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(JSON.parse(result.stdout.trim()), { acquired: true }, result.stderr);
@@ -253,10 +254,10 @@ test("a held resolution unit is represented by its parent lease during capacity 
 });
 
 test("only one recovery process can atomically take over a dead owner's lease", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-recovery-claim-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-recovery-claim-"));
   const home = path.join(root, "home");
   const artifactDir = path.join(root, "artifacts");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
   const source = `
     const { inTurn } = await import(${JSON.stringify(moduleUrl)});
@@ -270,7 +271,7 @@ test("only one recovery process can atomically take over a dead owner's lease", 
       systemRunner: async () => ({ exitCode: 0, stdout: "LoadState=loaded\\nActiveState=active\\n" }) });
   `;
   const launch = () => spawn(process.execPath, ["--input-type=module", "-e", source], {
-    cwd: process.cwd(), env: { ...process.env, HOME: home }, stdio: ["pipe", "pipe", "pipe"],
+    cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, stdio: ["pipe", "pipe", "pipe"],
   });
   let first;
   let second;
@@ -310,10 +311,10 @@ test("only one recovery process can atomically take over a dead owner's lease", 
 });
 
 test("recovery does not take over while a conflict-resolution child remains active", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-recovery-resolution-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-recovery-resolution-"));
   const home = path.join(root, "home");
   const artifactDir = path.join(root, "artifacts");
-  const capacity = path.join(home, ".local", "state", "561-group", "codex-provider-capacity");
+  const capacity = dataKindDirectory(home, "state", "codex-provider-capacity");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
   const source = `
     const { inTurn } = await import(${JSON.stringify(moduleUrl)});
@@ -335,7 +336,7 @@ test("recovery does not take over while a conflict-resolution child remains acti
       taskId: "task-resolution", artifactDir, unit: "codex-task-task-resolution",
     }));
     child = spawn(process.execPath, ["--input-type=module", "-e", source], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home }, stdio: ["ignore", "pipe", "pipe"],
+      cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, stdio: ["ignore", "pipe", "pipe"],
     });
     let output = "";
     child.stdout.setEncoding("utf8").on("data", chunk => { output += chunk; });
@@ -358,7 +359,7 @@ test("sessions retain arrival order with one available slot", async () => {
 });
 
 test("separate processes reserve distinct scopes within one shared budget and refuse duplicate scope or overflow", async () => {
-  const root = mkdtempSync(path.join(tmpdir(), "codex-provider-scopes-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "codex-provider-scopes-"));
   const home = path.join(root, "home");
   const moduleUrl = pathToFileURL(new URL("../src/codex-exec.mjs", import.meta.url).pathname).href;
   const source = `
@@ -379,7 +380,7 @@ test("separate processes reserve distinct scopes within one shared budget and re
   `;
   const launch = (scope, identity) => {
     const child = spawn(process.execPath, ["--input-type=module", "-e", source, scope, identity], {
-      cwd: process.cwd(), env: { ...process.env, HOME: home }, stdio: ["pipe", "pipe", "pipe"],
+      cwd: process.cwd(), env: { ...process.env, HOME: home, AGENT_HARNESS_SECTION_ROOT: home }, stdio: ["pipe", "pipe", "pipe"],
     });
     let stdout = "";
     let stderr = "";

@@ -14,14 +14,15 @@
  *                 directory inside a primary checkout is refused by every argument or unit builder.
  *
  * A dialect names itself (`name`, `label`); its root is `METROPLAT_<NAME>_WORKTREES`, default
- * `~/.local/state/561-group/<name>-worktrees`, and its branches `<name>/<task id>`.
+ * the harness section's `<name>-worktrees` state, and its branches `<name>/<task id>`.
  */
 import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { canonicalJson } from "@red-cup-engineering/json-services-section";
 import { workSourceTaskContract } from "@red-cup-engineering/organizing/work/schema";
 import { prepareSourceResultWorktree, prepareSourceClosureWorktree } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/source-closure";
-import { homedir } from "node:os";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
+import { sectionRootOf } from "../section-root.mjs";
 import path from "node:path";
 
 import { assertSourceClosureWorktreeOwners, sourceOnlyPackagePreparation, finishBoundWorktree, removeBoundWorktree, assertWorktreeOwner, commitWorktree, integrateWorktree, prepareWorktree, removeWorktree, worktreeChanges, worktreeDirty, worktreeHead } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/worktree";
@@ -63,11 +64,9 @@ export const RETIRED_ROOT_KEPT = 5;
 
 const environmentName = (dialect) => `METROPLAT_${dialect.name.toUpperCase().replace(/[^A-Z0-9]+/gu, "_")}_WORKTREES`;
 
-/** Where a dialect's task worktrees live. Outside the repository: inside it, each worktree's packages
- *  would join the pnpm workspace beside the originals and the tree would read as untracked files in
- *  the shared checkout. */
+/** Where a dialect's task worktrees live: the harness section's own state, which the repository ignores. */
 export const carrierWorktreeRoot = (dialect, environment = process.env) =>
-  environment[environmentName(dialect)] || path.join(homedir(), ".local", "state", "561-group", `${dialect.name}-worktrees`);
+  environment[environmentName(dialect)] || dataKindDirectory(sectionRootOf(environment), "state", `${dialect.name}-worktrees`);
 
 /** The worktree of one task: `<root>/<task id>`. */
 export function carrierTaskWorktree(dialect, taskId, environment = process.env) {

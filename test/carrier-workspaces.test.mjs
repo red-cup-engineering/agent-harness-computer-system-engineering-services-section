@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
@@ -14,7 +14,7 @@ import { antigravityConfinement, antigravityDialect } from "../services/antigrav
 import { claudeWorkspaces } from "../services/claude-code-harness-services-section/src/agency-work.mjs";
 import { antigravityWorkspaces } from "../services/antigravity-harness-services-section/src/agency-work.mjs";
 
-const root = mkdtempSync(path.join(tmpdir(), "carrier-workspaces-"));
+const root = mkdtempSync(path.join(scratchRoot(), "carrier-workspaces-"));
 const environment = {
   METROPLAT_CLAUDE_CODE_WORKTREES: path.join(root, "claude-trees"),
   METROPLAT_ANTIGRAVITY_WORKTREES: path.join(root, "antigravity-trees"),

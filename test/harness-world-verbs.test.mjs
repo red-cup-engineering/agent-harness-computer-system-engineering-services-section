@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { constitute } from "@red-cup-engineering/eavt-services-section/constitute-entity";
 import { appendEavtRow } from "@red-cup-engineering/eavt-services-section/append-eavt-row";
@@ -15,7 +15,7 @@ import * as verbs from "../src/harness-world-verbs.mjs";
 const ACTOR = ADMITTED_HARNESS_ACTORS[0];
 
 function withDir(fn) {
-  const dir = mkdtempSync(path.join(tmpdir(), "harness-world-verbs-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "harness-world-verbs-"));
   try { return fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 

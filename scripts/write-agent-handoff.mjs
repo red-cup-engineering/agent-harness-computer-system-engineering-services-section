@@ -3,10 +3,12 @@
 //   write-agent-handoff.mjs --input FILE|- [--out DIR] [--transcript JSONL] [--session ID] [--agent ID] [--prompt]
 // --input is the JSON described by formHandoffRecord (src/agent-handoff.mjs). --transcript fills `from.model` and
 // `from.contextTokens` from the transcript's last request (usage fields only). The record lands in --out
-// (default $AGENT_HANDOFF_DIR or ./data/state/agent-handoffs) as <id>.json; --prompt prints the successor's prompt.
+// (default: this section's agent-handoff state) as <id>.json; --prompt prints the successor's prompt.
 import { closeSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
+import { sectionRootOf } from "../src/section-root.mjs";
 import { contextOfClaudeTranscript, formHandoffRecord, renderHandoffPrompt } from "../src/agent-handoff.mjs";
 
 const args = process.argv.slice(2);
@@ -27,7 +29,7 @@ try {
     ...(one("--agent") ? { agentId: one("--agent") } : {}),
   };
   const record = formHandoffRecord(input);
-  const dir = one("--out") ?? process.env.AGENT_HANDOFF_DIR ?? path.join(process.cwd(), "data/state/agent-handoffs");
+  const dir = one("--out") ?? dataKindDirectory(sectionRootOf(process.env), "state", "agent-handoff");
   mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${record.id.slice("sha256:".length)}.json`);
   // The handoff's canonical content address is an immutable, shared Session

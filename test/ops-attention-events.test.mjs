@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from "node:path";
 import test from "node:test";
 import { ADMITTED_HARNESS_ACTORS, recordProviderCommission, recordSkillSelection } from "../src/harness-lifecycle.mjs";
@@ -9,7 +9,7 @@ import { DEFAULT_ATTENTION_EVENT_CONTRACT, projectOpsHarnessAttentionEvents } fr
 const [FIRST_ACTOR, SECOND_ACTOR] = ADMITTED_HARNESS_ACTORS;
 
 function journal(t) {
-  const root = mkdtempSync(join(tmpdir(), "harness-attention-"));
+  const root = mkdtempSync(join(scratchRoot(), "harness-attention-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   recordSkillSelection({ root, actor: FIRST_ACTOR, turnId: "turn-1", skill: "maintain-harness", recordedAt: "2026-08-31T12:00:00.000Z" });
   recordSkillSelection({ root, actor: SECOND_ACTOR, turnId: "turn-2", skill: "census-existing-code", recordedAt: "2026-08-31T12:01:00.000Z" });

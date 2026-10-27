@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { RECEIVING_ATTEMPTS, RECEIVING_RETRY_MS, inferenceReceivingCarrier, parseJudgement, readCommitEvidence } from "../src/carrier/inference-receiving-carrier.mjs";
@@ -14,7 +14,7 @@ const found = [{ label: "commit:0123abc", found: true, text: "diff" }];
 function carrierWith(replies, clock = { at: 1_000_000 }) {
   const calls = [];
   const carrier = inferenceReceivingCarrier({
-    workerId: "recv", dataRoot: mkdtempSync(path.join(tmpdir(), "inference-receiving-")), nodeName: "n", model: MODEL, family: "alibaba",
+    workerId: "recv", dataRoot: mkdtempSync(path.join(scratchRoot(), "inference-receiving-")), nodeName: "n", model: MODEL, family: "alibaba",
     descriptor: () => ({}), readEvidence: async () => found, now: () => clock.at,
     dispatch: async () => { calls.push(1); const reply = replies.shift(); if (reply instanceof Error) throw reply; return reply; },
   });

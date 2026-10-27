@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -22,7 +22,7 @@ function pack(directory, cache) {
 }
 
 test("native parent and Cairn packs exclude only actual capture state, preserving reusable carriers", () => {
-  const temporary = mkdtempSync(path.join(tmpdir(), "harness-capture-pack-"));
+  const temporary = mkdtempSync(path.join(scratchRoot(), "harness-capture-pack-"));
   try {
     const fixture = path.join(temporary, "source");
     // Never read or copy the actual captured conversation, even in a full checkout.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from "node:path";
 import test from "node:test";
 import { CONTINUE, respond } from "../src/agent-lifecycle-hook.mjs";
@@ -35,7 +35,7 @@ function assay(overrides = {}) {
     additionalContextLimit: 512,
     pointer: (text) => POINTER.test(text),
     readTrajectory: () => recorded,
-    stateRoot: mkdtempSync(join(tmpdir(), "harness-efficiency-test-")),
+    stateRoot: mkdtempSync(join(scratchRoot(), "harness-efficiency-test-")),
     ...overrides,
   });
 }

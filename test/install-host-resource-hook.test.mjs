@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,7 +13,7 @@ import { CONTAINMENT_SLICE, WORK_SLICE, containmentLimits, launcherScript, sessi
 import { EDITOR_SETTINGS, installContainment, installHostResourceHook } from "../scripts/install-host-resource-hook.mjs";
 
 const SCRIPT = fileURLToPath(new URL("../scripts/install-host-resource-hook.mjs", import.meta.url));
-const root = mkdtempSync(path.join(tmpdir(), "install-host-resource-hook-"));
+const root = mkdtempSync(path.join(scratchRoot(), "install-host-resource-hook-"));
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 let count = 0;
 const fresh = () => { count += 1; return { settings: path.join(root, `settings-${count}.json`) }; };

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from "node:path";
 import test from "node:test";
 import { deriveUtterances, readCodexPrompts, utterance } from "../src/utterances.mjs";
@@ -88,7 +88,7 @@ test("bounded collision evidence preserves count without exposing an unbounded e
 });
 
 test("a cache predating arrival identity retention is decoded again despite matching file metadata", async (t) => {
-  const root = mkdtempSync(join(tmpdir(), "utterance-cache-law-"));
+  const root = mkdtempSync(join(scratchRoot(), "utterance-cache-law-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const file = join(root, "history.jsonl");
   const cache = join(root, "prompts.json");

@@ -3,14 +3,15 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import { containedCommand } from "../src/host-resource-hook.mjs";
 import { recordScopeFailure, userManagerState } from "../src/scope-failure-record.mjs";
 import { getBlob, readTrace, traces } from "@red-cup-engineering/semiotic-eavt-services-section/telemetry-store";
 
-const root = realpathSync(mkdtempSync(path.join(tmpdir(), "scope-failure-")));
+const root = realpathSync(mkdtempSync(path.join(scratchRoot(), "scope-failure-")));
 after(() => rmSync(root, { recursive: true, force: true }));
 const RECORDER = { node: process.execPath, script: fileURLToPath(new URL("../src/scope-failure-record.mjs", import.meta.url)) };
 const REFUSAL = "Failed to start transient scope unit: Transport endpoint is not connected";
@@ -38,8 +39,8 @@ const kv = (value, ...names) => names.reduce((at, key) => at.kvlistValue.values.
 
 test("hk1-positive: a scope that fails with a dead user manager leaves systemd-run's words, its status and the manager's state, and the command still runs", () => {
   const runtime = mkdtempSync(path.join(root, "run-"));
-  const store = path.join(root, "store-positive");
-  const result = spawnSync("bash", ["-c", `${containedCommand(`printf '%s\\n' "it ran"; exit 3`, { recorder: RECORDER })}; echo "rc=$?"`], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, FAKE_SYSTEMD_RUN_FAIL: "1", AGENT_HARNESS_TELEMETRY_ROOT: store } });
+  const section = path.join(root, "section-positive"), store = dataKindDirectory(section, "state", "containment-telemetry");
+  const result = spawnSync("bash", ["-c", `${containedCommand(`printf '%s\\n' "it ran"; exit 3`, { recorder: RECORDER })}; echo "rc=$?"`], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, FAKE_SYSTEMD_RUN_FAIL: "1", AGENT_HARNESS_SECTION_ROOT: section } });
   assert.equal(result.stdout, "it ran\nrc=3\n", result.stderr);
   assert.match(result.stderr, new RegExp(REFUSAL, "u"), "the refusal is still shown");
   assert.deepEqual(readdirSync(runtime), [], "no marker or error file is left behind");
@@ -65,8 +66,8 @@ test("hk1-positive (fixture): the record holds the manager in D state under its 
   assert.match(state.pressure.memory, /^some avg10=61\.20/u);
   const errorFile = path.join(root, "err-fixture.txt");
   writeFileSync(errorFile, `${REFUSAL}\n`);
-  const store = path.join(root, "store-fixture");
-  const kept = await recordScopeFailure({ errorFile, status: "1", env: { ...f.env, AGENT_HARNESS_TELEMETRY_ROOT: store }, state });
+  const section = path.join(root, "section-fixture"), store = dataKindDirectory(section, "state", "containment-telemetry");
+  const kept = await recordScopeFailure({ errorFile, status: "1", env: f.env, root: section, state });
   assert.equal(kept.stored, "telemetry");
   const [{ traceId }] = [...traces(store)];
   const a = keys(readTrace(store, traceId).messages[0]);
@@ -77,8 +78,8 @@ test("hk1-positive (fixture): the record holds the manager in D state under its 
 
 test("hk1-alternate: a scope that starts leaves no record and no file behind", () => {
   const runtime = mkdtempSync(path.join(root, "run-"));
-  const store = path.join(root, "store-alternate");
-  const result = spawnSync("bash", ["-c", `${containedCommand(`printf '%s\\n' "inside"; echo oops >&2; exit 2`, { recorder: RECORDER })}; echo "rc=$?"`], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, AGENT_HARNESS_TELEMETRY_ROOT: store } });
+  const section = path.join(root, "section-alternate"), store = dataKindDirectory(section, "state", "containment-telemetry");
+  const result = spawnSync("bash", ["-c", `${containedCommand(`printf '%s\\n' "inside"; echo oops >&2; exit 2`, { recorder: RECORDER })}; echo "rc=$?"`], { encoding: "utf8", env: { ...process.env, PATH: `${fakeBin}:${process.env.PATH}`, XDG_RUNTIME_DIR: runtime, AGENT_HARNESS_SECTION_ROOT: section } });
   assert.equal(result.stdout, "inside\nrc=2\n", result.stderr);
   assert.equal(result.stderr, "oops\n", "the command's own standard error is untouched");
   assert.equal(existsSync(store), false);
@@ -92,14 +93,16 @@ test("hk1-refusal: an unreadable manager state is recorded as unreadable with it
   assert.deepEqual(state.bus, { unreadable: "XDG_RUNTIME_DIR unset" });
   const errorFile = path.join(root, "err-refusal.txt");
   writeFileSync(errorFile, `${REFUSAL}\n`);
-  const store = path.join(root, "store-refusal");
-  const kept = await recordScopeFailure({ errorFile, status: "1", env: { AGENT_HARNESS_TELEMETRY_ROOT: store }, state, load: async () => { throw new Error("telemetry module not installed"); } });
+  const section = path.join(root, "section-refusal"), store = dataKindDirectory(section, "state", "containment-telemetry");
+  const kept = await recordScopeFailure({ errorFile, status: "1", env: {}, root: section, state, load: async () => { throw new Error("telemetry module not installed"); } });
   assert.equal(kept.stored, "jsonl");
   const line = JSON.parse(readFileSync(kept.file, "utf8").trim());
-  assert.equal(line.stderr.trim(), REFUSAL);
-  assert.equal(line.exitStatus, 1);
-  assert.equal(line.userManager.manager.unreadable, "ENOENT");
-  assert.match(line.fallbackReason, /not installed/u);
-  const unreadableError = await recordScopeFailure({ errorFile: path.join(root, "absent.txt"), status: "x", env: { AGENT_HARNESS_TELEMETRY_ROOT: store }, state, load: async () => { throw new Error("no"); } });
-  assert.equal(JSON.parse(readFileSync(unreadableError.file, "utf8").trim().split("\n").at(-1)).exitStatus, null);
+  assert.equal(line.attribute, "AgentHarnessScopeFailure");
+  assert.equal(line.value.stderr.trim(), REFUSAL);
+  assert.equal(line.value.exitStatus, 1);
+  assert.equal(line.value.userManager.manager.unreadable, "ENOENT");
+  assert.match(line.value.fallbackReason, /not installed/u);
+  assert.ok(kept.file.startsWith(dataKindDirectory(section, "log", "scope-failure")), "the log is at the law's address under the section root");
+  const unreadableError = await recordScopeFailure({ errorFile: path.join(root, "absent.txt"), status: "x", env: {}, root: section, state, load: async () => { throw new Error("no"); } });
+  assert.equal(JSON.parse(readFileSync(unreadableError.file, "utf8").trim().split("\n").at(-1)).value.exitStatus, null);
 });

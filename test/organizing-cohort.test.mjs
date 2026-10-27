@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { schemaFrom } from "@red-cup-engineering/json-schema-services-section/contracts";
 import { semanticId } from "@red-cup-engineering/computer-content-address-engineering-services-section/semiotic-content-address";
@@ -30,7 +30,7 @@ test("native harness carriers share the original current work schema and incompa
 });
 
 test("the original Codex node binding receives the host's named enterprise section", t => {
-  const root = mkdtempSync(path.join(tmpdir(), "harness-cohort-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "harness-cohort-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const section = "codex-services-section";
   const pool = path.join(root, section, "lib", "agency", "enterprises");

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import { mkdtempSync, rmSync, statSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import {
   accountOfUsername, authorizationHeaders, csrfOf, headersFor, parseEnvironmentFile, pkcePair, signInForToken, signInOf, tokenCache,
@@ -139,7 +139,7 @@ test("a registered client is reused rather than registered again", async (t) => 
 });
 
 test("the token cache keeps a token mode 0600 until it expires, and its client after", (t) => {
-  const runtime = mkdtempSync(path.join(tmpdir(), "claude-sign-in-test-"));
+  const runtime = mkdtempSync(path.join(scratchRoot(), "claude-sign-in-test-"));
   t.after(() => rmSync(runtime, { recursive: true, force: true }));
   let now = 1_000_000;
   const cache = tokenCache({ runtimeDirectory: runtime, now: () => now });
@@ -159,7 +159,7 @@ test("the token cache keeps a token mode 0600 until it expires, and its client a
 
 test("headers sign in once, then answer from the cache, naming the session when it is told", async (t) => {
   const node = await standInNode();
-  const runtime = mkdtempSync(path.join(tmpdir(), "claude-sign-in-test-"));
+  const runtime = mkdtempSync(path.join(scratchRoot(), "claude-sign-in-test-"));
   t.after(() => { node.close(); rmSync(runtime, { recursive: true, force: true }); });
   const cache = tokenCache({ runtimeDirectory: runtime });
   let asked = 0;
@@ -174,7 +174,7 @@ test("headers sign in once, then answer from the cache, naming the session when 
 
 test("a sign-in after the token expired does not read the agency records for the username again", async (t) => {
   const node = await standInNode();
-  const runtime = mkdtempSync(path.join(tmpdir(), "claude-sign-in-test-"));
+  const runtime = mkdtempSync(path.join(scratchRoot(), "claude-sign-in-test-"));
   t.after(() => { node.close(); rmSync(runtime, { recursive: true, force: true }); });
   let now = 1_000_000;
   const cache = tokenCache({ runtimeDirectory: runtime, now: () => now });

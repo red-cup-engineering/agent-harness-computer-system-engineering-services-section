@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "../../../test/support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -10,10 +10,10 @@ import { codexTaskArtifactDirectory, runCodexSession, recoverCodexSession } from
 import { recoverCodexTasks, runCodexTask, writeCodexTask } from "../src/operations.mjs";
 
 // Slots default to the machine's state directory; tests keep theirs in a temporary one.
-process.env.METROPLAT_CODEX_WORKTREES = mkdtempSync(path.join(tmpdir(), "codex-test-slots-"));
+process.env.METROPLAT_CODEX_WORKTREES = mkdtempSync(path.join(scratchRoot(), "codex-test-slots-"));
 
 const fakeCodex = fileURLToPath(new URL("./fixtures/fake-codex", import.meta.url));
-const temporaryRoot = () => mkdtempSync(path.join(tmpdir(), "codex-task-test-"));
+const temporaryRoot = () => mkdtempSync(path.join(scratchRoot(), "codex-task-test-"));
 const task = (id, state) => ({
   kind: "codex-task",
   id,
