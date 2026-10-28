@@ -16,9 +16,10 @@
  * records give the same text (carrier states aside, which are read live from GitHub, cached, and absent
  * offline). Output is held to a strict budget so it can ride in every session.
  */
-import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { execFile } from "node:child_process";
-import { homedir } from "node:os";
+import { readServiceState, writeServiceState } from "@red-cup-engineering/computer-systems-logging-engine/service-state";
+import { sectionRootOf } from "./section-root.mjs";
 import path from "node:path";
 
 /** Where the 561 Group services section sits in a working tree of the Group. */
@@ -83,13 +84,12 @@ function ghIssue(repo, number, { timeout = 5000, run = execFile } = {}) {
 }
 
 /**
- * Live state of each carrier `{ repo, number }`, through a short file cache. Offline (or with `offline`)
+ * Live state of each carrier `{ repo, number }`, through a short cache kept as the section's `house-context` service state (no `root`, no cache). Offline (or with `offline`)
  * it answers the last cached reading, marked stale, or nothing: a carrier that cannot be read is still
  * listed from its record. Never throws.
  */
-export async function readCarriers(carriers, { cacheFile, now = Date.now(), offline = false, fetchOne = ghIssue, deadline = 6000, ttl = CACHE_SECONDS } = {}) {
-  let cache = {};
-  if (cacheFile !== undefined) cache = tryJson(cacheFile) ?? {};
+export async function readCarriers(carriers, { root, now = Date.now(), offline = false, fetchOne = ghIssue, deadline = 6000, ttl = CACHE_SECONDS } = {}) {
+  const cache = (root !== undefined && readServiceState({ root, service: "house-context" })) || {};
   const fresh = new Map(), stale = new Map();
   const wanted = [];
   for (const { repo, number } of carriers) {
@@ -101,15 +101,11 @@ export async function readCarriers(carriers, { cacheFile, now = Date.now(), offl
   if (!offline && wanted.length > 0) {
     const reads = Promise.all(wanted.map(({ repo, number, key }) => Promise.resolve().then(() => fetchOne(repo, number)).then((data) => { if (data) got.set(key, data); }, () => {})));
     await Promise.race([reads, new Promise((resolve) => { setTimeout(resolve, deadline).unref?.(); })]);
-    if (cacheFile !== undefined && got.size > 0) {
+    if (root !== undefined && got.size > 0) {
+      const at = new Date(now).toISOString();
       const next = { ...cache };
-      for (const [key, data] of got) next[key] = { at: new Date(now).toISOString(), data };
-      try {
-        mkdirSync(path.dirname(cacheFile), { recursive: true });
-        const staged = `${cacheFile}.${process.pid}.tmp`;
-        writeFileSync(staged, `${JSON.stringify(next)}\n`);
-        renameSync(staged, cacheFile);
-      } catch { /* an unwritable cache only costs the next read */ }
+      for (const [key, data] of got) next[key] = { at, data };
+      try { writeServiceState({ root, service: "house-context", at, value: next }); } catch { /* an unwritable cache only costs the next read */ }
     }
   }
   const states = new Map();
@@ -232,7 +228,7 @@ function renderAt({ house, carrierStates, event, scriptPath, trees, scale }) {
   if (projection.correction && !compact) {
     const { rule: ruleId, skill, runbook } = projection.correction;
     const rule = rules.get(ruleId);
-    out(`CAPITALS: the Leader writing in capitals means a carrier failed${rule ? ` [${ruleId}]` : ""}: run skill ${skill}${runbook ? ` and runbook ${runbook}` : ""} before resuming, repair the carrier (this projection record), never AGENTS.md or README.md.`);
+    out(`CAPITALS: ${rule ? `[${ruleId}] ${flat(rule.statement)}` : `[${ruleId}] rule unavailable; recover its source before determining the response.`} Reference: skill ${skill}${runbook ? ` and runbook ${runbook}` : ""}.`);
   }
   if (compact) out("You are a sub-agent: this was injected for you. Do not ask the Leader anything; return what you could not decide to your caller.");
   else if (scriptPath) out(`Sub-agents get a shorter projection (SubagentStart). If this context is ever missing, run: node ${scriptPath}`);
@@ -274,10 +270,9 @@ export function renderCapitalsInstruction({ house, excerpt }) {
   const rule = correction ? house.rules.get(correction.rule) : undefined;
   const lines = [
     `The Leader wrote in capitals${excerpt ? ` ("${excerpt}")` : ""}.`,
-    rule ? `${rule.id}: ${clip(rule.statement, 330)}` : "Rule capitalized-leader-statements-mark-a-failed-carrier: capitals are a correction the Leader has already given and a carrier failed to bring into this session.",
-    "Before resuming the interrupted work: (1) take each claim in the Leader's own words, with the date; (2) find where the house holds it (rules, requirements, leader-source and leader-decision records, open campaign issues; the projected context at session start lists them) and what you did instead; (3) repair the carrier that failed to bring it here, or admit it at the lowest layer that holds it (rule claim, skill, mechanism, note), amending the existing record's provenance rather than adding a duplicate; (4) tell the Leader in one line per claim where it now lives; (5) then resume. Do not ask the Leader to restate it, apologise, or edit AGENTS.md or README.md.",
+    rule ? `${rule.id}: ${flat(rule.statement)}` : "The correction rule is unavailable; recover its source before determining the response.",
   ];
-  if (correction) lines.push(`Method: skill ${correction.skill}${correction.runbook ? `; runbook ${correction.runbook}` : ""}.`);
+  if (correction) lines.push(`Reference: skill ${correction.skill}${correction.runbook ? `; runbook ${correction.runbook}` : ""}.`);
   const text = lines.join("\n");
   return text.length <= BUDGETS.UserPromptSubmit ? text : `${text.slice(0, BUDGETS.UserPromptSubmit - 1)}…`;
 }
@@ -285,13 +280,12 @@ export function renderCapitalsInstruction({ house, excerpt }) {
 /** The hook reply for one event. */
 export const hookOutput = (event, text) => `${JSON.stringify({ hookSpecificOutput: { hookEventName: event, additionalContext: text } })}\n`;
 
-export const defaultCacheFile = (environment = process.env) => path.join(environment.XDG_CACHE_HOME || path.join(environment.HOME ?? homedir(), ".cache"), "agent-harness", "house-context", "carriers.json");
 
 /**
  * The context for `event` at `cwd`, or undefined when `cwd` is outside the Group's working trees
  * (the hook is installed for a user, and projects nothing into their other work).
  */
-export async function projectHouseContext({ event, cwd, prompt, trees, section, offline = false, cacheFile = defaultCacheFile(), fetchOne, scriptPath, now }) {
+export async function projectHouseContext({ event, cwd, prompt, trees, section, offline = false, root = sectionRootOf(), fetchOne, scriptPath, now }) {
   const found = sectionFor(cwd, trees, { section });
   if (found === undefined) return undefined;
   const house = readHouse(found);
@@ -300,6 +294,6 @@ export async function projectHouseContext({ event, cwd, prompt, trees, section, 
     return verdict.matched ? renderCapitalsInstruction({ house, excerpt: verdict.excerpt }) : undefined;
   }
   const carriers = event === "SubagentStart" ? [] : house.projection?.carriers?.concat(house.projection?.briefs ?? []) ?? [];
-  const carrierStates = carriers.length > 0 ? await readCarriers(carriers, { cacheFile, offline, fetchOne, now }) : new Map();
+  const carrierStates = carriers.length > 0 ? await readCarriers(carriers, { root, offline, fetchOne, now }) : new Map();
   return renderHouseContext({ house, carrierStates, event, scriptPath, trees }).text;
 }

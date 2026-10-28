@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "../../../test/support/scratch.mjs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
@@ -11,10 +11,10 @@ import { codexAgencyWorkProvider, codexWorkspaces } from "../src/agency-work.mjs
 import { runCodexTask } from "../src/operations.mjs";
 
 // Task worktrees default to the machine's state directory; tests keep theirs in a temporary one.
-const worktrees = mkdtempSync(path.join(tmpdir(), "codex-test-worktrees-"));
+const worktrees = mkdtempSync(path.join(scratchRoot(), "codex-test-worktrees-"));
 process.env.METROPLAT_CODEX_WORKTREES = worktrees;
 // The provider's shared capacity ledger lives under HOME: tests do not queue behind the live node's sessions.
-process.env.HOME = mkdtempSync(path.join(tmpdir(), "codex-test-home-"));
+process.env.HOME = mkdtempSync(path.join(scratchRoot(), "codex-test-home-"));
 
 const fakeCodex = fileURLToPath(new URL("./fixtures/fake-codex", import.meta.url));
 
@@ -25,7 +25,7 @@ function git(root, ...arguments_) {
 }
 
 function fixture() {
-  const parent = mkdtempSync(path.join(tmpdir(), "codex-worktrees-"));
+  const parent = mkdtempSync(path.join(scratchRoot(), "codex-worktrees-"));
   const origin = path.join(parent, "origin.git");
   const seed = path.join(parent, "seed");
   const main = path.join(parent, "main");

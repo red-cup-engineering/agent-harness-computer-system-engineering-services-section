@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { runHarnessSession } from "../src/carrier/session.mjs";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import {
   assertNotSharedCheckout, carrierTaskWorktree, carrierWorkspaces, carrierWorktreeRoot, prepareCarrierWorktree, pruneRetiredWorktreeRoot, releaseCarrierWorktree,
 } from "../src/carrier/workspace.mjs";
@@ -14,7 +15,7 @@ import { antigravityConfinement, antigravityDialect } from "../services/antigrav
 import { claudeWorkspaces } from "../services/claude-code-harness-services-section/src/agency-work.mjs";
 import { antigravityWorkspaces } from "../services/antigravity-harness-services-section/src/agency-work.mjs";
 
-const root = mkdtempSync(path.join(tmpdir(), "carrier-workspaces-"));
+const root = mkdtempSync(path.join(scratchRoot(), "carrier-workspaces-"));
 const environment = {
   METROPLAT_CLAUDE_CODE_WORKTREES: path.join(root, "claude-trees"),
   METROPLAT_ANTIGRAVITY_WORKTREES: path.join(root, "antigravity-trees"),
@@ -69,6 +70,9 @@ function carrierHome() {
 const duty = (office = "junior-engineer", requiresCapabilities = []) => ({ office, scope: `scope-${office}`, requiresCapabilities });
 
 test("the carrier's root and task worktree are per dialect and per task", () => {
+  const owner = path.join(root, "owning-section");
+  assert.equal(carrierWorktreeRoot(claudeCodeDialect, { AGENT_HARNESS_SECTION_ROOT: owner }), dataKindDirectory(owner, "state", "claude-code-worktree"));
+  assert.equal(carrierWorktreeRoot(antigravityDialect, { AGENT_HARNESS_SECTION_ROOT: owner }), dataKindDirectory(owner, "state", "antigravity-worktree"));
   assert.equal(path.dirname(carrierTaskWorktree(claudeCodeDialect, "t1", environment)), environment.METROPLAT_CLAUDE_CODE_WORKTREES);
   assert.equal(carrierWorktreeRoot(antigravityDialect, environment), environment.METROPLAT_ANTIGRAVITY_WORKTREES);
   assert.notEqual(carrierTaskWorktree(claudeCodeDialect, "t1", environment), carrierTaskWorktree(claudeCodeDialect, "t2", environment));
@@ -128,16 +132,16 @@ test("the Antigravity argument builder and unit builder take a task worktree, ne
   assert.equal(calls.length, before);
 });
 
-test("a writing duty opens a per-task tree with packages, a reading duty a read-only one without", async () => {
+test("writing and reading duties open private source-only trees without implicit package installation", async () => {
   const setup = fixture();
   const runner = recordingRunner();
   for (const [dialect, workspaces, writing] of [
-    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-open"])],
-    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-commit"])],
+    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-open"])],
+    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-commit"])],
   ]) {
     const writer = await workspaces.open({ item: writing, id: `${dialect.name}-write`, receiving: false });
     assert.equal(writer, carrierTaskWorktree(dialect, `${dialect.name}-write`, environment));
-    assert.ok(runner.installs.includes(writer));
+    assert.ok(!runner.installs.includes(writer));
     assert.doesNotThrow(() => assertNotSharedCheckout(dialect, writer));
     writeFileSync(path.join(writer, "made.txt"), "by the duty\n");
 

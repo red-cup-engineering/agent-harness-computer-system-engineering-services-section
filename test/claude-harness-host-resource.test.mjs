@@ -7,7 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 
 import { hookEntries, hostResourceControl, shellQuote } from "../src/host-resource-hook.mjs";
@@ -22,7 +22,7 @@ const skip = projection === undefined ? "the workspace packages of the projectio
 
 const roots = [];
 const nodeDir = () => {
-  const dir = mkdtempSync(path.join(tmpdir(), "claude-harness-host-resource-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "claude-harness-host-resource-"));
   roots.push(dir);
   return dir;
 };

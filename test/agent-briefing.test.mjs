@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from "node:path";
 import { test } from "node:test";
 import { projectAgentBriefing } from "../src/agent-briefing.mjs";
@@ -10,7 +10,7 @@ import { harnessAgencyAt } from "../src/agency-source.mjs";
 import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
 
 function agencyFixture() {
-  const root = mkdtempSync(join(tmpdir(), "agent-briefing-"));
+  const root = mkdtempSync(join(scratchRoot(), "agent-briefing-"));
   const section = join(root, "shop-services-section");
   const pool = (name) => { const dir = join(section, "lib/agency", name); mkdirSync(dir, { recursive: true }); return dir; };
   mkdirSync(section, { recursive: true });
@@ -109,6 +109,9 @@ test("the generated harness briefing qualifies Actor testimony before Work and r
   ]) assert.ok(markdown.includes(expected), `harness did not receive the actual processing law: ${expected}`);
   assert.doesNotMatch(markdown, /When Pat names something to do, open it on the board/u,
     "a spoken subject must not be upgraded to demand without classification and authorization");
+  assert.match(markdown, /current user request and accumulated corrections as the active objective/u);
+  assert.match(markdown, /law-derived data\/state/u);
+  assert.doesNotMatch(markdown, /~\/\.local\/state/u);
 });
 
 test("a scheduled Actor hand can begin with one native World journal read without fake receipt or L-Space authority", (t) => {

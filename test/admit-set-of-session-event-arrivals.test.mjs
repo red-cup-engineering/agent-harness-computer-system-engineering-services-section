@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, appendFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -42,7 +42,7 @@ test("second run against the unchanged fixture file is idempotent and emits noth
 });
 
 test("a row appended after the cursor is admitted while prior rows are not re-admitted", async () => {
-  const workDir = mkdtempSync(join(tmpdir(), "session-event-arrivals-"));
+  const workDir = mkdtempSync(join(scratchRoot(), "session-event-arrivals-"));
   try {
     const filePath = dataArtifactAddress({ root: workDir, tier: "log", encoding: "jsonl", at: "2026-09-02", action: "admit", subject: "witness-journal-seavt" }).path;
     mkdirSync(dirname(filePath), { recursive: true });

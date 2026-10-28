@@ -9,7 +9,7 @@
  *   unit       the CLI runs in the transient user unit `<dialect.unit>-<id>`, outside the node's
  *              cgroup and inside the shared agent resource slice, falling back to an in-process child where systemd is absent;
  *   capacity   the host-wide budget of concurrent sessions is the provider's
- *              (`~/.local/state/561-group/<dialect.pool>-provider-capacity`), shared by every
+ *              (`<section>/data/state/<dialect.pool>-provider-capacity-state`), shared by every
  *              process and model carrier of that provider, reserved under a kernel lock;
  *   carry-on   a session the provider stopped for want of room, or whose required MCP handshake
  *              failed before a thread started, is resumed on its own witnessed thread;
@@ -28,10 +28,11 @@ import { CONTAINMENT_SLICE } from "../host-resource-hook.mjs";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
-import { availableParallelism, cpus, freemem, homedir, tmpdir } from "node:os";
+import { availableParallelism, cpus, freemem } from "node:os";
 import path from "node:path";
 
 import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
+import { sectionRootOf } from "../section-root.mjs";
 import { nodeFirstEnvironment } from "@red-cup-engineering/node-process-services-section/environment";
 
 export const POLL_INTERVAL_MS = 2_000;
@@ -96,8 +97,8 @@ async function ownerIsDefinitelyGone(owner) {
   return current === undefined || current.boot !== owner.boot || current.started !== owner.started;
 }
 // Capacity belongs to this host's provider, not to a checkout/worktree path that can differ
-// between duties. The stable per-user state root is shared by every local executor process.
-const sharedCapacityRoot = (dialect, environment = process.env) => path.join(environment.XDG_STATE_HOME || path.join(environment.HOME ?? homedir(), ".local", "state"), "561-group", `${dialect.pool}-provider-capacity`);
+// between duties. The harness section's state is shared by every local executor process.
+const sharedCapacityRoot = (dialect, environment = process.env) => dataKindDirectory(sectionRootOf(environment), "state", `${dialect.pool}-provider-capacity`);
 const capacityLockPath = root => path.join(root, "capacity.lock");
 const reservationPath = (root, slot) => path.join(root, `slot-${slot}.json`);
 const readText = file => { try { return readFileSync(file, "utf8"); } catch (error) { if (error.code === "ENOENT") return undefined; throw error; } };
@@ -728,7 +729,9 @@ export async function resumeHarnessSession(dialect, { thread, prompt, directory,
 export async function runHarnessSession(dialect, { prompt, cwd, artifactDir, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, ...options }) {
   if (typeof prompt !== "string" || prompt.trim() === "") throw new TypeError(`a ${dialect.label} session needs a prompt`);
   dialect.checkOptions?.(options);
-  const root = artifactDir ?? mkdtempSync(path.join(tmpdir(), `${dialect.name}-session-`));
+  const sessions = dataKindDirectory(sectionRootOf(options.environment), "state", `${dialect.name}-session`);
+  if (artifactDir === undefined) mkdirSync(sessions, { recursive: true, mode: 0o700 });
+  const root = artifactDir ?? mkdtempSync(path.join(sessions, "session-"));
   mkdirSync(root, { recursive: true, mode: 0o700 });
   const turn = nextHarnessTurnDirectory(root);
   const directory = turn.directory;

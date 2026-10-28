@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { harnessCapacitySnapshot, readHarnessSessionArtifacts, releaseProviderTurn, reserveProviderTurn,
@@ -24,7 +24,7 @@ const dialect = Object.freeze({
 });
 
 test("a resumed turn cannot consume or overwrite a task's stale completion artifacts", async (t) => {
-  const root = mkdtempSync(path.join(tmpdir(), "harness-turn-custody-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "harness-turn-custody-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   writeFileSync(path.join(root, "exit-code"), "0\n");
   writeFileSync(path.join(root, "events.jsonl"), '{"thread_id":"prior-thread"}\n');
@@ -65,7 +65,7 @@ test("a resumed turn cannot consume or overwrite a task's stale completion artif
 });
 
 test("a pre-thread retry copies its witnessed prompt into a new immutable turn", async (t) => {
-  const root = mkdtempSync(path.join(tmpdir(), "harness-startup-retry-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "harness-startup-retry-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const previous = path.join(root, "turns", "turn-000001");
   mkdirSync(previous, { recursive: true });
@@ -100,7 +100,7 @@ test("a pre-thread retry copies its witnessed prompt into a new immutable turn",
 });
 
 test("waiting from a task root watches the latest turn instead of a stale root exit marker", async (t) => {
-  const root = mkdtempSync(path.join(tmpdir(), "harness-wait-turn-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "harness-wait-turn-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   writeFileSync(path.join(root, "exit-code"), "0\n");
   const current = path.join(root, "turns", "turn-000001");
@@ -126,7 +126,7 @@ test("waiting from a task root watches the latest turn instead of a stale root e
 });
 
 test("a stale root exit marker cannot release provider capacity while the current turn is active", async (t) => {
-  const temporary = mkdtempSync(path.join(tmpdir(), "harness-live-turn-lease-"));
+  const temporary = mkdtempSync(path.join(scratchRoot(), "harness-live-turn-lease-"));
   t.after(() => rmSync(temporary, { recursive: true, force: true }));
   const home = path.join(temporary, "home");
   const artifacts = path.join(temporary, "task");

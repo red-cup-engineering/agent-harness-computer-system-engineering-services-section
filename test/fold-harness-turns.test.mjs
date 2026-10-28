@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { constitute } from "@red-cup-engineering/eavt-services-section/constitute-entity";
 import { appendEavtRow } from "@red-cup-engineering/eavt-services-section/append-eavt-row";
@@ -19,7 +19,7 @@ import { HARNESS_TURN_TYPE, readTurnEvents, fold } from "../scripts/fold-harness
 const ADMITTED_ACTOR = ADMITTED_HARNESS_ACTORS[0];
 
 function withDir(fn) {
-  const dir = mkdtempSync(path.join(tmpdir(), "lagoon-fold-harness-turns-test-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-fold-harness-turns-test-"));
   try {
     return fn(dir);
   } finally {

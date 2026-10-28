@@ -21,7 +21,8 @@ import { createHash } from "node:crypto";
 import { canonicalJson } from "@red-cup-engineering/json-services-section";
 import { workSourceTaskContract } from "@red-cup-engineering/organizing/work/schema";
 import { prepareSourceResultWorktree, prepareSourceClosureWorktree } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/source-closure";
-import { homedir } from "node:os";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
+import { sectionRootOf } from "../section-root.mjs";
 import path from "node:path";
 
 import { assertSourceClosureWorktreeOwners, sourceOnlyPackagePreparation, finishBoundWorktree, removeBoundWorktree, assertWorktreeOwner, commitWorktree, integrateWorktree, prepareWorktree, removeWorktree, worktreeChanges, worktreeDirty, worktreeHead } from "@red-cup-engineering/computer-systems-fabrication-engineering-services-section/workspace/worktree";
@@ -67,7 +68,7 @@ const environmentName = (dialect) => `METROPLAT_${dialect.name.toUpperCase().rep
  *  would join the pnpm workspace beside the originals and the tree would read as untracked files in
  *  the shared checkout. */
 export const carrierWorktreeRoot = (dialect, environment = process.env) =>
-  environment[environmentName(dialect)] || path.join(homedir(), ".local", "state", "561-group", `${dialect.name}-worktrees`);
+  environment[environmentName(dialect)] || dataKindDirectory(sectionRootOf(environment), "state", `${dialect.name}-worktree`);
 
 /** The worktree of one task: `<root>/<task id>`. */
 export function carrierTaskWorktree(dialect, taskId, environment = process.env) {

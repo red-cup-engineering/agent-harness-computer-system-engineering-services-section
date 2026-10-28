@@ -62,6 +62,8 @@ test("a section reads longest-idle first and says how many it leaves out", () =>
 test("an empty board says nothing is owed", () => {
   const text = journalText(journalOf({ threads: [] }, { workArena, at: AT }), { host: "node.test" });
   assert.match(text, /Work board on node\.test: 0 open of 0 threads/u);
+  assert.match(text, /current user request and its accumulated corrections govern the active objective/u);
+  assert.doesNotMatch(text, /before new work/u);
   assert.match(text, /Nothing is owed or standing still\./u);
 });
 

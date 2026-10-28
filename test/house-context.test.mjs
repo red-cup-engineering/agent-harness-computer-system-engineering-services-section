@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,7 @@ import { BUDGETS, PROJECTION_RECORD, SECTION_PATH, clip, detectCapitalizedStatem
 import { EVENTS, houseContextHookEntries, main, mergeHouseContextHooks, parseArguments } from "../src/house-context-hook.mjs";
 import { installHouseContextHook } from "../scripts/install-house-context-hook.mjs";
 
-const root = mkdtempSync(path.join(tmpdir(), "house-context-"));
+const root = mkdtempSync(path.join(scratchRoot(), "house-context-"));
 process.on("exit", () => rmSync(root, { recursive: true, force: true }));
 
 const ASK = "A session MUST answer a question about how the Group's work is done from the house by gathering context, and MUST NOT put such a question to the Leader. It brings the Leader only a preference.";
@@ -128,23 +128,23 @@ test("a record the projection names but the house lacks is a stated problem, and
 });
 
 test("carrier states are cached for ten minutes, stale offline, and a failing read never throws", async () => {
-  const cacheFile = path.join(root, "cache", "carriers.json");
+  const cacheRoot = path.join(root, "cache-carriers");
   const carriers = [{ repo: "org/campaign", number: 390 }, { repo: "org/market", number: 4 }];
   let calls = 0;
   const fetchOne = async (repo, number) => { calls += 1; return { state: "open", title: `${repo}#${number}`, updated: "2026-10-25T00:00:00Z" }; };
   const t0 = Date.parse("2026-10-25T12:00:00Z");
-  const first = await readCarriers(carriers, { cacheFile, now: t0, fetchOne });
+  const first = await readCarriers(carriers, { root: cacheRoot, now: t0, fetchOne });
   assert.equal(calls, 2);
   assert.equal(first.get("org/campaign#390").read, "live");
-  const second = await readCarriers(carriers, { cacheFile, now: t0 + 60_000, fetchOne });
+  const second = await readCarriers(carriers, { root: cacheRoot, now: t0 + 60_000, fetchOne });
   assert.equal(calls, 2, "the second reading is the cache's");
   assert.equal(second.get("org/market#4").read, "cached");
   const failing = async () => { throw new Error("offline"); };
-  const stale = await readCarriers(carriers, { cacheFile, now: t0 + 3_600_000, fetchOne: failing });
+  const stale = await readCarriers(carriers, { root: cacheRoot, now: t0 + 3_600_000, fetchOne: failing });
   assert.equal(stale.get("org/campaign#390").read, "stale", "an old reading is better than none, and says it is old");
-  const offline = await readCarriers(carriers, { cacheFile: path.join(root, "cache", "none.json"), now: t0, offline: true, fetchOne });
+  const offline = await readCarriers(carriers, { root: path.join(root, "cache-none"), now: t0, offline: true, fetchOne });
   assert.equal(offline.size, 0);
-  const slow = await readCarriers(carriers, { cacheFile: path.join(root, "cache", "slow.json"), now: t0, deadline: 20, fetchOne: () => new Promise(() => {}) });
+  const slow = await readCarriers(carriers, { root: path.join(root, "cache-slow"), now: t0, deadline: 20, fetchOne: () => new Promise(() => {}) });
   assert.equal(slow.size, 0, "a read that never answers is given up at the deadline");
 });
 
@@ -153,14 +153,24 @@ test("capitalized Leader statements are detected; prose, acronyms, code and link
   for (const no of ["Should we enable GCP billing to restore Cloud Run?", "please check the HTTP API CLI MCP flow", "STOP", "Use `STOP ASKING ME FOR THIS` as the string", "```\nERROR FATAL OUT OF MEMORY NOW\n```", "see https://example.com/STOP/ASKING/ME/FOR/THIS", ""]) assert.equal(detectCapitalizedStatement(no).matched, false, no);
 });
 
-test("the capitals instruction names the rule, skill and runbook the record names, and tells the repair order", () => {
+test("both context events follow the current correction rule without a hardcoded repair order", () => {
   const { section } = fakeTree("tree-h");
   const text = renderCapitalsInstruction({ house: readHouse(section), excerpt: "STOP ASKING ME" });
   assert.match(text, /wrote in capitals \("STOP ASKING ME"\)/u);
   assert.match(text, /caps: A Leader statement written in capitals MUST be received as a correction/u);
-  assert.match(text, /repair the carrier[\s\S]*amending the existing record's provenance rather than adding a duplicate[\s\S]*edit AGENTS\.md or README\.md/u);
   assert.match(text, /skill persisting-a-leader-correction; runbook a-leader-correction-arrives-in-capitals/u);
   assert.ok(text.length <= BUDGETS.UserPromptSubmit);
+  const statement = "Capitals MUST prompt recovery of the original claim. Ordinary assignments continue through their owning work; no separate correction workflow follows from emphasis alone.";
+  writeJson(path.join(section, "lib/agency/rules/caps.json"), { id: "caps", statement });
+  const house = readHouse(section);
+  for (const context of [
+    renderCapitalsInstruction({ house, excerpt: "PLEASE FINISH THIS ASSIGNMENT" }),
+    renderHouseContext({ house, event: "SessionStart" }).text,
+  ]) {
+    assert.ok(context.includes(statement), "the revised source rule reaches both consuming events intact");
+    assert.ok(!context.includes("Before resuming the interrupted work"), "the harness does not add an unconditional repair workflow");
+    assert.ok(!context.includes("run skill persisting-a-leader-correction"), "a method reference is not a mandatory dispatch");
+  }
 });
 
 const run = async (argv, payload) => {
@@ -197,10 +207,10 @@ test("projectHouseContext reads the section it is given and skips carriers for a
   const { section } = fakeTree("tree-j");
   let asked = 0;
   const fetchOne = async () => { asked += 1; return { state: "open", title: "t", updated: "2026-10-25T00:00:00Z" }; };
-  const cacheFile = path.join(root, "cache", "j.json");
-  await projectHouseContext({ event: "SubagentStart", cwd: root, section, cacheFile, fetchOne });
+  const cacheRoot = path.join(root, "cache-j");
+  await projectHouseContext({ event: "SubagentStart", cwd: root, section, root: cacheRoot, fetchOne });
   assert.equal(asked, 0);
-  await projectHouseContext({ event: "SessionStart", cwd: root, section, cacheFile, fetchOne });
+  await projectHouseContext({ event: "SessionStart", cwd: root, section, root: cacheRoot, fetchOne });
   assert.equal(asked, 3);
 });
 

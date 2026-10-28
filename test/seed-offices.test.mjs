@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import { constitute } from "@red-cup-engineering/eavt-services-section/constitute-entity";
 import { appendEavtRow } from "@red-cup-engineering/eavt-services-section/append-eavt-row";
@@ -22,7 +22,7 @@ function entityAddress(genesisRow) {
 }
 
 function withDir(fn) {
-  const dir = mkdtempSync(path.join(tmpdir(), "lagoon-seed-offices-test-"));
+  const dir = mkdtempSync(path.join(scratchRoot(), "lagoon-seed-offices-test-"));
   try {
     return fn(dir);
   } finally {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
@@ -32,7 +32,7 @@ const CODEX = "actor:WWOM5azg-fTrn1Id0YVbz5AhppbnFny_W5Xl-rKgSs4";
 const CLAUDE = "actor:bZH6KBOlPVWbYpqp04izN_Xtwykn0XgsMBStm_FkPPw";
 
 function temporaryRoot(t, label) {
-  const root = mkdtempSync(join(tmpdir(), `${label}-`));
+  const root = mkdtempSync(join(scratchRoot(), `${label}-`));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   return root;
 }

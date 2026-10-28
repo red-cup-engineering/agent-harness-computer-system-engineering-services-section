@@ -5,6 +5,18 @@ import { lstatSync, readFileSync } from "node:fs";
 import { projectCodexToolAccounting } from "./codex-tool-accounting.mjs";
 
 export const DEFAULT_ACCOUNTING_MAX_BYTES = 4 * 1024 * 1024;
+
+/** Native identity and mutation coordinates for reusing a completed transcript read. */
+export function nativeTranscriptFingerprint(stat) {
+  const fields = ["dev", "ino", "size", "mtimeMs", "ctimeMs"];
+  if (!stat || !fields.every((field) => Number.isFinite(stat[field]))) return undefined;
+  return Object.fromEntries(fields.map((field) => [field, stat[field]]));
+}
+
+export function sameNativeTranscript(left, right) {
+  return left !== undefined && right !== undefined
+    && ["dev", "ino", "size", "mtimeMs", "ctimeMs"].every((field) => Number.isFinite(left[field]) && left[field] === right[field]);
+}
 export function projectClaudeToolAccounting(rows) {
   if (!Array.isArray(rows)) throw new TypeError("Claude tool accounting needs transcript rows");
   const calls = new Map(), errorsByName = new Set(), orphans = new Set();

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { scratchRoot } from "./support/scratch.mjs";
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { containmentLimits, effectiveUserServiceMemory } from '../src/host-resource-hook.mjs';
 
 const GiB = 1024 ** 3;
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), 'harness-parent-budget-'));
+  const root = mkdtempSync(join(scratchRoot(), 'harness-parent-budget-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const write = (scope, name, value) => {
     mkdirSync(join(root, scope), { recursive: true });

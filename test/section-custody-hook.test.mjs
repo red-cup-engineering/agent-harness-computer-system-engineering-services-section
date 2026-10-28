@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { scratchRoot } from "./support/scratch.mjs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -31,7 +31,7 @@ test("executable source in any Operations-named directory is refused, legacy inc
 });
 
 test("the owning repository's org decides, through submodule and worktree .git files", () => {
-  const root = mkdtempSync(path.join(tmpdir(), "custody-"));
+  const root = mkdtempSync(path.join(scratchRoot(), "custody-"));
   const science = repo(root, "science/public-misnamed-dir", "lenticule-science");
   const engine = repo(root, "house/public-media-services-section", "red-cup-engineering");
   assert.equal(ownerOf(science), "lenticule-science");
