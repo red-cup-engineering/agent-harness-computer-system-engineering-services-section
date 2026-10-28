@@ -153,14 +153,24 @@ test("capitalized Leader statements are detected; prose, acronyms, code and link
   for (const no of ["Should we enable GCP billing to restore Cloud Run?", "please check the HTTP API CLI MCP flow", "STOP", "Use `STOP ASKING ME FOR THIS` as the string", "```\nERROR FATAL OUT OF MEMORY NOW\n```", "see https://example.com/STOP/ASKING/ME/FOR/THIS", ""]) assert.equal(detectCapitalizedStatement(no).matched, false, no);
 });
 
-test("the capitals instruction names the rule, skill and runbook the record names, and tells the repair order", () => {
+test("both context events follow the current correction rule without a hardcoded repair order", () => {
   const { section } = fakeTree("tree-h");
   const text = renderCapitalsInstruction({ house: readHouse(section), excerpt: "STOP ASKING ME" });
   assert.match(text, /wrote in capitals \("STOP ASKING ME"\)/u);
   assert.match(text, /caps: A Leader statement written in capitals MUST be received as a correction/u);
-  assert.match(text, /repair the carrier[\s\S]*amending the existing record's provenance rather than adding a duplicate[\s\S]*edit AGENTS\.md or README\.md/u);
   assert.match(text, /skill persisting-a-leader-correction; runbook a-leader-correction-arrives-in-capitals/u);
   assert.ok(text.length <= BUDGETS.UserPromptSubmit);
+  const statement = "Capitals MUST prompt recovery of the original claim. Ordinary assignments continue through their owning work; no separate correction workflow follows from emphasis alone.";
+  writeJson(path.join(section, "lib/agency/rules/caps.json"), { id: "caps", statement });
+  const house = readHouse(section);
+  for (const context of [
+    renderCapitalsInstruction({ house, excerpt: "PLEASE FINISH THIS ASSIGNMENT" }),
+    renderHouseContext({ house, event: "SessionStart" }).text,
+  ]) {
+    assert.ok(context.includes(statement), "the revised source rule reaches both consuming events intact");
+    assert.ok(!context.includes("Before resuming the interrupted work"), "the harness does not add an unconditional repair workflow");
+    assert.ok(!context.includes("run skill persisting-a-leader-correction"), "a method reference is not a mandatory dispatch");
+  }
 });
 
 const run = async (argv, payload) => {

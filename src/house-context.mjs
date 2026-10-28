@@ -228,7 +228,7 @@ function renderAt({ house, carrierStates, event, scriptPath, trees, scale }) {
   if (projection.correction && !compact) {
     const { rule: ruleId, skill, runbook } = projection.correction;
     const rule = rules.get(ruleId);
-    out(`CAPITALS: the Leader writing in capitals means a carrier failed${rule ? ` [${ruleId}]` : ""}: run skill ${skill}${runbook ? ` and runbook ${runbook}` : ""} before resuming, repair the carrier (this projection record), never AGENTS.md or README.md.`);
+    out(`CAPITALS: ${rule ? `[${ruleId}] ${flat(rule.statement)}` : `[${ruleId}] rule unavailable; recover its source before determining the response.`} Reference: skill ${skill}${runbook ? ` and runbook ${runbook}` : ""}.`);
   }
   if (compact) out("You are a sub-agent: this was injected for you. Do not ask the Leader anything; return what you could not decide to your caller.");
   else if (scriptPath) out(`Sub-agents get a shorter projection (SubagentStart). If this context is ever missing, run: node ${scriptPath}`);
@@ -270,10 +270,9 @@ export function renderCapitalsInstruction({ house, excerpt }) {
   const rule = correction ? house.rules.get(correction.rule) : undefined;
   const lines = [
     `The Leader wrote in capitals${excerpt ? ` ("${excerpt}")` : ""}.`,
-    rule ? `${rule.id}: ${clip(rule.statement, 330)}` : "Rule capitalized-leader-statements-mark-a-failed-carrier: capitals are a correction the Leader has already given and a carrier failed to bring into this session.",
-    "Before resuming the interrupted work: (1) take each claim in the Leader's own words, with the date; (2) find where the house holds it (rules, requirements, leader-source and leader-decision records, open campaign issues; the projected context at session start lists them) and what you did instead; (3) repair the carrier that failed to bring it here, or admit it at the lowest layer that holds it (rule claim, skill, mechanism, note), amending the existing record's provenance rather than adding a duplicate; (4) tell the Leader in one line per claim where it now lives; (5) then resume. Do not ask the Leader to restate it, apologise, or edit AGENTS.md or README.md.",
+    rule ? `${rule.id}: ${flat(rule.statement)}` : "The correction rule is unavailable; recover its source before determining the response.",
   ];
-  if (correction) lines.push(`Method: skill ${correction.skill}${correction.runbook ? `; runbook ${correction.runbook}` : ""}.`);
+  if (correction) lines.push(`Reference: skill ${correction.skill}${correction.runbook ? `; runbook ${correction.runbook}` : ""}.`);
   const text = lines.join("\n");
   return text.length <= BUDGETS.UserPromptSubmit ? text : `${text.slice(0, BUDGETS.UserPromptSubmit - 1)}…`;
 }

@@ -58,8 +58,10 @@ export function runHarnessEfficiencyAssay(options = {}) {
     if (result?.ok === false) throw new Error(`assay response was not admitted: ${JSON.stringify(result.refusal)}`);
     return result?.ok === true ? result.value : result;
   };
-  const priorTranscript = `PRIOR_TRANSCRIPT_SENTINEL\n${"t".repeat(options.priorTranscriptBytes ?? 30_000_000)}`;
-  const toolResult = `TOOL_RESULT_SENTINEL\n${"r".repeat(options.toolResultBytes ?? 16_000_000)}`;
+  // Ordinary conformance needs an oversized carrier, not tens of megabytes
+  // of fabricated retained evidence on every test. Stress sizes are explicit.
+  const priorTranscript = `PRIOR_TRANSCRIPT_SENTINEL\n${"t".repeat(options.priorTranscriptBytes ?? 32_768)}`;
+  const toolResult = `TOOL_RESULT_SENTINEL\n${"r".repeat(options.toolResultBytes ?? 16_384)}`;
   const prior = compileToolEvidence({ tool_name: "prior-context-index", tool_input: {}, tool_response: priorTranscript }, { ...enterpriseOptions, actor, provider: "assay-provenance" });
   const samples = [];
   const timed = (name, action, rawCarrierBytes) => {
@@ -70,8 +72,8 @@ export function runHarnessEfficiencyAssay(options = {}) {
     return output;
   };
   timed("fresh-prompt", () => run({ hook_event_name: "UserPromptSubmit", session_id: "assay", turn_id: "1", prompt: "fresh representative prompt" }), bytes("fresh representative prompt"));
-  timed("interrupted-prompt-30mb-prior", () => run({ hook_event_name: "UserPromptSubmit", session_id: "assay", turn_id: "2", prompt: "correction", prior_context_receipt: prior.receipt.id }), bytes(priorTranscript) + bytes("correction"));
-  timed("tool-result-16mb", () => run({ hook_event_name: "PostToolUse", session_id: "assay", turn_id: "2", tool_use_id: "large", tool_name: "representative-tool", tool_input: {}, tool_response: { output: toolResult } }), bytes(toolResult));
+  timed("interrupted-prompt", () => run({ hook_event_name: "UserPromptSubmit", session_id: "assay", turn_id: "2", prompt: "correction", prior_context_receipt: prior.receipt.id }), bytes(priorTranscript) + bytes("correction"));
+  timed("tool-result", () => run({ hook_event_name: "PostToolUse", session_id: "assay", turn_id: "2", tool_use_id: "large", tool_name: "representative-tool", tool_input: {}, tool_response: { output: toolResult } }), bytes(toolResult));
   const duplicate = { hook_event_name: "UserPromptSubmit", hook_event_id: "shared-native", session_id: "duplicate", turn_id: "1", prompt: "one delivery" };
   timed("duplicate-user-delivery", () => run(duplicate), bytes(duplicate.prompt));
   timed("duplicate-project-delivery", () => run(duplicate), bytes(duplicate.prompt));
@@ -85,18 +87,14 @@ export function runHarnessEfficiencyAssay(options = {}) {
   const harnessInjectedBytes = samples.reduce((sum, sample) => sum + sample.injectedBytes, 0);
   const rawCarrierBytes = samples.reduce((sum, sample) => sum + sample.rawCarrierBytes, 0);
   const hookWallMs = samples.reduce((sum, sample) => sum + sample.wallMs, 0);
-  // Raw-carrier delivery includes context ingestion, not merely pipe transfer.
-  // Keep this deliberately conservative (about 2 MB/s) so the representative
-  // assay compares end-to-end interactive delivery against bounded receipts.
-  const transportBytesPerMs = options.transportBytesPerMs ?? 2_000;
-  const baselineEndToEndWallMs = rawCarrierBytes / transportBytesPerMs;
-  const harnessEndToEndWallMs = hookWallMs + harnessInjectedBytes / transportBytesPerMs;
   const rows = readTrajectory(enterpriseOptions);
   const result = {
     type: "HarnessEfficiencyAssay",
+    scope: "synthetic-context-delivery",
     runtime,
-    baseline: { injectedBytes: rawCarrierBytes, estimatedTokens: Math.ceil(rawCarrierBytes / 4), endToEndWallMs: baselineEndToEndWallMs, processCount: 0 },
-    harness: { injectedBytes: harnessInjectedBytes, estimatedTokens: Math.ceil(harnessInjectedBytes / 4), hookWallMs, endToEndWallMs: harnessEndToEndWallMs, processCount: 0 },
+    baseline: { injectedBytes: rawCarrierBytes, estimatedTokens: Math.ceil(rawCarrierBytes / 4) },
+    harness: { injectedBytes: harnessInjectedBytes, estimatedTokens: Math.ceil(harnessInjectedBytes / 4), hookWallMs },
+    operatingCost: { status: "unmeasured", reason: "Synthetic bytes and a hook timer do not measure provider charges, end-to-end latency, processes or accepted useful work." },
     samples: samples.map(({ output, ...sample }) => ({ ...sample, pointer: contextBytes(output) === 0 || pointer(output?.additionalContext ?? "") })),
     duplicateRecords: rows.filter((row) => row.type === cycleRecordType && row.sessionId === "duplicate").length - 1,
     statusObservations: observations.filter((item) => item.emitObservation).length,
@@ -104,8 +102,6 @@ export function runHarnessEfficiencyAssay(options = {}) {
   };
   result.passed = result.harness.injectedBytes < result.baseline.injectedBytes
     && result.harness.estimatedTokens < result.baseline.estimatedTokens
-    && result.harness.endToEndWallMs < result.baseline.endToEndWallMs
-    && result.harness.processCount <= result.baseline.processCount
     && result.duplicateRecords === 0
     && result.statusObservations === 1
     && result.maximumAdditionalContextBytes <= additionalContextLimit

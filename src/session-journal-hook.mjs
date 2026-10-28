@@ -104,7 +104,7 @@ const clip = (text, size) => { const flat = String(text).replace(/\s+/gu, " ").t
 
 /** The journal as the few lines a session reads before its prompt. */
 export function journalText(journal, { host = "this node", limit = DEFAULT_LIMIT } = {}) {
-  const lines = [`Work board on ${host}: ${journal.open} open of ${journal.threads} threads (read ${journal.at}). Act on a thread by a move on the board (ops_open_work, world-command); this journal is a reading, not an authority.`, "", BIAS_CHECK];
+  const lines = [`Work board on ${host}: ${journal.open} open of ${journal.threads} threads (read ${journal.at}). Act on a thread by a move on the board (ops_open_work, world-command); this journal is a reading, not an authority. The current user request and its accumulated corrections govern the active objective. Match relevant existing Work to that objective; other obligations remain discoverable and do not silently replace it.`, "", BIAS_CHECK];
   const section = (title, entries, describe) => {
     if (entries.length === 0) return;
     lines.push("", `${title} (${entries.length}):`);
@@ -112,7 +112,7 @@ export function journalText(journal, { host = "this node", limit = DEFAULT_LIMIT
     if (entries.length > limit) lines.push(`- and ${entries.length - limit} more`);
   };
   const owing = (entry) => (entry.owes.length === 0 ? "" : ` (owes: ${entry.owes.join(", ")}${entry.awaits.length ? `; awaits ${entry.awaits.join("/")}` : ""})`);
-  section("Owed by your offices: carry these to their receiving condition before new work", journal.mine, owing);
+  section("Owed by your offices", journal.mine, owing);
   section("Owed by your offices' enterprises", journal.houses, owing);
   section("Waiting on the Leader: say each one to them plainly, once", journal.leader, owing);
   section(UNSEATED_TITLE, journal.unseated, () => "");

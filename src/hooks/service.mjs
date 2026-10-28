@@ -21,6 +21,7 @@ import { appendArrivalAtRoot } from "@red-cup-engineering/computer-system-engine
 import { agentSessionTokenUsageStatementRows } from "@red-cup-engineering/computer-inference-engine/cost/token-usage/persistence";
 import { claudeSessionTokenUsageOfContent } from "@red-cup-engineering/computer-inference-engine/anthropic/token-usage";
 import { codexSessionTokenUsageOfContent } from "@red-cup-engineering/feltos/agents/sessions/codex/token-usage";
+import { nativeTranscriptFingerprint as transcriptFingerprint, sameNativeTranscript as sameTranscript } from "../transcripts/native-tool-observation.mjs";
 
 const TOKEN_USAGE_CHECKPOINT_HOOKS = new Set(["Stop", "SessionEnd", "SubagentStop"]);
 // A long main session's transcript runs to tens of megabytes, and those are the sessions that cost
@@ -55,10 +56,9 @@ const TOKEN_USAGE_CHECKPOINT_TYPE = "token-usage-checkpoint";
 const checkpointName = (transcriptPath) => sha256Hex(transcriptPath);
 
 /** The last row of a transcript its checkpoints admitted. */
-function admittedTranscriptRow(root, transcriptPath) {
+function transcriptCheckpoints(root, transcriptPath) {
   const frontier = readHead(root, TOKEN_USAGE_CHECKPOINT_TYPE, checkpointName(transcriptPath))?.frontier ?? [];
-  const rows = frontier.map((address) => get(root, TOKEN_USAGE_CHECKPOINT_TYPE, address)?.row).filter(Number.isFinite);
-  return rows.length === 0 ? -Infinity : Math.max(...rows);
+  return frontier.map((address) => get(root, TOKEN_USAGE_CHECKPOINT_TYPE, address));
 }
 
 function tokenUsageTranscriptMaxBytes(options) {
@@ -83,6 +83,14 @@ function appendHookTranscriptTokenUsageAtRoot(
   if (stat === null || !stat.isFile()) return;
   if (stat.size > tokenUsageTranscriptMaxBytes(options)) return;
 
+  const checkpoints = transcriptCheckpoints(root, transcriptPath);
+  const fingerprint = transcriptFingerprint(stat);
+  if (checkpoints.length > 0 && checkpoints.every((entry) => entry?.provider === provider
+    && entry.harnessSession === envelope.sessionId && sameTranscript(fingerprint, entry.transcript))) return;
+  const rows = checkpoints.map((entry) => entry?.row).filter(Number.isFinite);
+  const changedIdentity = checkpoints.some((entry) => entry?.transcript && fingerprint && (entry.transcript.dev !== fingerprint.dev || entry.transcript.ino !== fingerprint.ino || entry.transcript.size > fingerprint.size || (entry.transcript.size === fingerprint.size && !sameTranscript(fingerprint, entry.transcript))));
+  const through = rows.length === 0 || changedIdentity ? -Infinity : Math.max(...rows);
+
   const content = options.readFileUtf8(transcriptPath);
   const summary = provider === "anthropic"
     ? claudeSessionTokenUsageOfContent(content, {
@@ -93,14 +101,18 @@ function appendHookTranscriptTokenUsageAtRoot(
       source: transcriptPath,
       ...(envelope.sessionId === undefined ? {} : { sessionId: envelope.sessionId }),
     });
-  if (summary.rawEvents.length === 0) return;
   const sessionId = summary.sessionId ?? envelope.sessionId ?? `${provider}-session`;
-  // Every checkpoint of a session reads its whole transcript, but admits only the requests made
-  // since the last one: re-admitting the transcript each turn would grow the feed with the square
-  // of a session's length. The summary row stays whole, so the latest one is the session's total.
-  const through = admittedTranscriptRow(root, transcriptPath);
   const fresh = summary.rawEvents.filter((event) => !(event.row <= through));
-  if (fresh.length === 0) return;
+  // Mark only a stable, complete read as reusable. A concurrent append keeps
+  // its existing row frontier but never stamps unread bytes as accounted.
+  const after = transcriptFingerprint(options.statPathOrNull(transcriptPath));
+  const stable = sameTranscript(fingerprint, after) && Buffer.byteLength(content) === stat.size;
+  const row = Math.max(through, ...fresh.map((event) => event.row).filter(Number.isFinite));
+  const checkpoint = () => extend(root, TOKEN_USAGE_CHECKPOINT_TYPE, checkpointName(transcriptPath), {
+    at, transcriptPath, provider, harnessSession: envelope.sessionId ?? null, session: sessionId, ...(Number.isFinite(row) ? { row } : {}),
+    ...(stable ? { transcript: fingerprint } : {}),
+  });
+  if (fresh.length === 0) { if (stable) checkpoint(); return; }
   // Each measured event is the same record however often its transcript is admitted; the session's running total is the latest summary.
   const [summaryRow, ...eventRows] = agentSessionTokenUsageStatementRows({ ...summary, rawEventCount: summary.rawEvents.length, rawEvents: fresh }, at);
   for (const [e, a, v, t] of eventRows) put(root, TOKEN_USAGE_EVENT_TYPE, { e, a, v, t });
@@ -108,7 +120,7 @@ function appendHookTranscriptTokenUsageAtRoot(
   const latestAddress = readHead(root, SESSION_TOKEN_USAGE_TYPE, sessionId)?.frontier[0];
   const latest = latestAddress === undefined ? undefined : get(root, SESSION_TOKEN_USAGE_TYPE, latestAddress);
   if (latest === undefined || semanticId({ e: latest.e, a: latest.a, v: latest.v }) !== semanticId({ e, a, v })) extend(root, SESSION_TOKEN_USAGE_TYPE, sessionId, { e, a, v, t });
-  extend(root, TOKEN_USAGE_CHECKPOINT_TYPE, checkpointName(transcriptPath), { at, transcriptPath, session: sessionId, row: Math.max(through, ...fresh.map((event) => event.row).filter(Number.isFinite)) });
+  checkpoint();
 }
 
 /** Append one normalized hook envelope under `$root/data/logs/**` (the hook-event service log and the arrival store). `options.at` (ISO

@@ -109,6 +109,9 @@ test("the generated harness briefing qualifies Actor testimony before Work and r
   ]) assert.ok(markdown.includes(expected), `harness did not receive the actual processing law: ${expected}`);
   assert.doesNotMatch(markdown, /When Pat names something to do, open it on the board/u,
     "a spoken subject must not be upgraded to demand without classification and authorization");
+  assert.match(markdown, /current user request and accumulated corrections as the active objective/u);
+  assert.match(markdown, /law-derived data\/state/u);
+  assert.doesNotMatch(markdown, /~\/\.local\/state/u);
 });
 
 test("a scheduled Actor hand can begin with one native World journal read without fake receipt or L-Space authority", (t) => {

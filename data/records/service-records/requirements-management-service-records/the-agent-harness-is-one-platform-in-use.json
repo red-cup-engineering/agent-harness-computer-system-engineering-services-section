@@ -20,6 +20,21 @@
       "cell": "harness:named-agency-source",
       "target": "held",
       "says": "The harness reads only source sections named by the owning host, forwarding that declaration to the original Organizing holder. Root-only selection does not recursively discover nested offices; retained data snapshots and vendor copies are never additional agency sections."
+    },
+    {
+      "cell": "harness:context-source-ownership",
+      "target": "held",
+      "says": "An office context and its Codex discovery references follow original qualified duty and skill owners, including a received owner move, source-only custody upgrade, linked-source freshness, ambiguous-name refusal and missing-source preservation."
+    },
+    {
+      "cell": "harness:synthetic-cost-is-not-operating-cost",
+      "target": "held",
+      "says": "Synthetic conformance retains context byte counts and hook timing without asserting measured provider cost, processes, useful output or end-to-end latency. Routine fixtures are bounded and retired."
+    },
+    {
+      "cell": "harness:unchanged-transcript-read-reuse",
+      "target": "held",
+      "says": "Token checkpoints reuse only complete, stable native file observations; changed or unknown coordinates do not establish a cache hit. Actual token-event admission and provider validation remain independently required."
     }
   ],
   "tier": "major",
@@ -313,6 +328,12 @@
       "type": "emsenn/schema/requirement",
       "mark": "ni:///sha-256;FytXmQiX3S9rX9F21NoTgct_7kZy3kCIkWqtqBUi90U",
       "cell": "ni:///sha-256;yBbt9O3GJol3ee1zE693pks40NMZNv2MKIvVe2KeTzw"
+    },
+    "leader-request-2026-10-28": {
+      "source": "Codex chat 01a18356-13bd-70e2-ace4-858e874da223",
+      "words": "Aggressively repair our codex-harness-engineering-services-section and everything upstream to massively address your failures and costs as reflected in literally every session you do, mostly doing the wrong work in the wrong way, while you act like a few thin skills are enough and burn almost all your budget on the same expensive useless tasks.",
+      "work": "ni:///sha-256;gvYofELy1gvjVhJB0U-YDd2qrsLdAgLp8ZnJ4eIRvt0",
+      "reading": "Repair the executable producer/consumer path; a method revision or synthetic assay does not establish operating improvement."
     }
   },
   "x-development": {

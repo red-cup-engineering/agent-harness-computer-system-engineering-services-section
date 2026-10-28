@@ -37,7 +37,7 @@ export function codexWorldReading(metroplatServer) {
   const command = server
     ? `await tools.${codexToolName(server, "metroplat_world-command")}`
     : "the metroplat_world_command tool of this node's configured MetroPlat MCP server";
-  return `Before designing anything, read what the Group already wrote. The node's world is a tool in your JavaScript exec tool: ${command}({ line: 'archive-search query="..."' }) searches every revision the archive holds, and the line \`archive-read id=...\` reads one. `;
+  return `Keep the current assignment and its receiver as the objective. The node's world is a tool in your JavaScript exec tool: ${command}({ line: 'journal' }) reads current obligations; it does not replace this assignment or authorize other work. Recover the matching original Work and its exact source method. Discover the installed contract before invoking an operation. Search historical context only to resolve a named missing premise; retain the source reference and reuse the result rather than repeat orientation. `;
 }
 
 const reasoningArgs = (reasoningEffort) => {

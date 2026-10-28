@@ -177,3 +177,15 @@ clone. Native tests use a harmless marker in place of Git effects.
 
 - The value of the concurrent-agent ceiling for the 8 GB WSL VM.
 - Which of the platform's apps already carry file-touch, mcp-tool, serve-web and workspace-analysis.
+
+
+## Source ownership and measured cost receiving, 2026-10-28
+
+The continuing Leader request is preserved verbatim in the original requirement record under `x-provenance.leader-request-2026-10-28` and native Work `ni:///sha-256;gvYofELy1gvjVhJB0U-YDd2qrsLdAgLp8ZnJ4eIRvt0`. Existing-source maintenance preserves these invariants:
+
+- Qualified office duty and skill references resolve to their current actual section, under an explicit corpus. The Codex projector uses the same address law for both. Discovery holds source references, never copied method bodies. Source custody retains each actual method and its linked-source digests. Moving a method replaces only a reference proven by prior custody; unrelated content, conflicting discovery names and unavailable sources refuse before the received image changes. Original source-only projection custody upgrades before retirement.
+- The current user objective governs session context. The journal and headless Codex carrier expose matching original Work without mandating an estate archive search or replacing the assignment with unrelated older obligations. Carrier workspace defaults derive from the section data law; explicit existing resource bindings retain their separate custody.
+- Ordinary efficiency conformance uses 32,768 prior-context bytes and 16,384 result bytes, with explicit larger stress inputs available. It measures injected bytes and hook execution, labels token counts as estimates and operating cost as unmeasured, and keeps no invented process or baseline latency measurements. Its tests retire their owned synthetic state.
+- The token-accounting checkpoint retains native device, inode, size, modification and change-time coordinates only after a stable complete read. An unchanged read may be reused. Replacement, truncation, same-size mutation and incomplete coordinates cannot establish reuse. This does not yet make a growing transcript incremental or establish an operating cost reduction.
+
+The machine-owned Codex-home record receives the original shared house-context installer through its existing harness scope and hourly timer. Actual installed source invocation, provider trust, running-session uptake, useful work and independent acceptance are distinct receiving conditions. A source test or synthetic result closes none of the unobserved conditions.

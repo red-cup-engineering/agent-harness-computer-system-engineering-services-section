@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { runHarnessSession } from "../src/carrier/session.mjs";
+import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import {
   assertNotSharedCheckout, carrierTaskWorktree, carrierWorkspaces, carrierWorktreeRoot, prepareCarrierWorktree, pruneRetiredWorktreeRoot, releaseCarrierWorktree,
 } from "../src/carrier/workspace.mjs";
@@ -69,6 +70,9 @@ function carrierHome() {
 const duty = (office = "junior-engineer", requiresCapabilities = []) => ({ office, scope: `scope-${office}`, requiresCapabilities });
 
 test("the carrier's root and task worktree are per dialect and per task", () => {
+  const owner = path.join(root, "owning-section");
+  assert.equal(carrierWorktreeRoot(claudeCodeDialect, { AGENT_HARNESS_SECTION_ROOT: owner }), dataKindDirectory(owner, "state", "claude-code-worktree"));
+  assert.equal(carrierWorktreeRoot(antigravityDialect, { AGENT_HARNESS_SECTION_ROOT: owner }), dataKindDirectory(owner, "state", "antigravity-worktree"));
   assert.equal(path.dirname(carrierTaskWorktree(claudeCodeDialect, "t1", environment)), environment.METROPLAT_CLAUDE_CODE_WORKTREES);
   assert.equal(carrierWorktreeRoot(antigravityDialect, environment), environment.METROPLAT_ANTIGRAVITY_WORKTREES);
   assert.notEqual(carrierTaskWorktree(claudeCodeDialect, "t1", environment), carrierTaskWorktree(claudeCodeDialect, "t2", environment));
