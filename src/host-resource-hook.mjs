@@ -847,9 +847,11 @@ function dependencyProduction(name, words, report) {
     ||(name==="yarn"&&(action===undefined||["install","add","upgrade","up","dlx"].includes(action)))
     ||(name==="bun"&&["install","i","add","update"].includes(action));
   const fetchingExec=name==="npx"||name==="bunx"||name==="npm"&&action==="exec";
-  const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only")&&(args.includes("--ignore-pnpmfile")||args.includes("--config.ignore-pnpmfile=true")))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
+  // A lockfile-only resolution writes no node_modules and runs no lifecycle script; the repository's
+  // own .pnpmfile.cjs (the house's one-version-per-family rule) must still shape that resolution.
+  const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only"))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
   if((installation&&!lockOnly)||(fetchingExec&&!args.includes("--no-install")))
-    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Use the original worktree dependency preparation with explicit installation selection and its shared-store/lifecycle receipt; use already received dependencies for checks. Lockfile-only metadata resolution and no-install execution remain available.");
+    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Use the original worktree dependency preparation with explicit installation selection and its shared-store/lifecycle receipt; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
   return true;
 }
 

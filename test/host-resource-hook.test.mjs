@@ -275,8 +275,9 @@ test("raw clone denial has no native effect even at a resolved in-colony target"
 
 test('raw dependency producers refuse while metadata and received execution remain usable',()=>{
  for(const command of ['npm ci','npm --prefix /tmp/job install','pnpm install','pnpm add package','pnpm dlx package','npx package','npx --offline package','npm exec --offline -- package','yarn','yarn add package','bun install','bunx package','git.exe clone https://example.com/o/r.git ./r','npm.cmd ci','PNPM.EXE install','bash -c "npm install"'])assert.equal(verdict(command).action,'deny',command);
- for(const command of ['npm test','npm pack --ignore-scripts','npm view package version','pnpm exec already-received','npm install --package-lock-only --ignore-scripts','pnpm install --lockfile-only --ignore-scripts --ignore-pnpmfile','npx --no-install already-received'])assert.equal(verdict(command).action,'allow',command);
+ for(const command of ['npm test','npm pack --ignore-scripts','npm view package version','pnpm exec already-received','npm install --package-lock-only --ignore-scripts','pnpm install --lockfile-only --ignore-scripts --ignore-pnpmfile','pnpm install --lockfile-only --ignore-scripts','npx --no-install already-received'])assert.equal(verdict(command).action,'allow',command);
  assert.equal(verdict('pnpm install --lockfile-only --lockfile-only=false').action,'deny');
+ assert.equal(verdict('pnpm install --lockfile-only').action,'deny','a resolution without --ignore-scripts may run lifecycle scripts');
 });
 
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
