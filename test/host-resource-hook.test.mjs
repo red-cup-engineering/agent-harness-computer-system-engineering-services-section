@@ -112,7 +112,7 @@ const TABLE = [
   ["git worktree add -b topic ../w HEAD", "small", "deny"],
   ["git worktree list", "plain", "allow"],
   ["git worktree remove ../w", "plain", "allow"],
-  // git clone: only inside the colony directory (~/<colony>), never into scratch
+  // Raw clones never use the original shared source-object owner.
   ["git clone https://example.com/o/r.git", "plain", "deny", "another unreceived object database"],
   ["gh repo clone o/r", "plain", "deny"],
   ["git clone https://example.com/o/r.git", "srv", "deny", "outside the colony directory"],
@@ -156,9 +156,10 @@ const TABLE = [
   ["git submodule foreach 'git status'", "big", "deny", "submodule foreach"],
   ["git submodule foreach --recursive git fetch", "many", "deny"],
   [`git -C ${dirs.big} submodule update --init`, "plain", "deny"],
-  ["git submodule update --init --recursive -- deps/x", "big", "allow"],
-  ["git submodule update --init", "sub", "allow"],
-  ["git submodule update --init --recursive", "small", "allow"],
+  ["git submodule update --init --recursive -- deps/x", "big", "deny"],
+  ["git submodule update --init", "sub", "deny"],
+  ["git submodule update --init --recursive", "small", "deny"],
+  ["git submodule update --init -- deps/x", "big", "allow"],
   ["git submodule sync", "big", "allow"],
   ["git submodule status", "big", "allow"],
   // transfers and whole-tree git in a large repository are not denied, and nothing queues them

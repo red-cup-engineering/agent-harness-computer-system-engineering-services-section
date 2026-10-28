@@ -623,8 +623,8 @@ function git(argv, state, ctx, report) {
   if (sub === "submodule") {
     const action = positionals(args)[0];
     const split = args.indexOf("--");
-    if (["update", "foreach"].includes(action) && repo?.large === true && cwd === repo.top && !(split >= 0 && split < args.length - 1)) {
-      report.deny(`git submodule ${action} at the top of this large repository${size} visits every submodule, checks out each one's recorded commit (detaching nested repositories) and reads all their trees: name the submodule (git submodule ${action} -- <path>) or work inside that submodule's own clone.`);
+    if (["update", "foreach"].includes(action) && (action === "foreach" || args.includes("--recursive") || !(split >= 0 && split < args.length - 1) || args.slice(split+1).some(value => value === "." || value === ".." || /[*?[]/u.test(value)))) {
+      report.deny(`git submodule ${action} at the top of this large repository${size} can acquire whole nested repository trees: initialize only one named canonical child without --recursive (git submodule update --init -- <path>), or work inside the existing child checkout.`);
     }
     return;
   }
