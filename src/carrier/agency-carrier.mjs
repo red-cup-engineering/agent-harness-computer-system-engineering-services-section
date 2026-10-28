@@ -47,12 +47,48 @@ export const AGENCY_OUTCOME_SHAPE = `${JSON.stringify(workResultFromSkillResult(
  *  since a CLI's structured-output tool takes an object schema; which of value and error the kind
  *  requires is checked when the outcome is read. */
 export function agencyOutcomeSchema(returns) {
+  const native = { ...skillResultSchema, anyOf: [
+    { properties: { ok: { enum: [true] }, reading: { enum: ["potential", "active"] } },
+      required: ["output", "reading"], not: { required: ["error"] } },
+    { properties: { ok: { enum: [false] } }, required: ["error", "reading"], not: { required: ["output"] } },
+  ] };
   return Object.freeze({
     type: "object",
-    properties: { kind: { enum: ["skill-result", "skill-error"] }, value: returns ?? { type: "object" }, error: { type: "string", minLength: 1 }, skillOutcome: skillResultSchema },
+    properties: { kind: { enum: ["skill-result", "skill-error"] }, value: returns ?? { type: "object" }, error: { type: "string", minLength: 1 }, skillOutcome: native },
     required: ["kind", "skillOutcome"],
+    anyOf: [
+      { properties: { kind: { enum: ["skill-result"] }, skillOutcome: { properties: { ok: { enum: [true] } } } },
+        required: ["value"], not: { required: ["error"] } },
+      { properties: { kind: { enum: ["skill-error"] }, skillOutcome: { properties: { ok: { enum: [false] } } } },
+        required: ["error"], not: { required: ["value"] } },
+    ],
     additionalProperties: false,
   });
+}
+
+/** Observe a completed carrier's report through the original Work codec.
+ * Invalid output is a witnessed validation failure, never fulfilled work or a
+ * new startup. The original session artifacts retain the actual output bytes.
+ */
+export function readAgencyWorkOutcome(message, scope) {
+  let parsed;
+  let parseFailure = false;
+  try {
+    if (typeof message !== "string") throw new TypeError("message absent");
+    parsed = JSON.parse(message);
+  } catch { parseFailure = true; }
+  try {
+    if (parseFailure) throw new TypeError("completed carrier did not return one JSON work outcome");
+    return Object.freeze({ result: admitAgencyWorkResult(parsed), evidence: Object.freeze([]) });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unadmitted native outcome";
+    const evidence = typeof message === "string"
+      ? [`unadmitted-work-outcome-sha256:${createHash("sha256").update(message).digest("hex")}`]
+      : ["unadmitted-work-outcome:message-absent"];
+    const result = workResultFromSkillResult(skillError("ValidationFailure",
+      `completed carrier report did not satisfy its Work result contract: ${reason.slice(0, 1000)}`, scope));
+    return Object.freeze({ result, evidence: Object.freeze(evidence) });
+  }
 }
 
 const RECEIVING_ATTEMPTS = 4;
@@ -173,13 +209,13 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     // A session that never started failed for capacity, not at the work: the dialect says which.
     if (!session.ok) throw Object.assign(new Error(session.errors.join("; ") || `${dialect.label} ended without a completed inference result`),
       dialect.startupFailure(session) ? { failure: "carrier-startup" } : {});
-    let result;
-    try { result = JSON.parse(session.message); } catch { throw new TypeError(`${dialect.label} worker did not return a typed service outcome`); }
-    result = admitAgencyWorkResult(result);
     const selectedModel = item.allocatedModel ?? model;
     const carrier = observedCarrier(session, selectedModel, requiredEffort(item));
+    const outcome = readAgencyWorkOutcome(session.message, item.scope);
+    const result = outcome.result;
     const producer = { id: workerId, revision: `${dialect.name}:${carrier.model}` };
     const evidence = [
+      ...outcome.evidence,
       ...(session.thread === undefined ? [] : [`${dialect.evidence}:${session.thread}`]),
       ...(session.carrierEvidence === undefined ? [] : [`${dialect.name}-session-context:${session.carrierEvidence}`]),
       `${dialect.name}-exit:${session.exitCode}`, `${dialect.name}-prompt-sha256:${createHash("sha256").update(readFileSync(path.join(session.artifactDir, existsSync(path.join(session.artifactDir, "prompt.txt")) ? "prompt.txt" : "resume-prompt.txt"))).digest("hex")}`, `${dialect.name}-task:${taskId(item)}`,
