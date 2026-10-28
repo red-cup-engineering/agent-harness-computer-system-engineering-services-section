@@ -132,8 +132,8 @@ test("a writing duty opens a per-task tree with packages, a reading duty a read-
   const setup = fixture();
   const runner = recordingRunner();
   for (const [dialect, workspaces, writing] of [
-    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-open"])],
-    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-commit"])],
+    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-open"])],
+    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-commit"])],
   ]) {
     const writer = await workspaces.open({ item: writing, id: `${dialect.name}-write`, receiving: false });
     assert.equal(writer, carrierTaskWorktree(dialect, `${dialect.name}-write`, environment));
