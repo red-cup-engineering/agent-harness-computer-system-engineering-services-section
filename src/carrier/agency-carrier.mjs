@@ -247,11 +247,12 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
   };
   provider.dialect = dialect;
   provider.workerId = workerId;
+  provider.waitsForCapacity = true;
   provider.reserve = ({ item, scopeKey, executionIdentity }) => {
     const task = item.proposal === undefined
       ? { taskId: taskId(item), artifactDir: directory(item) }
       : receivingTask(item);
-    return reserveProviderTurn(dialect, { scopeKey, executionIdentity, ...task });
+    return reserveProviderTurn(dialect, { scopeKey, executionIdentity, ...task, waitForCapacity: true });
   };
   provider.release = reservation => releaseProviderTurn(dialect, reservation);
   // The runner's thread event exists before completion and survives host restart.
