@@ -99,22 +99,23 @@ export function assertNotSharedCheckout(dialect, cwd) {
 }
 
 /** What every carrier session is told of where it works. */
-export const CARRIER_WORKSPACE_RULE = "Your working directory is a Git worktree opened for this task alone, detached at origin/main. Work only in it. Never edit, stash, reset, checkout, pull, merge or rebase in the shared checkout of the repository (the node's live data root, where other sessions' code runs), and never change directory into it to write. Your change joins main through the merge queue as a candidate; the runner commits and names it, so do not push.";
+export const CARRIER_WORKSPACE_RULE = "Your working directory is a Git worktree opened for this task alone, detached at origin/main. Dependencies and composed repositories are prepared only when explicitly requested. Work only in it. Never edit, stash, reset, checkout, pull, merge or rebase in the shared checkout of the repository (the node's live data root, where other sessions' code runs), and never change directory into it to write. Your change joins main through the merge queue as a candidate; the runner commits and names it, so do not push.";
 
-/** Open the task's own detached worktree at origin/main, submodules at their gitlinks, packages linked
- *  offline (a read-only task does not install). `cwd` is the repository the worktree borrows objects
+/** Open the task's own detached worktree at origin/main, source only by default. Dependencies and recursive composition require explicit
+ *  install/composeSubmodules selections; no read task installs dependencies. `cwd` is the repository the worktree borrows objects
  *  from, and is never itself the workspace. Fails closed: when the worktree cannot be opened this
  *  rejects, and no session starts. A worktree that already exists is the task's own earlier one and is
  *  reused as it stands when `reuse` is set (recovery), never reset. `commandRunner`, when given,
  *  replaces the house command executor for the worktree's steps. */
-export async function prepareCarrierWorktree(dialect, { cwd, taskId, effects = "repository-write", install = effects !== "read-only", reuse = false, sourceBinding, sourceResult, bindGit, commandRunner, environment = process.env }) {
+export async function prepareCarrierWorktree(dialect, { cwd, taskId, effects = "repository-write", install = false, composeSubmodules = false, reuse = false, sourceBinding, sourceResult, bindGit, commandRunner, environment = process.env }) {
+  if (effects === "read-only" && install) throw new TypeError("read-only carrier source preparation cannot install dependencies");
   const workspace = carrierTaskWorktree(dialect, taskId, environment);
   const branch = carrierTaskBranch(dialect, taskId);
   if (path.resolve(workspace) === path.resolve(cwd)) throw new TypeError(`a ${dialect.label} task worktree is never the repository it borrows from`);
   try {
     if (existsSync(workspace)) assertWorktreeOwner(cwd, workspace);
-    if (sourceBinding === undefined && reuse && existsSync(path.join(workspace, ".git"))) return Object.freeze({ workspace, branch, reused: true });
-    const prepared = await prepareWorktree({ repository: cwd, workspace, branch, ...(sourceBinding === undefined ? {} : { sourceBinding, sourceResult, from: sourceBinding.copy.commit, bindGit }), install, environment, runner: commandRunner });
+    if (sourceBinding === undefined && reuse && !composeSubmodules && !install && existsSync(path.join(workspace, ".git"))) return Object.freeze({ workspace, branch, reused: true });
+    const prepared = await prepareWorktree({ repository: cwd, workspace, branch, ...(sourceBinding === undefined ? {} : { sourceBinding, sourceResult, from: sourceBinding.copy.commit, bindGit }), install, composeSubmodules, environment, runner: commandRunner });
     assertWorktreeOwner(cwd, prepared.workspace);
     assertNotSharedCheckout(dialect, prepared.workspace);
     return Object.freeze({ ...prepared, reused: prepared.reused ?? false });
@@ -238,7 +239,7 @@ function sourceFreeWorkspace(dialect, spec, environment) {
  * act writes (`repository-write`) or only reads (`read-only`). `retired` names shared roots this
  * policy replaces, pruned once when the first tree opens.
  */
-export function carrierWorkspaces(dialect, { repository, repositoryOf, commandRunner, environment = process.env, effectsOf = defaultEffects, retired = [], bindGit, publishSourceCandidate, sourcePreparationOf }) {
+export function carrierWorkspaces(dialect, { repository, repositoryOf, commandRunner, environment = process.env, effectsOf = defaultEffects, retired = [], bindGit, publishSourceCandidate, sourcePreparationOf, installDependencies = false, composeSubmodules = false }) {
   const prune = async repository => { for (const root of retired) await pruneRetiredWorktreeRoot({ root, repository, commandRunner }).catch(() => undefined); };
   const pruning = new Map();
   const openWithSource = async (spec) => {
@@ -271,7 +272,7 @@ export function carrierWorkspaces(dialect, { repository, repositoryOf, commandRu
         const declared = await sourcePreparationOf({ sourceBinding: bound.sourceBinding, item: spec.item });
         if (declared !== undefined) preparation = await sourceOnlyPackagePreparation(bound.sourceBinding, declared, { bindGit });
       }
-      const prepared = await prepareCarrierWorktree(dialect, { ...(preparation === undefined ? {} : { install: false }), cwd: source, taskId: spec.id, effects, reuse: true, sourceBinding: bound.sourceBinding, ...(spec.receiving ? { sourceResult: spec.item?.proposal?.sourceResult } : {}), bindGit, commandRunner, environment });
+      const prepared = await prepareCarrierWorktree(dialect, { install: preparation === undefined && installDependencies && effects !== "read-only", composeSubmodules, cwd: source, taskId: spec.id, effects, reuse: true, sourceBinding: bound.sourceBinding, ...(spec.receiving ? { sourceResult: spec.item?.proposal?.sourceResult } : {}), bindGit, commandRunner, environment });
       return Object.freeze({ workspace: prepared.workspace, effects, ...(bound.sourceBinding === undefined ? {} : { sourceBinding: bound.sourceBinding }) });
   };
   return Object.freeze({
