@@ -3,7 +3,7 @@
 // same records, for a session or sub-agent that was not given it (the hook is the carrier; this is the
 // tool a brief tells an agent to call first when it finds the context absent).
 //
-//   project-house-context [--tree <working tree>...] [--cwd <dir>] [--event SessionStart|SubagentStart] [--offline]
+//   project-house-context [--tree <working tree>...] [--cwd <dir>] [--event SessionStart|SubagentStart] [--offline] [--live-carriers]
 //   project-house-context --section <561-group-services-section dir> ...
 //   project-house-context --prompt "<text>" --event UserPromptSubmit     (what a capitalized prompt injects)
 import { main } from "../src/house-context-hook.mjs";

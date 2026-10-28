@@ -74,6 +74,8 @@ test("the projection is read from the records: statements, budget, decisions, qu
   assert.deepEqual(house.problems, []);
   const { text, truncated } = renderHouseContext({ house, carrierStates: states(), event: "SessionStart" });
   assert.equal(truncated, false);
+  assert.match(text, /current user request defines the work/u);
+  assert.doesNotMatch(text, /OPEN CARRIERS: continue these|CHECK ALL OF THESE/u);
   assert.ok(text.length <= BUDGETS.SessionStart);
   assert.ok(text.includes("MUST NOT put such a question to the Leader"), "the rule's own words, not a paraphrase");
   assert.ok(text.includes("[no-billing] " + BILL));
@@ -200,6 +202,8 @@ test("the hook answers each event as Claude Code reads it, and nothing outside t
 test("a failing projection is said in the session, never silent, and the exit stays zero", async () => {
   const reply = JSON.parse(await run(["--bogus"], { hook_event_name: "SessionStart", cwd: root }));
   assert.match(reply.hookSpecificOutput.additionalContext, /hook failed[\s\S]*failed carrier/u);
+  assert.match(reply.hookSpecificOutput.additionalContext, /current request remains the work/u);
+  assert.doesNotMatch(reply.hookSpecificOutput.additionalContext, /then read lib\/agency\/rules/u);
   assert.equal(await run(["--bogus"], { hook_event_name: "UserPromptSubmit", cwd: root, prompt: "STOP ASKING ME FOR THIS NOW" }), "", "a failed capitals check adds nothing to a prompt");
 });
 
@@ -211,7 +215,11 @@ test("projectHouseContext reads the section it is given and skips carriers for a
   await projectHouseContext({ event: "SubagentStart", cwd: root, section, root: cacheRoot, fetchOne });
   assert.equal(asked, 0);
   await projectHouseContext({ event: "SessionStart", cwd: root, section, root: cacheRoot, fetchOne });
-  assert.equal(asked, 3);
+  assert.equal(asked, 0, "ordinary startup never refreshes unrelated GitHub carriers");
+  await projectHouseContext({ event: "SessionStart", cwd: root, section, root: cacheRoot, fetchOne, liveCarriers: true });
+  assert.equal(asked, 3, "explicit refresh preserves the native capability");
+  await projectHouseContext({ event: "SessionStart", cwd: root, section, root: path.join(root, "uncached"), fetchOne, liveCarriers: true, offline: true });
+  assert.equal(asked, 3, "offline overrides explicit live selection");
 });
 
 test("the hook arguments need a tree, and the entries cover the three events", () => {

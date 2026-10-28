@@ -30,10 +30,11 @@ export { HOOK_FILE };
 
 /** `--tree <dir>` (repeatable), `--section <dir>`, `--offline`, `--event <name>` (for a manual run). */
 export function parseArguments(argv) {
-  const options = { trees: [], section: undefined, offline: false, event: undefined };
+  const options = { trees: [], section: undefined, offline: false, liveCarriers: false, event: undefined };
   for (let index = 0; index < argv.length; index += 1) {
     const flag = argv[index];
     if (flag === "--offline") { options.offline = true; continue; }
+    if (flag === "--live-carriers") { options.liveCarriers = true; continue; }
     const value = argv[index + 1];
     if (!["--tree", "--section", "--event"].includes(flag) || value === undefined) throw new TypeError(`house-context-hook: expected --tree, --section, --event or --offline at ${flag}`);
     if (flag === "--tree") options.trees.push(value);
@@ -78,12 +79,12 @@ export async function main(argv = process.argv.slice(2), { stdin = process.stdin
     if (!EVENTS.includes(event)) return;
     const text = await projectHouseContext({
       event, cwd: payload.cwd ?? process.cwd(), prompt: payload.prompt, trees: options.trees, section: options.section,
-      offline: options.offline, scriptPath: path.resolve(path.dirname(SOURCE), "..", "scripts", "project-house-context.mjs"),
+      offline: options.offline, liveCarriers: options.liveCarriers, scriptPath: path.resolve(path.dirname(SOURCE), "..", "scripts", "project-house-context.mjs"),
     });
     if (text) stdout.write(hookOutput(event, text));
   } catch (error) {
     const event = payload.hook_event_name;
-    if (EVENTS.includes(event) && event !== "UserPromptSubmit") stdout.write(hookOutput(event, `HOUSE CONTEXT hook failed (${String(error?.message ?? error).slice(0, 200)}). The session starts without the house's rules: that is a failed carrier. Say so, then read lib/agency/rules, the Leader's decision queue and the open campaign issues before asking the Leader anything.`));
+    if (EVENTS.includes(event) && event !== "UserPromptSubmit") stdout.write(hookOutput(event, `HOUSE CONTEXT hook failed (${String(error?.message ?? error).slice(0, 200)}). This is a failed carrier. The current request remains the work; recover only the missing prerequisite needed for it. A projection failure does not authorize a backlog, archive or campaign survey.`));
   }
 }
 
