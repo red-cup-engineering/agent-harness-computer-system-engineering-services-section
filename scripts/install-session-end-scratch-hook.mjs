@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Install the session-end scratch hook (`src/session-end-scratch-hook.mjs`) as the SessionEnd hook of one user's
- * Claude Code settings, referencing this owning source by absolute path, the way `install-house-context-hook` does.
+ * Claude Code settings, referencing this owning source by absolute path, the way `install-host-resource-hook` does.
  *
  *   install-session-end-scratch-hook --codex-home <codex-home.mjs> --parameters <codex-home.json> [--settings <file>] [--install-dir <dir>] [--dry-run] [--uninstall]
  *
