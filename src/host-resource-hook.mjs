@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * The host-resource controller: one PreToolUse hook that mediates the Bash commands of every agent
- * session on a machine, so that no number of concurrent sessions, subagents or Codex processes can
- * exhaust its disk or memory. The control is software in the harness and not an instruction an agent
+ * session on a machine, to refuse known wasteful producer paths before they run. Native producer
+ * owners receive physical allocation and lifecycle state; this hook is not a disk quota. The control is software in the harness and not an instruction an agent
  * is trusted to follow: the harness hands the hook each command before it runs, and the hook either
  * denies it or lets it run, placed in the work slice. Beneath it sits a kernel cap (see "Containment"
  * below): every process a Claude Code session runs lives in one user-manager slice,
@@ -13,7 +13,7 @@
  *
  *   deny    the command reads or writes far more than it can be worth (`find`, or a recursive
  *           `grep`/`rg`/`ag`/`ack`/`fd`/`tree`, over the disk, a home or a large working tree, `git worktree add`,
- *           `git clone` outside the colony directory (~/<colony>), an unscoped `git status`/`git log --all`/
+ *           raw `git clone`/`gh repo clone`, direct dependency installs and fetch-on-exec, an unscoped `git status`/`git log --all`/
  *           `git ls-files` and `git submodule update|foreach` in a large repository, `git commit -a` in a
  *           partial working tree, a `gh pr merge` that deletes most of a repository, `rm .git/index.lock`
  *           while a git process works there); the reason, shown to the agent, names the safe alternative;
@@ -29,7 +29,7 @@
  * (it replaces the whole input, so unchanged fields are carried over). The hook FAILS OPEN: on any
  * internal error, malformed input or a missing `systemd-run` it prints nothing and exits 0, and the
  * command runs as if the hook were absent. A hook is a guardrail on a cooperative agent, not a
- * security boundary, and it must never be the reason work stops. It never waits on anything: a 200 ms
+ * security boundary, and original producers remain responsible for resource admission. It never waits on anything: a 200 ms
  * timer ends the process if stdin never closes. The one exception is the mass-deletion guard (`gh pr
  * merge`, `git commit -a`): it asks gh and git, within a ten-second budget, and allows the command when
  * it cannot find out.
@@ -623,8 +623,8 @@ function git(argv, state, ctx, report) {
   if (sub === "submodule") {
     const action = positionals(args)[0];
     const split = args.indexOf("--");
-    if (["update", "foreach"].includes(action) && repo?.large === true && cwd === repo.top && !(split >= 0 && split < args.length - 1)) {
-      report.deny(`git submodule ${action} at the top of this large repository${size} visits every submodule, checks out each one's recorded commit (detaching nested repositories) and reads all their trees: name the submodule (git submodule ${action} -- <path>) or work inside that submodule's own clone.`);
+    if (["update", "foreach"].includes(action) && (action === "foreach" || args.includes("--recursive") || !(split >= 0 && split < args.length - 1) || args.slice(split+1).some(value => value === "." || value === ".." || /[*?[]/u.test(value)))) {
+      report.deny(`git submodule ${action} at the top of this large repository${size} can acquire whole nested repository trees: initialize only one named canonical child without --recursive (git submodule update --init -- <path>), or work inside the existing child checkout.`);
     }
     return;
   }
@@ -667,7 +667,10 @@ function clone(words, state, ctx, report) {
   // Everything the Group writes stays inside the colony directory (~/<colony>, e.g. ~/bare-cedar-fog);
   // a clone in /tmp, a scratchpad, ~/.cache or anywhere outside it is the data flood the Leader names.
   const colony = colonyOf(resolved, ctx);
-  if (colony !== undefined && !isScratch(resolved, ctx)) return;
+  if (colony !== undefined && !isScratch(resolved, ctx)) {
+    report.deny("raw git clone allocates another unreceived object database even inside the colony. Reuse the canonical checkout; read selected pins through source-working-copy-acquire, or initialize one named canonical child through its owning Git submodule route. Do not make scratch clones.");
+    return;
+  }
   report.deny(`git clone into ${resolved} is outside the colony directory: clone a repository only to its section's path inside ~/<colony> (${colonyOf(state.cloneCwd ?? "", ctx) ?? "~/<colony>"}), or work in the checkout the colony already holds. Never clone into /tmp, a scratchpad or a dot directory.`);
 }
 
@@ -835,10 +838,25 @@ function scanner(name, argv, piped, state, ctx, report) {
   }
 }
 
+function dependencyProduction(name, words, report) {
+  if(!["npm","npx","pnpm","yarn","bun","bunx"].includes(name))return false;
+  const args=words.slice(1), positional=positionals(args,["--prefix","--dir","-C","--cwd","--cache","--store-dir","--registry","--userconfig","--globalconfig","--filter","--package","-p"]);
+  const action=positional[0];
+  const installation=(name==="npm"&&["install","i","ci","add","update","upgrade","rebuild"].includes(action))
+    ||(name==="pnpm"&&["install","i","add","update","up","rebuild","fetch","dlx"].includes(action))
+    ||(name==="yarn"&&(action===undefined||["install","add","upgrade","up","dlx"].includes(action)))
+    ||(name==="bun"&&["install","i","add","update"].includes(action));
+  const fetchingExec=name==="npx"||name==="bunx"||name==="npm"&&action==="exec";
+  const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only")&&(args.includes("--ignore-pnpmfile")||args.includes("--config.ignore-pnpmfile=true")))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
+  if((installation&&!lockOnly)||(fetchingExec&&!args.includes("--no-install")))
+    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Use the original worktree dependency preparation with explicit installation selection and its shared-store/lifecycle receipt; use already received dependencies for checks. Lockfile-only metadata resolution and no-install execution remain available.");
+  return true;
+}
+
 function simple(command, frame, ctx, report, depth) {
   const words = unwrap(withoutRedirections(command.words, command.quoted));
   if (words.length === 0) return;
-  const name = path.basename(words[0]);
+  const name = path.basename(words[0].replaceAll("\\","/")).replace(/\.(?:exe|cmd|bat)$/iu, "").toLowerCase();
   if (SKIPPED.has(name)) return;
   const cwdOf = (scope) => {
     if (!frame.cwds.has(scope)) frame.cwds.set(scope, cwdOf(frame.scopes[scope].parent));
@@ -864,6 +882,7 @@ function simple(command, frame, ctx, report, depth) {
     return;
   }
   if (name === "eval") { walk(words.slice(1).join(" "), here.cwd, ctx, report, depth + 1, here.cloneCwd); return; }
+  if (dependencyProduction(name, words, report)) return;
   if (name === "find" || name === "bfs") { find(words, here, ctx, report); return; }
   if (name === "git") { git(words, here, ctx, report); return; }
   if (name === "gh") { github(words, here, ctx, report); return; }
