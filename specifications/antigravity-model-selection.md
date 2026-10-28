@@ -1,0 +1,3 @@
+The Antigravity adapter shall select the actual CLI catalogue model for an explicitly required Gemini effort, preserve backend-log attestation and preserve other model argument behavior. Supported Gemini 3.8 Flash and Gemini 4 Argon low/medium/high variants use suffixed catalogue IDs without an unsupported effort flag. Conflicting or unsupported selections refuse before launch.
+
+Native AGY_ERROR retryable JSON metadata participates in the existing bounded transport recovery. Quota and weekly refusals remain terminal. A failed unsupported-effort CLI selection without a conversation is a carrier startup failure; an observed conversation is never reclassified as unstarted. Original retry limits, resource reservations and actual Session requirements remain unchanged.
