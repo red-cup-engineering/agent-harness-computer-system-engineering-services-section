@@ -132,16 +132,16 @@ test("the Antigravity argument builder and unit builder take a task worktree, ne
   assert.equal(calls.length, before);
 });
 
-test("a writing duty opens a per-task tree with packages, a reading duty a read-only one without", async () => {
+test("writing and reading duties open private source-only trees without implicit package installation", async () => {
   const setup = fixture();
   const runner = recordingRunner();
   for (const [dialect, workspaces, writing] of [
-    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-open"])],
-    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment, installDependencies: true }), duty("junior-engineer", ["duty-worktree-commit"])],
+    [claudeCodeDialect, claudeWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-open"])],
+    [antigravityDialect, antigravityWorkspaces({ repository: setup.main, commandRunner: runner, environment }), duty("junior-engineer", ["duty-worktree-commit"])],
   ]) {
     const writer = await workspaces.open({ item: writing, id: `${dialect.name}-write`, receiving: false });
     assert.equal(writer, carrierTaskWorktree(dialect, `${dialect.name}-write`, environment));
-    assert.ok(runner.installs.includes(writer));
+    assert.ok(!runner.installs.includes(writer));
     assert.doesNotThrow(() => assertNotSharedCheckout(dialect, writer));
     writeFileSync(path.join(writer, "made.txt"), "by the duty\n");
 

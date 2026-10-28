@@ -104,6 +104,7 @@
     "!**/lib/legacy/**",
     "test/agent-briefing.test.mjs",
     "test/organizing-cohort.test.mjs",
+    "test/hook-token-checkpoint.test.mjs",
     "test/carrier-workspaces.test.mjs",
     "test/inference-receiving-carrier.test.mjs",
     "test/receiving-judgement-export.test.mjs",
@@ -127,7 +128,7 @@
     "@red-cup-engineering/eavt-services-section": "0.14.1",
     "@red-cup-engineering/computer-systems-logging-engine": "0.2.0",
     "@red-cup-engineering/computer-file-engineering-services-section": "0.4.0",
-    "@red-cup-engineering/json-schema-services-section": "0.5.0",
+    "@red-cup-engineering/json-schema-services-section": "0.5.2",
     "@red-cup-engineering/json-services-section": "0.4.0",
     "@red-cup-engineering/metrologic": "0.4.0",
     "@red-cup-engineering/computer-content-address-engineering-services-section": "0.2.0",
@@ -142,7 +143,7 @@
     "@red-cup-engineering/computer-system-engine": "0.1.4",
     "@red-cup-engineering/computer-systems-fabrication-engineering-services-section": "0.4.14",
     "@red-cup-engineering/feltos": "0.20.2",
-    "@red-cup-engineering/organizing": "0.8.0-dev.946",
+    "@red-cup-engineering/organizing": "0.8.0-dev.1103",
     "@red-cup-engineering/animating": "0.2.4"
   },
   "engines": {
@@ -164,6 +165,7 @@
   "receivingTests": [
     "test/agent-briefing.test.mjs",
     "test/organizing-cohort.test.mjs",
+    "test/hook-token-checkpoint.test.mjs",
     "test/carrier-workspaces.test.mjs",
     "test/inference-receiving-carrier.test.mjs",
     "test/receiving-judgement-export.test.mjs",

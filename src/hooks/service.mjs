@@ -86,10 +86,7 @@ function appendHookTranscriptTokenUsageAtRoot(
   const checkpoints = transcriptCheckpoints(root, transcriptPath);
   const fingerprint = transcriptFingerprint(stat);
   if (checkpoints.length > 0 && checkpoints.every((entry) => entry?.provider === provider
-    && entry.harnessSession === envelope.sessionId && sameTranscript(fingerprint, entry.transcript))) return;
-  const rows = checkpoints.map((entry) => entry?.row).filter(Number.isFinite);
-  const changedIdentity = checkpoints.some((entry) => entry?.transcript && fingerprint && (entry.transcript.dev !== fingerprint.dev || entry.transcript.ino !== fingerprint.ino || entry.transcript.size > fingerprint.size || (entry.transcript.size === fingerprint.size && !sameTranscript(fingerprint, entry.transcript))));
-  const through = rows.length === 0 || changedIdentity ? -Infinity : Math.max(...rows);
+    && entry.harnessSession === (envelope.sessionId ?? null) && sameTranscript(fingerprint, entry.transcript))) return;
 
   const content = options.readFileUtf8(transcriptPath);
   const summary = provider === "anthropic"
@@ -102,6 +99,13 @@ function appendHookTranscriptTokenUsageAtRoot(
       ...(envelope.sessionId === undefined ? {} : { sessionId: envelope.sessionId }),
     });
   const sessionId = summary.sessionId ?? envelope.sessionId ?? `${provider}-session`;
+  // Growth alone does not prove append-only input: a writer can rewrite earlier
+  // usage and grow the same inode. Reuse a frontier only when the measured
+  // prefix is identical and belongs to this provider and harness session.
+  const reusable = checkpoints.length > 0 && checkpoints.every(entry =>
+    entry?.provider === provider && entry.harnessSession === (envelope.sessionId ?? null)
+    && Number.isFinite(entry.row) && entry.eventPrefix === semanticId(summary.rawEvents.filter(event => event.row <= entry.row)));
+  const through = reusable ? Math.max(...checkpoints.map(entry => entry.row)) : -Infinity;
   const fresh = summary.rawEvents.filter((event) => !(event.row <= through));
   // Mark only a stable, complete read as reusable. A concurrent append keeps
   // its existing row frontier but never stamps unread bytes as accounted.
@@ -109,10 +113,9 @@ function appendHookTranscriptTokenUsageAtRoot(
   const stable = sameTranscript(fingerprint, after) && Buffer.byteLength(content) === stat.size;
   const row = Math.max(through, ...fresh.map((event) => event.row).filter(Number.isFinite));
   const checkpoint = () => extend(root, TOKEN_USAGE_CHECKPOINT_TYPE, checkpointName(transcriptPath), {
-    at, transcriptPath, provider, harnessSession: envelope.sessionId ?? null, session: sessionId, ...(Number.isFinite(row) ? { row } : {}),
+    at, transcriptPath, provider, harnessSession: envelope.sessionId ?? null, session: sessionId, eventPrefix: semanticId(summary.rawEvents), ...(Number.isFinite(row) ? { row } : {}),
     ...(stable ? { transcript: fingerprint } : {}),
   });
-  if (fresh.length === 0) { if (stable) checkpoint(); return; }
   // Each measured event is the same record however often its transcript is admitted; the session's running total is the latest summary.
   const [summaryRow, ...eventRows] = agentSessionTokenUsageStatementRows({ ...summary, rawEventCount: summary.rawEvents.length, rawEvents: fresh }, at);
   for (const [e, a, v, t] of eventRows) put(root, TOKEN_USAGE_EVENT_TYPE, { e, a, v, t });
