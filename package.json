@@ -136,6 +136,7 @@
     "@red-cup-engineering/flatfile-resource-graph-service": "0.1.9",
     "@red-cup-engineering/javascript-node-services-section": "0.3.2",
     "@red-cup-engineering/node-process-services-section": "0.2.2",
+    "@red-cup-engineering/execute-javascript-node-command-service": "0.3.1",
     "@red-cup-engineering/witness-journal-document-service": "0.1.2",
     "@red-cup-engineering/mcp-engineering-services-section": "0.1.1",
     "@red-cup-engineering/javascript-file-services-section": "0.1.1",
