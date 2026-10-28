@@ -169,14 +169,14 @@ function renderAt({ house, carrierStates, event, scriptPath, trees, scale }) {
   const { projection, rules, requirements, queue, problems } = house;
   const budget = BUDGETS[event] ?? BUDGETS.SessionStart;
   if (projection === undefined) {
-    return { over: false, text: `HOUSE CONTEXT could not be projected: ${problems.join("; ")}. A session that starts without the house's rules is a failed carrier (rule capitalized-leader-statements-mark-a-failed-carrier): say so, then read lib/agency/rules, the Leader's decision queue and the open campaign issues before asking the Leader anything.`, problems, truncated: false };
+    return { over: false, text: `HOUSE CONTEXT could not be projected: ${problems.join("; ")}. This is a failed carrier. The current request remains the work. Recover only a missing source prerequisite needed to execute it; this failure does not authorize a backlog, archive or campaign survey.`, problems, truncated: false };
   }
   const compact = event === "SubagentStart";
   const lines = [];
   const out = (...more) => lines.push(...more);
 
   out(`HOUSE CONTEXT, projected by the agent harness from the 561 Group's records (${PROJECTION_RECORD}); the records are the authority.`);
-  out("The Leader (emsenn) has already answered most questions you are about to ask. Answer from the house, continue the existing carrier, then act. A question this context answers is a failure of the carrier, not the Leader's to answer again.", "");
+  out("The current user request defines the work. Apply these records when relevant to that request. Existing carriers are references: their presence does not authorize unrelated work. Recover only context needed for the next concrete action.", "");
 
   out("BINDING RULES (read the record by id when it applies)");
   for (const topic of projection.rules ?? []) {
@@ -210,7 +210,7 @@ function renderAt({ house, carrierStates, event, scriptPath, trees, scale }) {
 
   const carriers = projection.carriers ?? [];
   if (carriers.length > 0) {
-    out(`OPEN CARRIERS: continue these; do not restart their work or open a twin${compact ? "" : " (live from GitHub, cached 10 min)"}`);
+    out(`EXISTING CARRIERS: continue only a carrier that owns the current request; avoid duplicate work${compact ? "" : " (cached states; live refresh requires explicit selection)"}`);
     for (const carrier of carriers) out(carrierLine(carrier, compact ? undefined : carrierStates.get(`${carrier.repo}#${carrier.number}`)));
     for (const brief of projection.briefs ?? []) {
       const state = carrierStates.get(`${brief.repo}#${brief.number}`);
@@ -220,7 +220,7 @@ function renderAt({ house, carrierStates, event, scriptPath, trees, scale }) {
     out("");
   }
 
-  out("BEFORE ASKING THE LEADER, CHECK ALL OF THESE (the answer is almost always held)");
+  out("BEFORE ASKING THE LEADER: CHECK APPLICABLE SOURCES FOR THE CURRENT REQUEST");
   (projection.checklist ?? []).forEach((item, index) => out(`${index + 1}. ${clip(item, compact ? 130 : 240)}`));
   if (!compact) out("Ask only a matter of preference or a choice the house's research cannot decide, with your recommendation, and queue it in the decision queue.");
   out("");
@@ -285,7 +285,7 @@ export const hookOutput = (event, text) => `${JSON.stringify({ hookSpecificOutpu
  * The context for `event` at `cwd`, or undefined when `cwd` is outside the Group's working trees
  * (the hook is installed for a user, and projects nothing into their other work).
  */
-export async function projectHouseContext({ event, cwd, prompt, trees, section, offline = false, root = sectionRootOf(), fetchOne, scriptPath, now }) {
+export async function projectHouseContext({ event, cwd, prompt, trees, section, offline = false, liveCarriers = false, root = sectionRootOf(), fetchOne, scriptPath, now }) {
   const found = sectionFor(cwd, trees, { section });
   if (found === undefined) return undefined;
   const house = readHouse(found);
@@ -294,6 +294,6 @@ export async function projectHouseContext({ event, cwd, prompt, trees, section, 
     return verdict.matched ? renderCapitalsInstruction({ house, excerpt: verdict.excerpt }) : undefined;
   }
   const carriers = event === "SubagentStart" ? [] : house.projection?.carriers?.concat(house.projection?.briefs ?? []) ?? [];
-  const carrierStates = carriers.length > 0 ? await readCarriers(carriers, { root, offline, fetchOne, now }) : new Map();
+  const carrierStates = carriers.length > 0 ? await readCarriers(carriers, { root, offline: offline || !liveCarriers, fetchOne, now }) : new Map();
   return renderHouseContext({ house, carrierStates, event, scriptPath, trees }).text;
 }
