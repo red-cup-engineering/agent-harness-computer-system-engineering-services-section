@@ -112,9 +112,9 @@ const TABLE = [
   ["git worktree add -b topic ../w HEAD", "small", "deny"],
   ["git worktree list", "plain", "allow"],
   ["git worktree remove ../w", "plain", "allow"],
-  // git clone: only inside the colony directory (~/<colony>), never into scratch
-  ["git clone https://example.com/o/r.git", "plain", "allow"],
-  ["gh repo clone o/r", "plain", "allow"],
+  // Raw clones never use the original shared source-object owner.
+  ["git clone https://example.com/o/r.git", "plain", "deny", "another unreceived object database"],
+  ["gh repo clone o/r", "plain", "deny"],
   ["git clone https://example.com/o/r.git", "srv", "deny", "outside the colony directory"],
   ["git clone https://example.com/o/r.git ./r", "srv", "deny"],
   ["gh repo clone o/r", "srv", "deny"],
@@ -156,9 +156,10 @@ const TABLE = [
   ["git submodule foreach 'git status'", "big", "deny", "submodule foreach"],
   ["git submodule foreach --recursive git fetch", "many", "deny"],
   [`git -C ${dirs.big} submodule update --init`, "plain", "deny"],
-  ["git submodule update --init --recursive -- deps/x", "big", "allow"],
-  ["git submodule update --init", "sub", "allow"],
-  ["git submodule update --init --recursive", "small", "allow"],
+  ["git submodule update --init --recursive -- deps/x", "big", "deny"],
+  ["git submodule update --init", "sub", "deny"],
+  ["git submodule update --init --recursive", "small", "deny"],
+  ["git submodule update --init -- deps/x", "big", "allow"],
   ["git submodule sync", "big", "allow"],
   ["git submodule status", "big", "allow"],
   // transfers and whole-tree git in a large repository are not denied, and nothing queues them
@@ -206,7 +207,7 @@ const TABLE = [
   ["find . -name x", "super", "deny"],
   ["ls -la", "big", "allow"],
   // installs and builds are not denied
-  ["npm install", "plain", "allow"],
+  ["npm install", "plain", "deny", "direct dependency installation"],
   ["make -j4", "plain", "allow"],
   ["sudo du -sh /", "plain", "allow"],
 
@@ -232,10 +233,10 @@ for (const [command, cwd, action, reason] of TABLE) {
   });
 }
 
-test("a clone is judged by its resolved path: inside a colony directory it runs, in tmp, scratch or a dot directory it is refused", () => {
+test("raw clones are refused inside the colony as well as in scratch", () => {
   const user = { env: { ...env, HOME: "/home/someone" }, home: "/home/someone" };
-  assert.equal(classify("git clone https://example.com/o/r.git $HOME/code/r", { cwd: "/srv/work/proj", ...user }).action, "allow", "inside a colony directory");
-  assert.equal(classify("git clone https://example.com/o/r.git ~/code/r", { cwd: "/srv/work/proj", ...user }).action, "allow");
+  assert.equal(classify("git clone https://example.com/o/r.git $HOME/code/r", { cwd: "/srv/work/proj", ...user }).action, "deny", "inside a colony directory");
+  assert.equal(classify("git clone https://example.com/o/r.git ~/code/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
   assert.equal(classify("git clone https://example.com/o/r.git ../../../tmp/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
   assert.equal(classify("git clone https://example.com/o/r.git ../r", { cwd: "/srv/work/scratchpad/harness", ...user }).action, "deny");
   assert.equal(classify("git clone https://example.com/o/r.git /home/someone/.cache/scratch/r", { cwd: "/srv/work/proj", ...user }).action, "deny");
@@ -263,38 +264,19 @@ test("clone custody refuses a missing cd and unresolved destinations before exec
   assert.equal(existsSync(missing), false, "admission does not create the intended directory");
 });
 
-test("clone custody preserves valid targets and intentional cd failure recovery without shell rewrites", () => {
-  const scratch = path.join(home, "colony", "clone-custody");
-  const bin = path.join(scratch, "bin");
-  mkdirSync(bin, { recursive: true });
-  const marker = path.join(scratch, "git-effects");
-  // The real hook admits a harmless executable standing in for Git: no clone or network effect.
-  writeFileSync(path.join(bin, "git"), '#!/bin/sh\nprintf "%s\\n" "$PWD" >> "$CLONE_CUSTODY_MARKER"\n', { mode: 0o755 });
-  const hookEnv = { ...env, PATH: `${bin}:${env.PATH}`, CLONE_CUSTODY_MARKER: marker, AGENT_CONTAINMENT: "off" };
-  const execute = command => {
-    const admission = hook(event(command), hookEnv);
-    assert.equal(admission.status, 0);
-    const decision = admission.stdout ? JSON.parse(admission.stdout).hookSpecificOutput : undefined;
-    assert.notEqual(decision?.permissionDecision, "deny", command);
-    return spawnSync("bash", ["-c", decision?.updatedInput?.command ?? command], {
-      cwd: dirs.plain, env: hookEnv, encoding: "utf8", timeout: 5_000,
-    });
-  };
-  const positive = execute(`cd ${shellQuote(scratch)} && git clone https://example.com/o/r.git ./fixture`);
-  assert.equal(positive.status, 0, positive.stderr);
-  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n`);
-  const missing = path.join(scratch, "missing");
-  const alternate = execute(`if ! cd ${shellQuote(missing)}; then git clone https://example.com/o/r.git ${shellQuote(path.join(scratch, "alternate"))}; fi`);
-  assert.equal(alternate.status, 0, alternate.stderr);
-  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`);
-  const recovery = `if ! cd ${shellQuote(missing)}; then printf recovered; fi`;
-  assert.equal(classify(recovery, { cwd: dirs.plain, env: hookEnv, home }).action, "allow");
-  const recovered = execute(recovery);
-  assert.equal(recovered.status, 0);
-  assert.equal(recovered.stdout, "recovered");
-  assert.equal(readFileSync(marker, "utf8"), `${scratch}\n${dirs.plain}\n`, "recovery made no Git call");
-  assert.equal(existsSync(path.join(scratch, "fixture")), false);
-  assert.equal(existsSync(path.join(scratch, "alternate")), false);
+test("raw clone denial has no native effect even at a resolved in-colony target", () => {
+ const directory=path.join(home,'colony','clone-custody');mkdirSync(directory,{recursive:true});
+ for(const command of [`cd ${shellQuote(directory)} && git clone https://example.com/o/r.git ./fixture`,`gh repo clone o/r ${shellQuote(path.join(directory,'alternate'))}`]){
+  const result=hook(event(command));assert.equal(result.status,0);const decision=JSON.parse(result.stdout).hookSpecificOutput;assert.equal(decision.permissionDecision,'deny');assert.match(decision.permissionDecisionReason,/unreceived object database/);assert.equal(decision.updatedInput,undefined);
+ }
+ assert.equal(existsSync(path.join(directory,'fixture')),false);assert.equal(existsSync(path.join(directory,'alternate')),false);
+ const recovery=`if ! cd ${shellQuote(path.join(directory,'missing'))}; then printf recovered; fi`;assert.equal(classify(recovery,{cwd:dirs.plain,env,home}).action,'allow');
+});
+
+test('raw dependency producers refuse while metadata and received execution remain usable',()=>{
+ for(const command of ['npm ci','npm --prefix /tmp/job install','pnpm install','pnpm add package','pnpm dlx package','npx package','npx --offline package','npm exec --offline -- package','yarn','yarn add package','bun install','bunx package','git.exe clone https://example.com/o/r.git ./r','npm.cmd ci','PNPM.EXE install','bash -c "npm install"'])assert.equal(verdict(command).action,'deny',command);
+ for(const command of ['npm test','npm pack --ignore-scripts','npm view package version','pnpm exec already-received','npm install --package-lock-only --ignore-scripts','pnpm install --lockfile-only --ignore-scripts --ignore-pnpmfile','npx --no-install already-received'])assert.equal(verdict(command).action,'allow',command);
+ assert.equal(verdict('pnpm install --lockfile-only --lockfile-only=false').action,'deny');
 });
 
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
