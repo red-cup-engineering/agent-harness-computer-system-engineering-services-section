@@ -70,15 +70,38 @@ export function readAntigravityLogModel(file, { before = Infinity } = {}) {
   return found;
 }
 
+const GEMINI_EFFORTS = new Set(["low", "medium", "high"]);
+
 function sharedArguments({ model, reasoningEffort, effects, outputSchema, addDirs = [], artifactDir }) {
   if (reasoningEffort !== undefined && !EFFORTS.has(reasoningEffort)) throw new TypeError("invalid Antigravity effort");
   if (outputSchema !== undefined && (outputSchema === null || typeof outputSchema !== "object" || Array.isArray(outputSchema))) throw new TypeError("Antigravity JSON schema must be an object");
+  let selectedModel = model;
+  let selectedEffort = reasoningEffort;
+  if (model !== undefined && model !== "default") {
+    const geminiBase = model.startsWith("gemini-3.8-flash") ? "gemini-3.8-flash" : model.startsWith("gemini-4-argon") ? "gemini-4-argon" : undefined;
+    if (geminiBase !== undefined) {
+      const rest = model.slice(geminiBase.length);
+      if (rest === "") {
+        if (reasoningEffort !== undefined && !GEMINI_EFFORTS.has(reasoningEffort)) throw new TypeError("invalid Antigravity effort");
+        selectedModel = reasoningEffort === undefined ? model : `${geminiBase}-${reasoningEffort}`;
+      } else if (rest.startsWith("-")) {
+        const suffix = rest.slice(1);
+        if (!GEMINI_EFFORTS.has(suffix) || (reasoningEffort !== undefined && reasoningEffort !== suffix)) {
+          throw new TypeError("invalid Antigravity effort");
+        }
+        selectedModel = model;
+      } else {
+        throw new TypeError("invalid Antigravity effort");
+      }
+      selectedEffort = undefined;
+    }
+  }
   return [
     "--input-format", "stream-json", "--output-format", "stream-json", "--disable-slash-commands",
     ...(checkEffects(effects) === "read-only" ? ["--sandbox"] : []),
     ...(artifactDir === undefined ? [] : ["--log-file", artifact(artifactDir, LOG_FILE)]),
-    ...(model === undefined || model === "default" ? [] : ["--model", model]),
-    ...(reasoningEffort === undefined ? [] : ["--effort", reasoningEffort]),
+    ...(selectedModel === undefined || selectedModel === "default" ? [] : ["--model", selectedModel]),
+    ...(selectedEffort === undefined ? [] : ["--effort", selectedEffort]),
     ...addDirs.flatMap((directory) => ["--add-dir", directory]),
     ...(outputSchema === undefined ? [] : ["--json-schema", JSON.stringify(outputSchema)]),
     // An empty attached print prompt: the turn comes from the stream-json input.
@@ -101,6 +124,12 @@ export function antigravityTokenUsage(usage) {
 
 const QUOTA_REFUSAL = /quota|rate.?limit|resource.?exhausted|usage limit|\b429\b|weekly/iu;
 const TRANSIENT = /overloaded|unavailable|\b50[0234]\b|internal server error|deadline exceeded/iu;
+
+function isAgyErrorRetryable(error) {
+  const match = /^AGY_ERROR:\s*(\{[^\r\n]*\})\s*$/mu.exec(error);
+  if (match === null) return false;
+  try { return JSON.parse(match[1])?.retryable === true; } catch { return false; }
+}
 
 const LOGIN = path.join(".gemini", "antigravity-cli", "antigravity-oauth-token");
 
@@ -180,6 +209,6 @@ export const antigravityDialect = Object.freeze({
     };
   },
   // A quota refusal is allowance exhaustion; only overload or server faults are worth another attempt.
-  transient: (result) => !result.ok && (result.errors ?? []).some((error) => !QUOTA_REFUSAL.test(error) && TRANSIENT.test(error)),
-  startupFailure: () => false,
+  transient: (result) => !result.ok && !(result.errors ?? []).some((error) => QUOTA_REFUSAL.test(error)) && (result.errors ?? []).some((error) => TRANSIENT.test(error) || isAgyErrorRetryable(error)),
+  startupFailure: (result) => result.thread === undefined && !(result.errors ?? []).some((error) => QUOTA_REFUSAL.test(error)) && (result.errors ?? []).some((error) => /^Antigravity ended ERROR: invalid model selection\b[^\r\n]*--effort is not supported for model\b/iu.test(error)),
 });

@@ -391,9 +391,11 @@ export function inProviderTurn(dialect, task, { slot, environment = process.env,
  *  admitted. Scope and execution identity are diagnostic/effect keys; only an existing matching
  *  scope or a full configured budget refuses the reservation. */
 export async function reserveProviderTurn(dialect, { scopeKey, executionIdentity, taskId, artifactDir,
-  unit = taskId === undefined ? undefined : `${dialect.unit}-${taskId}`, environment = process.env, host, systemRunner } = {}) {
+  unit = taskId === undefined ? undefined : `${dialect.unit}-${taskId}`, environment = process.env, host, systemRunner, waitForCapacity = false } = {}) {
   if (typeof scopeKey !== "string" || scopeKey.length === 0 || typeof executionIdentity !== "string" || executionIdentity.length === 0) throw new TypeError("provider reservation requires canonical scope and execution identity");
-  const result = await reserveSharedSlot(dialect, { environment, host, systemRunner, reservation: { id: randomUUID(), scopeKey, executionIdentity, taskId, artifactDir, unit, immediate: true } });
+  if (typeof waitForCapacity !== "boolean") throw new TypeError("waitForCapacity must be boolean");
+  const immediate = !waitForCapacity;
+  const result = await reserveSharedSlot(dialect, { environment, host, systemRunner, reservation: { id: randomUUID(), scopeKey, executionIdentity, taskId, artifactDir, unit, immediate } });
   if (result.refused !== undefined) return Object.freeze({ acquired: false, reason: result.refused, scopeKey, executionIdentity });
   return Object.freeze({ acquired: true, root: result.root, slot: result.slot, record: result.record, pool: dialect.pool });
 }
