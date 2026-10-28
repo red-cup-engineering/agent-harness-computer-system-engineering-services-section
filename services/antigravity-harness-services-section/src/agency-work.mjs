@@ -23,20 +23,20 @@ export const antigravityEffectsOf = (item) => (item.requiresCapabilities ?? []).
   ? "workspace-write" : "read-only";
 
 /** The task worktree of each act: opened for writing when the duty writes, read-only otherwise. */
-export const antigravityWorkspaces = ({ repository, commandRunner, environment = process.env, retired = [] }) => carrierWorkspaces(antigravityDialect, {
-  repository, commandRunner, environment, retired,
-  effectsOf: ({ item, receiving }) => (receiving || antigravityEffectsOf(item) === "read-only" ? "read-only" : "repository-write"),
+export const antigravityWorkspaces = ({ repository, repositoryOf, commandRunner, bindGit, publishSourceCandidate, sourcePreparationOf, environment = process.env, retired = [] }) => carrierWorkspaces(antigravityDialect, {
+  repository, repositoryOf, commandRunner, bindGit, publishSourceCandidate, sourcePreparationOf, environment, retired,
+  effectsOf: ({ item, receiving }) => (receiving || repositoryOf?.({ item, receiving })?.mode === "no-source" || antigravityEffectsOf(item) === "read-only" ? "read-only" : "repository-write"),
 });
 
 /** `executeAgencyWork(item)` for a node whose Antigravity character is admitted. `home` is its carrier
  *  home and `cwd` the repository each act's task worktree borrows from; no act runs in it. `retired`
  *  names shared roots (the former duty-worktrees root) pruned once. */
-export function antigravityAgencyWorkProvider({ home, addDirs = [], agy, cwd, commandRunner, environment, retired, ...options }) {
+export function antigravityAgencyWorkProvider({ home, addDirs = [], agy, cwd, repositoryOf, commandRunner, bindGit, publishSourceCandidate, sourcePreparationOf, environment, retired, ...options }) {
   return agencyWorkCarrier({
     ...options, cwd, dialect: antigravityDialect, ...(agy === undefined ? {} : { executable: agy }),
-    workspaceOf: antigravityWorkspaces({ repository: cwd, commandRunner, ...(environment === undefined ? {} : { environment }), ...(retired === undefined ? {} : { retired }) }),
+    workspaceOf: antigravityWorkspaces({ repository: cwd, repositoryOf, commandRunner, bindGit, publishSourceCandidate, sourcePreparationOf, ...(environment === undefined ? {} : { environment }), ...(retired === undefined ? {} : { retired }) }),
     sessionOptions: ({ item, receiving }) => {
-      const effects = receiving ? "read-only" : antigravityEffectsOf(item);
+      const effects = receiving || repositoryOf?.({ item, receiving })?.mode === "no-source" ? "read-only" : antigravityEffectsOf(item);
       return {
         effects, home,
         ...(addDirs.length === 0 ? {} : { addDirs }),
