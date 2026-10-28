@@ -114,7 +114,7 @@ export async function prepareCarrierWorktree(dialect, { cwd, taskId, effects = "
   try {
     if (existsSync(workspace)) assertWorktreeOwner(cwd, workspace);
     if (sourceBinding === undefined && reuse && existsSync(path.join(workspace, ".git"))) return Object.freeze({ workspace, branch, reused: true });
-    const prepared = await prepareWorktree({ repository: cwd, workspace, branch, ...(sourceBinding === undefined ? {} : { sourceBinding, sourceResult, from: sourceBinding.copy.commit, bindGit }), install, runner: commandRunner });
+    const prepared = await prepareWorktree({ repository: cwd, workspace, branch, ...(sourceBinding === undefined ? {} : { sourceBinding, sourceResult, from: sourceBinding.copy.commit, bindGit }), install, environment, runner: commandRunner });
     assertWorktreeOwner(cwd, prepared.workspace);
     assertNotSharedCheckout(dialect, prepared.workspace);
     return Object.freeze({ ...prepared, reused: prepared.reused ?? false });
