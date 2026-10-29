@@ -62,7 +62,7 @@ let AGENCY_ROOT;
 
 function agencyOf() {
   if (agency === undefined) {
-    AGENCY_ROOT = existsSync(join(REPO_ROOT, "lib")) ? join(REPO_ROOT, "lib") : REPO_ROOT;
+    AGENCY_ROOT = REPO_ROOT;
     agency = readHarnessAgency(AGENCY_ROOT, {
       agencySections: argValue("--agency-sections") === undefined ? undefined : JSON.parse(argValue("--agency-sections")),
     });

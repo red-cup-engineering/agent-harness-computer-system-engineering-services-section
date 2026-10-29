@@ -29,6 +29,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, wr
 import path from "node:path";
 import { operation } from "@red-cup-engineering/computer-system-engine/rpc/operation";
 import { schemaFrom } from "@red-cup-engineering/json-schema-services-section/contracts";
+import {harnessBindings}from"@red-cup-engineering/organizing/agency/organs";
 import { incumbenciesOf, officeReading } from "@red-cup-engineering/organizing/agency";
 import { harnessAgencyAt } from "../../../src/agency-source.mjs";
 import { projectOfficeAgent } from "./install-claude-as-an-agent.mjs";
@@ -36,7 +37,7 @@ import { hostResourceControl, mergeHostResourceHooks } from "../../../src/host-r
 
 const SETTINGS = ".claude/settings.local.json";
 const MCP = ".mcp.json";
-const ECOSYSTEM_NOTE = "lib/emsenn/services/561-group/services/internal-services-section/services/561-group-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team/content/text/documents/articles/notes/2026/09/23/2026-09-23-note-on-the-software-ecosystem.md";
+const ECOSYSTEM_NOTE = "services/internal-services-section/services/internal-operations-services-section/services/561-group-board-of-directors/services/561-group-board-of-directors-leader-movement-team/content/text/documents/articles/notes/2026/09/23/2026-09-23-note-on-the-software-ecosystem.md";
 
 /**
  * What a session may hold in context. A session keeps the model's full window: study that spans
@@ -70,12 +71,12 @@ const readJson = (file) => (existsSync(file) ? JSON.parse(readFileSync(file, "ut
  * entry reads them live.
  */
 function heldOffices(agency, readings, harness, obstructions) {
-  const characters = new Set([...agency.characters.values()].filter((character) => character.kind === "harness" && character.harness === harness).map((character) => character.id));
+  const characters = new Set(harnessBindings(agency,{harness}).map(binding=>binding.character.key));
   const offices = [];
   for (const reading of readings) {
     if (!reading.seats.some((seat) => seat.state === "dignitas" && characters.has(seat.holder))) continue;
     try {
-      const text = withoutFrontmatter(projectOfficeAgent({ repoRoot: path.dirname(agency.root), agency, office: reading.office }).text);
+      const text = withoutFrontmatter(projectOfficeAgent({ repoRoot: agency.root, agency, office: reading.office }).text);
       offices.push(text.trim());
     } catch (error) {
       obstructions.push({ office: reading.office, reason: `the session's own office does not project: ${error.message}` });
@@ -111,7 +112,7 @@ export function projectClaudeHarness({ node, agencyRoot, agencySections, environ
     if (reading.skills.length === 0) continue;
     if (seenAgents.has(reading.id)) { obstructions.push({ office: reading.office, reason: `office id '${reading.id}' is seated at dignitas in several sections` }); continue; }
     try {
-      const agent = projectOfficeAgent({ repoRoot: path.dirname(agency.root), agency, office: reading.office });
+      const agent = projectOfficeAgent({ repoRoot: agency.root, agency, office: reading.office });
       seenAgents.add(agent.id);
       files.set(`.claude/agents/${agent.id}.md`, agent.text);
     } catch (error) {
@@ -120,7 +121,7 @@ export function projectClaudeHarness({ node, agencyRoot, agencySections, environ
   }
 
   const held = heldOffices(agency, readings, harness, obstructions);
-  const ecosystem = path.join(path.dirname(agency.root), ECOSYSTEM_NOTE);
+  const ecosystem = path.join(agency.root, ECOSYSTEM_NOTE);
   if (existsSync(ecosystem)) standing = [withoutFrontmatter(readFileSync(ecosystem, "utf8")), String(standing ?? "").trim()].filter(Boolean).join("\n\n");
   else obstructions.push({ standing: ECOSYSTEM_NOTE, reason: "the software ecosystem note is absent" });
   if ((typeof standing === "string" && standing.trim() !== "") || held !== "") {

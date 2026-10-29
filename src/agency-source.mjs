@@ -1,15 +1,12 @@
 /** The harness receives the host's named source sections through Organizing's original reader. */
 import { readAgency } from "@red-cup-engineering/organizing/agency";
 import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
+import { admitAgencySections } from "@red-cup-engineering/agentic-organization-services-section-engineering-services-section/agency-layout";
 
 function selection({ agencySections, environment = process.env }) {
-  const declared = agencySections ?? (environment.METROPLAT_AGENCY_SECTIONS === undefined
-    ? [""] : JSON.parse(environment.METROPLAT_AGENCY_SECTIONS));
-  if (!Array.isArray(declared) || declared.some(section => typeof section !== "string")) {
-    throw new TypeError("The harness host must declare its agency sections as an array of source-relative paths");
-  }
-  // Original Organizing admits the actual section paths and excludes data/vendor copies.
-  return declared;
+  if (agencySections !== undefined) return admitAgencySections(agencySections);
+  if (environment.METROPLAT_AGENCY_SECTIONS === undefined) return undefined;
+  return admitAgencySections(JSON.parse(environment.METROPLAT_AGENCY_SECTIONS));
 }
 
 export function harnessAgencyAt(root, { agencySections, environment, ...options } = {}) {

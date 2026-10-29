@@ -148,7 +148,7 @@ function resolveEnterprise(arg, node) {
 
 // The roster is every office the agency registry seats in the enterprise's own section.
 function roster(enterprise) {
-  const agencyRoot = existsSync(join(REPO_ROOT, "lib")) ? join(REPO_ROOT, "lib") : REPO_ROOT;
+  const agencyRoot = REPO_ROOT;
   const sectionPath = relative(agencyRoot, enterprise).split("\\").join("/");
   return [...readHarnessAgency(agencyRoot, { agencySections: [sectionPath] }).offices.values()]
     .filter((office) => office.sectionPath === sectionPath)
