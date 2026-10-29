@@ -394,7 +394,23 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     return session.exitCode !== undefined && session.ok
       && ["accepted", "rejected"].includes(optionalJudgement(session.message).judgement?.decision);
   };
-  provider.receive = review => {
+  provider.supportsTerminalReceiving = true;
+  provider.receive = async review => {
+    if (review.terminalObservation === true) {
+      if (review.sourceRepository !== undefined || review.proposal.sourceBinding !== undefined)
+        throw new TypeError("terminal receiving observation cannot bypass source custody");
+      const { taskId: id, artifactDir } = receivingTask(review);
+      const session = readHarnessSessionArtifacts(dialect, artifactDir);
+      const judgement = optionalJudgement(session.message).judgement;
+      if (session.exitCode === undefined || !session.ok || !["accepted", "rejected"].includes(judgement?.decision))
+        throw new TypeError("original terminal receiving judgment is unavailable; no inference resumed");
+      const observed = observedCarrier(session, review.staffing?.carrier, review.staffing?.effort);
+      if (!review.staffing?.carrier || review.proposal.origin === undefined || review.office === review.proposal.origin.office)
+        throw new TypeError("terminal receiving needs the original distinct office and qualified carrier");
+      await onReceivingSession?.(review, observed);
+      recordCarrierAllowance({ dialect, session, consumer: `${dialect.name}:${review.office}:receiving` });
+      return { task: id, session: observed, ok: session.ok, exitCode: session.exitCode, usage: session.usage, errors: session.errors, judgement };
+    }
     const run = async ({ onSession: bindSession } = {}) => {
     const { proposal, office, staffing } = review;
     if (!staffing?.carrier || proposal.origin === undefined || office === proposal.origin.office) throw new TypeError("receiving needs distinct producing and receiving offices and a stated carrier");
