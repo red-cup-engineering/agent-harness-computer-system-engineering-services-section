@@ -714,8 +714,21 @@ function colonyOf(dir, ctx) {
   return first && !first.startsWith(".") ? path.join(ctx.home, first) : undefined;
 }
 
-/** A running git process whose working directory is inside `top`, or undefined. Bounded in time: past the bound the answer is "none seen". */
-function gitProcessIn(top) {
+/** The git directory serving `dir`: the nearest `.git` directory, or the target of a `.git` file's `gitdir:` line. */
+function gitDirOf(dir) {
+  for (let at = dir; ; at = path.dirname(at)) {
+    const dotGit = path.join(at, ".git");
+    try {
+      if (statSync(dotGit).isDirectory()) return dotGit;
+      const target = /^gitdir:\s*(.+)$/mu.exec(readFileSync(dotGit, "utf8"))?.[1]?.trim();
+      if (target) return path.resolve(at, target);
+    } catch { /* no .git here */ }
+    if (at === path.dirname(at)) return undefined;
+  }
+}
+
+/** A running git process working on the git directory `gitDir` (through its cwd, `-C` or `--git-dir`), or undefined. Bounded in time: past the bound the answer is "none seen". */
+function gitProcessOn(gitDir) {
   const deadline = Date.now() + 30;
   let entries;
   try { entries = readdirSync("/proc"); } catch { return undefined; }
@@ -725,21 +738,30 @@ function gitProcessIn(top) {
     try {
       const command = readFileSync(`/proc/${entry}/comm`, "utf8").trim();
       if (command !== "git" && !command.startsWith("git-")) continue;
-      if (within(readlinkSync(`/proc/${entry}/cwd`), top)) return Number(entry);
+      let dir = readlinkSync(`/proc/${entry}/cwd`);
+      let explicit;
+      const args = readFileSync(`/proc/${entry}/cmdline`, "utf8").split("\0");
+      for (let i = 1; i < args.length - 1; i++) {
+        if (args[i] === "-C") dir = path.resolve(dir, args[i + 1]);
+        else if (args[i] === "--git-dir") explicit = path.resolve(dir, args[i + 1]);
+      }
+      if (args.some((arg) => arg.startsWith("--git-dir="))) explicit = path.resolve(dir, args.find((arg) => arg.startsWith("--git-dir=")).slice(10));
+      const served = explicit ?? gitDirOf(dir);
+      if (served !== undefined && path.resolve(served) === path.resolve(gitDir)) return Number(entry);
     } catch { /* it ended, or is not ours to read */ }
   }
   return undefined;
 }
 
-/** `rm .git/index.lock` while a git process is working in that repository would corrupt the index it is writing. */
+/** `rm .git/index.lock` while a git process is working on that git directory would corrupt the index it is writing. A submodule's git directory sits under its superproject's `.git/modules/`, so the lock's own directory, not the enclosing working tree, names the repository. */
 function indexLock(argv, state, ctx, report) {
   for (const word of positionals(argv.slice(1))) {
     if (path.basename(word) !== "index.lock") continue;
     const file = resolveDir(word, state.cwd, ctx);
-    const repo = file === undefined ? undefined : repoOf(path.dirname(file), ctx);
-    const running = repo === undefined ? undefined : gitProcessIn(repo.top);
+    const gitDir = file === undefined ? undefined : path.dirname(file);
+    const running = gitDir === undefined ? undefined : gitProcessOn(gitDir);
     if (running !== undefined) {
-      report.deny(`removing ${file} while git (pid ${running}) is running in ${repo.top} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
+      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
       return;
     }
   }
