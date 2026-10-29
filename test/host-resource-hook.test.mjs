@@ -206,8 +206,14 @@ const TABLE = [
   ["grep -rn foo docs", "super", "allow"],
   ["find . -name x", "super", "deny"],
   ["ls -la", "big", "allow"],
-  // installs and builds are not denied
-  ["npm install", "plain", "deny", "direct dependency installation"],
+  // direct installs are denied; a lockfile-only resolution that runs no script is not, and it keeps the
+  // repository's own .pnpmfile.cjs
+  ["npm install", "plain", "deny", "direct dependency installation.*lockfile-only"],
+  ["pnpm install --lockfile-only", "plain", "deny", "--ignore-scripts"],
+  ["pnpm install --lockfile-only --ignore-scripts", "plain", "allow"],
+  ["npm install --package-lock-only --ignore-scripts", "plain", "allow"],
+  ["pnpm install --lockfile-only=false --ignore-scripts", "plain", "deny"],
+  // builds are not denied
   ["make -j4", "plain", "allow"],
   ["sudo du -sh /", "plain", "allow"],
 
