@@ -340,7 +340,25 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
   // Each attempt is its own task: the first keeps the original id, and an attempt that could not
   // inspect its evidence (unverified) is followed, after RECEIVING_RETRY_MS, by the next, up to
   // RECEIVING_ATTEMPTS. Past the last the work stays awaiting receipt: unknown, not judged.
-  const receivingTaskId = (review, attempt = 0) => `agency-receive-${createHash("sha256").update(JSON.stringify([review.proposal.receipt, workerId, review.office])).digest("hex").slice(0, 32)}${attempt === 0 ? "" : `-${attempt}`}`;
+  const receivingStem = (review, office) => "agency-receive-" + createHash("sha256").update(JSON.stringify([review.proposal.receipt, workerId, office])).digest("hex").slice(0, 32);
+  const receivingTaskId = (review, attempt = 0) => {
+    const suffix = attempt === 0 ? "" : "-" + attempt;
+    const current = receivingStem(review, review.office);
+    const canonical = typeof review.officeKey === "string" && review.officeKey.length > 0
+      ? receivingStem(review, review.officeKey) : current;
+    // A changed office spelling must not detach an already witnessed task.
+    // Preserve the currently addressed task if it exists; otherwise reuse the
+    // original canonical task. New tasks use the host's qualified office key.
+    // Recognize the finite attempt family without inventing a new task.
+    const exists = stem => {
+      for (let i = 0; i < RECEIVING_ATTEMPTS; i += 1) {
+        const id = stem + (i === 0 ? "" : "-" + i);
+        if (existsSync(harnessTaskArtifactDirectory(dialect, dataRoot, id, formerRoots))) return true;
+      }
+      return false;
+    };
+    return (current !== canonical && exists(current) ? current : canonical) + suffix;
+  };
   const attemptDirectory = (review, attempt) => harnessTaskArtifactDirectory(dialect, dataRoot, receivingTaskId(review, attempt), formerRoots);
   const receivingAttempt = review => {
     for (let attempt = 0; ; attempt += 1) {
