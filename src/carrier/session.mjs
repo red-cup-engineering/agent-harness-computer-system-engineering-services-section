@@ -33,6 +33,7 @@ import path from "node:path";
 
 import { dataKindDirectory } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import { sectionRootOf } from "../section-root.mjs";
+import { sessionMeter, stoppedForBudget } from "./flow-bounds.mjs";
 import { nodeFirstEnvironment } from "@red-cup-engineering/node-process-services-section/environment";
 
 export const POLL_INTERVAL_MS = 2_000;
@@ -646,12 +647,15 @@ export function retryableHarnessSession(dialect, result, { artifactDir: director
  * failed before a thread started. Resume only a witnessed thread. Each retry gets a new immutable
  * turn directory, so old evidence cannot become the completion evidence of the resumed turn.
  */
-export async function retryTransientHarnessSession(dialect, result, { artifactDir: directory, cwd, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, retryStartup = false, onSession, ...options }) {
+export async function retryTransientHarnessSession(dialect, result, { artifactDir: directory, cwd, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, retryStartup = false, onSession, budget, meter: carriedMeter, ...options }) {
+  const meter = carriedMeter ?? sessionMeter(dialect, directory, { budget, environment: options.environment });
   const unit = `${dialect.unit}-${taskId ?? path.basename(directory)}`;
   let current = result;
   for (;;) {
     const attempt = (Number.isInteger(current?.turn) ? current.turn : latestHarnessTurnDirectory(directory).sequence ?? 1) + 1;
     if (!retryableHarnessSession(dialect, current, { artifactDir: directory, retryDelaysMs, retryStartup })) return current;
+    const spent = meter.exhausted();
+    if (spent !== undefined) return stoppedForBudget(dialect, current, spent);
     await delay(retryDelaysMs[attempt - 2]);
     const next = nextHarnessTurnDirectory(directory);
     const lastFile = artifact(next.directory, "last-message.txt");
@@ -666,7 +670,7 @@ export async function retryTransientHarnessSession(dialect, result, { artifactDi
       if (previousPrompt === undefined) throw new Error(`${dialect.label} startup retry has no witnessed prompt to carry forward`);
       writeFileSync(input, previousPrompt, { mode: 0o600 });
     }
-    current = await launchHarnessSession(dialect, { directory: next.directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: next.directory }) });
+    current = meter.charge(await launchHarnessSession(dialect, { directory: next.directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: next.directory }) }));
   }
 }
 
@@ -679,7 +683,8 @@ export async function retryTransientHarnessSession(dialect, result, { artifactDi
  * are set aside as `events.jsonl.continued-<n>`.
  */
 const CONTINUE_UNFINISHED = "Your turn ended without the result this assignment requires. A command you started in the background has finished or will not report on its own: read its output, check the state you left, finish the assignment, and end with the required result.\n";
-export async function carryUnfinishedHarnessSession(dialect, result, { artifactDir: directory, cwd, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, ...options }) {
+export async function carryUnfinishedHarnessSession(dialect, result, { artifactDir: directory, cwd, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, budget, meter: carriedMeter, ...options }) {
+  const meter = carriedMeter ?? sessionMeter(dialect, directory, { budget, environment: options.environment });
   let current = result;
   let previousProgress = Infinity;
   for (;;) {
@@ -689,6 +694,8 @@ export async function carryUnfinishedHarnessSession(dialect, result, { artifactD
     if (owed.progress === 0 && previousProgress === 0) {
       return Object.freeze({ ...current, ok: false, errors: Object.freeze([...(current.errors ?? []), `${dialect.label} session stalled: it ended without its required result and its continuation took no step`]) });
     }
+    const spent = meter.exhausted();
+    if (spent !== undefined) return stoppedForBudget(dialect, current, spent);
     previousProgress = owed.progress;
     const continued = readdirSync(directory).filter((name) => /^events\.jsonl\.continued-\d+$/u.test(name)).length + 1;
     for (const name of ["events.jsonl", "stderr.txt", "exit-code"]) if (existsSync(artifact(directory, name))) renameSync(artifact(directory, name), artifact(directory, `${name}.continued-${continued}`));
@@ -696,8 +703,31 @@ export async function carryUnfinishedHarnessSession(dialect, result, { artifactD
     writeFileSync(input, promptText(dialect, CONTINUE_UNFINISHED), { mode: 0o600 });
     const args = dialect.resumeArguments({ ...options, cwd, lastFile: artifact(directory, "last-message.txt"), thread: current.thread, artifactDir: directory, taskId });
     const unit = `${dialect.unit}-${taskId ?? path.basename(directory)}`;
-    const next = await launchHarnessSession(dialect, { directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: directory }) });
-    current = await retryTransientHarnessSession(dialect, next, { ...options, artifactDir: directory, cwd, taskId, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession });
+    const next = meter.charge(await launchHarnessSession(dialect, { directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: directory }) }));
+    current = await retryTransientHarnessSession(dialect, next, { ...options, artifactDir: directory, cwd, taskId, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession, meter });
+  }
+}
+
+/**
+ * The provider's own statement of its allowance windows, taken once a session has ended: a dialect
+ * whose CLI states them only on request (`readQuota(options)`, the CLI's quota text) has them kept
+ * as the turn's `quota.txt`, which its `readSession` reads into `allowance`, so the ledger records
+ * the stated level the allowance's meter reads. Reading a quota never fails the work it follows.
+ */
+async function withStatedWindows(dialect, session, options) {
+  if (typeof dialect.readQuota !== "function" || session.thread === undefined || session.artifactDir === undefined) return session;
+  try {
+    const file = artifact(session.artifactDir, "quota.txt");
+    if (!existsSync(file)) {
+      const text = await dialect.readQuota(options);
+      if (typeof text !== "string" || text.trim() === "") return session;
+      writeFileSync(file, text, { mode: 0o600 });
+    }
+    const { allowance } = readHarnessSessionArtifacts(dialect, session.artifactDir);
+    return allowance === undefined ? session : Object.freeze({ ...session, allowance });
+  } catch (error) {
+    console.error(`[carrier] ${dialect.label} allowance windows left unread: ${error instanceof Error ? error.message : String(error)}`);
+    return session;
   }
 }
 
@@ -710,45 +740,51 @@ const promptText = (dialect, text) => (dialect.promptOf === undefined ? text : d
  * through a provider's lack of room like the original session. Used where the session that wrote a
  * change must carry it on, such as resolving its own conflicts against a moved main.
  */
-export async function resumeHarnessSession(dialect, { thread, prompt, directory, cwd, unitTask, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, ...options }) {
+export async function resumeHarnessSession(dialect, { thread, prompt, directory, cwd, unitTask, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, budget, ...options }) {
   mkdirSync(directory, { recursive: true, mode: 0o700 });
+  const meter = sessionMeter(dialect, directory, { budget, environment: options.environment });
+  const spent = meter.exhausted();
+  if (spent !== undefined) return stoppedForBudget(dialect, readHarnessSessionArtifacts(dialect, directory), spent);
   const turn = nextHarnessTurnDirectory(directory);
   const input = artifact(turn.directory, "prompt.txt");
   writeFileSync(input, promptText(dialect, prompt), { mode: 0o600 });
   const lastFile = artifact(turn.directory, "last-message.txt");
   const args = dialect.resumeArguments({ ...options, cwd, lastFile, thread, artifactDir: turn.directory, taskId: unitTask });
-  const first = await launchHarnessSession(dialect, { directory: turn.directory, input, args, cwd, executable, unit: `${dialect.unit}-${unitTask}`, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: turn.directory }) });
-  const carried = { ...options, artifactDir: directory, cwd, taskId: unitTask, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession };
-  return carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried);
+  const first = meter.charge(await launchHarnessSession(dialect, { directory: turn.directory, input, args, cwd, executable, unit: `${dialect.unit}-${unitTask}`, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: turn.directory }) }));
+  const carried = { ...options, artifactDir: directory, cwd, taskId: unitTask, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession, meter };
+  return withStatedWindows(dialect, await carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried), { ...options, cwd, executable });
 }
 
 /**
  * `{ prompt, cwd, artifactDir?, taskId?, executable?, timeoutMs?, systemRunner?, retryDelaysMs?, ...dialect options }`
  * to `{ ok, exitCode, thread, message, usage, errors, model?, reasoningEffort? }`. A task supplies its durable artifactDir.
  */
-export async function runHarnessSession(dialect, { prompt, cwd, artifactDir, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, ...options }) {
+export async function runHarnessSession(dialect, { prompt, cwd, artifactDir, taskId, executable = dialect.executable, timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand, retryDelaysMs = RETRY_DELAYS_MS, onSession, budget, ...options }) {
   if (typeof prompt !== "string" || prompt.trim() === "") throw new TypeError(`a ${dialect.label} session needs a prompt`);
   dialect.checkOptions?.(options);
   const sessions = dataKindDirectory(sectionRootOf(options.environment), "state", `${dialect.name}-session`);
   if (artifactDir === undefined) mkdirSync(sessions, { recursive: true, mode: 0o700 });
   const root = artifactDir ?? mkdtempSync(path.join(sessions, "session-"));
   mkdirSync(root, { recursive: true, mode: 0o700 });
+  const meter = sessionMeter(dialect, root, { budget, environment: options.environment });
+  const spent = meter.exhausted();
+  if (spent !== undefined) return stoppedForBudget(dialect, readHarnessSessionArtifacts(dialect, root), spent);
   const turn = nextHarnessTurnDirectory(root);
   const directory = turn.directory;
   const promptFile = artifact(directory, "prompt.txt");
   writeFileSync(promptFile, promptText(dialect, prompt), { mode: 0o600 });
   const unit = `${dialect.unit}-${taskId ?? path.basename(directory)}`;
   const args = dialect.startArguments({ ...options, cwd, lastFile: artifact(directory, "last-message.txt"), artifactDir: directory, taskId });
-  const first = await launchHarnessSession(dialect, { directory, input: promptFile, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: directory }) });
-  const carried = { ...options, artifactDir: directory, cwd, taskId, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession };
-  return carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried);
+  const first = meter.charge(await launchHarnessSession(dialect, { directory, input: promptFile, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: directory }) }));
+  const carried = { ...options, artifactDir: directory, cwd, taskId, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession, meter };
+  return withStatedWindows(dialect, await carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried), { ...options, cwd, executable });
 }
 
 /** Recover only after the original runner is observably gone. Keep the native
  * thread and archived attempt evidence; an absent exit marker alone proves nothing. */
 export async function recoverHarnessSession(dialect, { artifactDir: directory, taskId, thread, cwd, executable = dialect.executable,
   timeoutMs = 3_600_000, pollIntervalMs = POLL_INTERVAL_MS, systemRunner = systemdCommand,
-  retryDelaysMs = RETRY_DELAYS_MS, onSession, ...options }) {
+  retryDelaysMs = RETRY_DELAYS_MS, onSession, budget, ...options }) {
   const activeTurn = latestHarnessTurnDirectory(directory);
   const activeDirectory = activeTurn.directory;
   if (existsSync(artifact(activeDirectory, "exit-code"))) return readHarnessSessionArtifacts(dialect, activeDirectory);
@@ -771,11 +807,14 @@ export async function recoverHarnessSession(dialect, { artifactDir: directory, t
   const session = readHarnessSessionArtifacts(dialect, activeDirectory);
   const nativeThread = thread ?? session.thread;
   if (nativeThread === undefined) throw new Error(`${dialect.label} runner disappeared before a native session was witnessed`);
+  const meter = sessionMeter(dialect, directory, { budget, environment: options.environment });
+  const spent = meter.exhausted();
+  if (spent !== undefined) return stoppedForBudget(dialect, session, spent);
   const next = nextHarnessTurnDirectory(directory);
   const input = artifact(next.directory, "resume-prompt.txt");
   writeFileSync(input, promptText(dialect, "Your execution process was interrupted. Continue this same allocated duty from its existing evidence and current owning-node state. Check effects already recorded before acting; preserve the original receiving condition.\n"), { mode: 0o600 });
   const args = dialect.resumeArguments({ ...options, cwd, lastFile: artifact(next.directory, "last-message.txt"), thread: nativeThread, artifactDir: next.directory, taskId });
-  const first = await launchHarnessSession(dialect, { directory: next.directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: next.directory }) });
-  const carried = { ...options, artifactDir: directory, taskId, cwd, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession };
-  return carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried);
+  const first = meter.charge(await launchHarnessSession(dialect, { directory: next.directory, input, args, cwd, executable, unit, timeoutMs, pollIntervalMs, systemRunner, onSession, confinement: dialect.confinement?.({ ...options, cwd, artifactDir: next.directory }) }));
+  const carried = { ...options, artifactDir: directory, taskId, cwd, executable, timeoutMs, pollIntervalMs, systemRunner, retryDelaysMs, onSession, meter };
+  return withStatedWindows(dialect, await carryUnfinishedHarnessSession(dialect, await retryTransientHarnessSession(dialect, first, carried), carried), { ...options, cwd, executable });
 }

@@ -156,6 +156,13 @@ export const claudeCodeDialect = Object.freeze({
   evidence: "claude-session",
   // Every Claude Code session on this account draws on its subscription's stated windows (CIE content/allowances).
   allowance: "claude-max",
+  // Flow bounds of the carrier (agent-harness `carrier/flow-bounds.mjs`): what one task may draw when
+  // its caller states no route budget, and how much variable context a prompt may inline.
+  budget: Object.freeze({ turns: 6, tokens: 1_000_000 }),
+  ceiling: 6_000,
+  bytesPerToken: 4,
+  // The result's output tokens already hold its thinking tokens.
+  tokensOf: (usage) => ["input_tokens", "cache_write_input_tokens", "output_tokens"].reduce((sum, field) => sum + (Number.isFinite(usage[field]) ? usage[field] : 0), 0),
   // The subscription carries this house's interactive sessions too; headless carriers take few at once.
   usageLimit: 2,
   toolName: claudeToolName,
