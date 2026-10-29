@@ -17,7 +17,7 @@ import {
   orderPresenceMeasurements,
   DEFAULT_STALE_AFTER_SECONDS,
 
-} from "@red-cup-engineering/metrologic/models/physics/session-presence";
+} from "@red-cup-engineering/organizing/agency/session-presence";
 import { CLAUDE_CODE_PRESENCE_VOCABULARY } from "@red-cup-engineering/agent-harness-computer-system-engineering-services-section/hooks/schema";
 
 /** The date the `SessionEnd` hook was wired into `.claude/settings.json`.
