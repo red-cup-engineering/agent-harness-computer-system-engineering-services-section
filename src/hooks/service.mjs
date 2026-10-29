@@ -191,6 +191,29 @@ const hookEventAdmissionInput = schemaFrom({
 });
 
 /**
+ * Keep partial hook telemetry distinct from participation in the World.
+ *
+ * appendHookEventAtRoot deliberately returns a nonthrowing admission report for
+ * malformed telemetry; its caller must not turn that report into an authenticated
+ * SessionStart/SessionEnd, or execute recognition/participation after refusal.
+ * The host still owns authentication, office rights and binding the supplied
+ * session token to its actual client — this shape check grants none of those.
+ */
+export function requireParticipationHook(input) {
+  const admitted = admitHookEnvelope(input.payload, { harness: input.harness });
+  if (!isHookEnvelope(admitted)) {
+    throw new TypeError("harness-hook-event-admit: hook envelope refused before participation");
+  }
+  if (admitted.sessionId === undefined) {
+    throw new TypeError("harness-hook-event-admit: original source session id required before participation");
+  }
+  if (Buffer.byteLength(admitted.sessionId, "utf8") > 512) {
+    throw new TypeError("harness-hook-event-admit: source session id exceeds 512 bytes");
+  }
+  return admitted;
+}
+
+/**
  * One node operation for one harness utterance. The host owns recognition of its
  * harness character and participation effects; this service owns the sole hook
  * envelope/arrival admission path. Recognition happens before any journal write.
@@ -208,6 +231,8 @@ export function harnessHookEventAdmissionOperation({ binding, recognize, partici
     domain: hookEventAdmissionInput,
     effects: { class: "journal-write", replay: "idempotency-key", coordination: "coordination-free", deterministic: true, totality: "schema-bounded" },
     run: (input, _args, context) => {
+      // Refuse malformed/missing-session input before host recognition or any journal/Body effect.
+      requireParticipationHook(input);
       const subject = context?.invocation?.subject ?? "anonymous";
       const participant = recognize({ harness: input.harness, payload: input.payload, subject });
       const at = binding.now();
