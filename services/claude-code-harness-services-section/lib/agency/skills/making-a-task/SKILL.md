@@ -6,8 +6,9 @@ requires-capabilities:
   - work-item
   - structured-work-intent-admit
   - work-discharge-admit
----
+id: making-a-task
 
+---
 A task is the thing that makes work able to fail.
 
 The vocabulary here is exact, because confusing it is the recurring failure

@@ -4,8 +4,9 @@ description: "Reads a schema from the pool and validates data against it, return
 requires-capabilities:
   - read
   - schema-conformance
----
+id: reading-a-schema
 
+---
 One validator, one home. Every script that needs to check something against a
 contract runs this one, rather than carrying its own copy — because copies
 drift, and a validator that has drifted from the pool reports conformance

@@ -2,23 +2,28 @@
 description: Write or improve a CLAUDE.md file for a project. Use when setting up Claude Code instructions or auditing an existing CLAUDE.md.
 id: write-claude-md
 name: write-claude-md
-version: [0, 1]
+version:
+  - 0
+  - 1
 kind: operational
 runtime: inference
 triggers:
-  - "write claude md"
-  - "create claude md"
-  - "improve claude md"
-  - "set up claude code instructions"
+  - write claude md
+  - create claude md
+  - improve claude md
+  - set up claude code instructions
 inputs:
   project_root: string?
 outputs:
   path: string
 region:
-  reads: ["content/technology/disciplines/computing/software/claude-code/"]
+  reads:
+    - content/technology/disciplines/computing/software/claude-code/
   writes: []
 dependencies: []
 part-of: technology/disciplines/computing/software/claude-code/specifications/claude-md-specification
+requires-capabilities: []
+
 ---
 Write or improve a CLAUDE.md file: $ARGUMENTS
 
@@ -43,8 +48,8 @@ Write or improve a CLAUDE.md file: $ARGUMENTS
    - Existing README.md for project context
 
 4. **Draft the CLAUDE.md.** Follow the
-   [CLAUDE.md specification](../../index.md) and the
-   [writing curriculum](../../curricula/writing-claude-md.md).
+   [CLAUDE.md specification](../../../../index.md) and the
+   [writing curriculum](../../../../curricula/writing-claude-md.md).
    Structure:
 
    ```markdown

@@ -6,9 +6,9 @@ requires-capabilities:
   - office
   - office-incumbency-admit
   - character-mask-admit
+id: installing-claude-as-an-agent
+
 ---
-
-
 Installs one **office** into one **node** of the tree as a **subagent**, so a Claude session opened at that node can delegate work to that office — the office arriving with exactly the skills its record holds, and the node's shared skill registry receiving nothing.
 
 This is the sibling of **installing-claude-as-an-office**, and the difference is the whole point: that skill seats an office as the identity a session *steps into* (the node's CLAUDE.md, the node's skills). This one seats an office as a colleague a session *hands work to*.

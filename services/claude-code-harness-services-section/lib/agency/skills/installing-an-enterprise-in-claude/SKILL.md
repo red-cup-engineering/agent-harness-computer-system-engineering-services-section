@@ -7,8 +7,9 @@ requires-capabilities:
   - office
   - office-incumbency-admit
   - character-mask-admit
----
+id: installing-an-enterprise-in-claude
 
+---
 An enterprise install is the third relation between an office and a node.
 installing-claude-as-an-office seats one office as the identity a node's
 sessions step into; installing-claude-as-an-agent seats one office as a

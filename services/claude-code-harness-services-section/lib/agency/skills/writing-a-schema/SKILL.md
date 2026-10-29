@@ -1,13 +1,14 @@
 ---
 name: writing-a-schema
-description: "Writes a JSON Schema into the schema pool from data, refusing one that is unsatisfiable, self-contradictory, or names references that do not resolve; and with --check, validates every seated schema. Use when adding a record type, changing a type's contract, or proving the pool still says what it claims. A schema is a record like any other, so it is written by a script and checked by a machine rather than typed and hoped over."
+description: Writes a JSON Schema into the schema pool from data, refusing one that is unsatisfiable, self-contradictory, or names references that do not resolve; and with --check, validates every seated schema. Use when adding a record type, changing a type's contract, or proving the pool still says what it claims. A schema is a record like any other, so it is written by a script and checked by a machine rather than typed and hoped over.
 requires-capabilities:
   - read
   - write
   - schema-conformance
   - realize
----
+id: writing-a-schema
 
+---
 A schema is a record. It is not a special thing that lives outside the system
 that governs records — that exemption is what let the pool reach a state where
 `office.schema.json` required a key its own `properties` did not declare under

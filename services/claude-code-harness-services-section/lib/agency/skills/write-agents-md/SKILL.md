@@ -2,23 +2,28 @@
 description: Write or improve an AGENTS.md file for a project. Use when setting up cross-tool AI agent instructions or migrating from vendor-specific files.
 id: write-agents-md
 name: write-agents-md
-version: [0, 1]
+version:
+  - 0
+  - 1
 kind: operational
 runtime: inference
 triggers:
-  - "write agents md"
-  - "create agents md"
-  - "improve agents md"
-  - "set up agent instructions"
+  - write agents md
+  - create agents md
+  - improve agents md
+  - set up agent instructions
 inputs:
   project_root: string?
 outputs:
   path: string
 region:
-  reads: ["content/technology/disciplines/computing/software/claude-code/"]
+  reads:
+    - content/technology/disciplines/computing/software/claude-code/
   writes: []
 dependencies: []
 part-of: technology/disciplines/computing/software/claude-code/specifications/agents-md-specification
+requires-capabilities: []
+
 ---
 Write or improve an AGENTS.md file: $ARGUMENTS
 
@@ -45,8 +50,8 @@ Write or improve an AGENTS.md file: $ARGUMENTS
    - README.md for project context
 
 4. **Draft the AGENTS.md.** Follow the
-   [AGENTS.md specification](../../index.md) and the
-   [writing curriculum](../../curricula/writing-agents-md.md).
+   [AGENTS.md specification](../../../../index.md) and the
+   [writing curriculum](../../../../curricula/writing-agents-md.md).
    Structure:
 
    ```markdown

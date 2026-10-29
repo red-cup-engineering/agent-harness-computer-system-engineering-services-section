@@ -2,23 +2,28 @@
 description: Write or improve a README.md file for a project or directory. Use when setting up project documentation or auditing an existing README.
 id: write-readme-md
 name: write-readme-md
-version: [0, 1]
+version:
+  - 0
+  - 1
 kind: operational
 runtime: inference
 triggers:
-  - "write readme"
-  - "create readme"
-  - "improve readme"
-  - "set up project documentation"
+  - write readme
+  - create readme
+  - improve readme
+  - set up project documentation
 inputs:
   target_dir: string?
 outputs:
   path: string
 region:
-  reads: ["content/technology/disciplines/computing/software/claude-code/"]
+  reads:
+    - content/technology/disciplines/computing/software/claude-code/
   writes: []
 dependencies: []
 part-of: technology/disciplines/computing/software/claude-code/specifications/readme-md-specification
+requires-capabilities: []
+
 ---
 Write or improve a README.md file: $ARGUMENTS
 
@@ -43,8 +48,8 @@ Write or improve a README.md file: $ARGUMENTS
    - CONTRIBUTING.md if present
 
 4. **Draft the README.md.** Follow the
-   [README.md specification](../../index.md) and the
-   [writing curriculum](../../curricula/writing-readme-md.md).
+   [README.md specification](../../../../index.md) and the
+   [writing curriculum](../../../../curricula/writing-readme-md.md).
    Use Standard README section order:
 
    1. Title
