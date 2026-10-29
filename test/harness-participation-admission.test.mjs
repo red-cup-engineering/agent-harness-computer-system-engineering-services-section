@@ -5,7 +5,7 @@ import { requireParticipationHook } from "../src/hooks/service.mjs";
 const sourceSession = "actual-harness-session-from-transport";
 const event = (name = "SessionStart", sessionId = sourceSession) => ({
   harness: "mcp",
-  payload: { hook_event_name: name, ...(sessionId === undefined ? {} : { session_id: sessionId }) },
+  payload: { hook_event_name: name, ...(sessionId === null ? {} : { session_id: sessionId }) },
 });
 
 test("native participation preflight requires an admitted source event, not an arbitrary payload", () => {
@@ -20,7 +20,7 @@ test("native participation preflight requires an admitted source event, not an a
 
 test("SessionStart, SessionEnd and ordinary MCP hooks cannot invent a missing session", () => {
   for (const name of ["SessionStart", "SessionEnd", "UserPromptSubmit"]) {
-    for (const missing of [undefined, "", "   "]) {
+    for (const missing of [null, "", "   "]) {
       assert.throws(() => requireParticipationHook(event(name, missing)),
         /original source session id required before participation/u);
     }
