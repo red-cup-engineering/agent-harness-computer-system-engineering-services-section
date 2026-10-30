@@ -784,3 +784,13 @@ test("the partial-worktree check is bounded: where git cannot answer in time the
   assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: overflow }).action, "deny");
   assert.ok(LIMITS.massDeletion.worktreeMilliseconds + LIMITS.massDeletion.worktreeMilliseconds < 15_000);
 });
+
+test('the dependency installation denial names the runnable sanctioned preparation',()=>{
+ for(const command of ['npm ci','pnpm install','npx some-tool']){
+  const result=verdict(command);
+  assert.equal(result.action,'deny',command);
+  assert.match(result.reason,/duty-worktree-open/u,command);
+  assert.match(result.reason,/"dependencies":true/u,command);
+  assert.match(result.reason,/scripts\/converge-house-dependencies\.mjs <package> --apply/u,command);
+ }
+});
