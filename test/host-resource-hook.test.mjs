@@ -537,11 +537,12 @@ test("commands go to the work slice, from a session outside the slices or inside
     const answer = (input, cgroup = OUTSIDE, provider = "claude") => decide(input, { env: live, provider, cgroup })?.updatedInput?.command;
     // Without permission rules, every command is contained.
     assert.ok(answer(shellEvent("ls -la", "bypassPermissions")).includes(slice));
-    // Except a line of removals only, which the harness's own removal check must read as written.
+    // Except a line holding a removal, which the harness's own removal check must read as written.
     const removal = ["r" + "m", "src/old.mjs"].join(" ");
     assert.equal(answer(shellEvent(removal, "bypassPermissions")), undefined);
     assert.equal(answer(shellEvent(`${"r" + "mdir"} a/b && ${"r" + "mdir"} a`, "bypassPermissions")), undefined);
-    assert.ok(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")).includes(slice), "a removal beside other work is contained");
+    assert.equal(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")), undefined, "a removal beside other work is left readable");
+    assert.equal(answer(shellEvent(`jq -e . a.json && ${removal}`, "bypassPermissions")), undefined);
     // With them, only a watch, so no allow rule stops matching an ordinary command.
     assert.equal(answer(shellEvent("ls -la", "default")), undefined);
     assert.equal(answer(shellEvent("git fetch origin", "default")), undefined);

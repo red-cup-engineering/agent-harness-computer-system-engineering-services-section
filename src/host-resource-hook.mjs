@@ -1120,12 +1120,12 @@ const WATCH_TOOLS = /^Monitor$/u;
  *  `systemd-run … bash -c` carrier that check cannot see into, so it refuses every removal. */
 const SELF_CHECKED_PROGRAMS = new Set(["rm", "rmdir", "unlink"]);
 
-/** Whether every simple command of `command` is a removal the harness checks itself: light work,
- *  left uncontained so that check reads it. */
+/** Whether any simple command of `command` is a removal the harness checks itself. The whole line is
+ *  left uncontained so that check reads it and asks, instead of refusing an unreadable carrier. */
 export function isSelfCheckedRemoval(command) {
   try {
     const { commands } = parseShell(command);
-    return commands.length > 0 && commands.every(({ words, piped }) => !piped && SELF_CHECKED_PROGRAMS.has(words[0]));
+    return commands.some(({ words }) => SELF_CHECKED_PROGRAMS.has(words[0]));
   } catch {
     return false;
   }
