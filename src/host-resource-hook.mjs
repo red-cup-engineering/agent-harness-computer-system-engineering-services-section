@@ -642,7 +642,7 @@ function git(argv, state, ctx, report) {
     if (why !== undefined) { report.deny(partialReason(sub === "commit" ? "git commit -a" : "git add -A/-u", why)); return; }
   }
   if (sub === "worktree") {
-    if (args[0] === "add") report.deny("git worktree add makes a second working tree of a repository the colony already holds: work in that section's own checkout inside the colony directory (~/<colony>), on a branch.");
+    if (args[0] === "add") report.deny("git worktree add makes a second working tree of a repository the colony already holds: work in that section's own checkout inside the colony directory (~/<colony>) on a branch (git -C ~/<colony>/<section> switch -c <branch>), or open a duty worktree with the MetroPlat verb duty-worktree-open {\"duty\":\"<ready-duty>\"}.");
     return;
   }
   if (sub === "clone") {
@@ -694,7 +694,7 @@ function clone(words, state, ctx, report) {
   }
   const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
   if (resolved === undefined) {
-    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory (~/<colony>).");
+    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory, e.g. git clone <url> ~/<colony>/<section>.");
     return;
   }
   // Everything the Group writes stays inside the colony directory (~/<colony>, e.g. ~/bare-cedar-fog);
@@ -761,7 +761,7 @@ function indexLock(argv, state, ctx, report) {
     const gitDir = file === undefined ? undefined : path.dirname(file);
     const running = gitDir === undefined ? undefined : gitProcessOn(gitDir);
     if (running !== undefined) {
-      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
+      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish (check with pgrep -a git); the lock is stale only once no git process is left there.`);
       return;
     }
   }
@@ -889,7 +889,7 @@ function scanner(name, argv, piped, state, ctx, report) {
     const dir = resolveDir(word, state.cwd, ctx);
     // Rule no-whole-tree-scans-on-bare-cedar-fog: a recursive scan of a disk, a home or a large working tree is denied like
     // `find`, not run; the settings deny list matches command prefixes, so `cd … && grep -r …` reaches only this hook.
-    if (dir !== undefined && isBroad(dir, ctx)) { report.deny(`${name} recursing from ${dir} scans the whole disk or a large working tree (rule no-whole-tree-scans-on-bare-cedar-fog): search a named section's directory, read the file a note or term already cites, or hand a broad sweep to an Explore agent.`); return; }
+    if (dir !== undefined && isBroad(dir, ctx)) { report.deny(`${name} recursing from ${dir} scans the whole disk or a large working tree (rule no-whole-tree-scans-on-bare-cedar-fog): search a named section's directory (rg -n <pattern> <section-dir>), read the file a note or term already cites, or hand a broad sweep to an Explore agent.`); return; }
   }
 }
 
@@ -906,7 +906,7 @@ function dependencyProduction(name, words, report) {
   // own .pnpmfile.cjs (the house's one-version-per-family rule) must still shape that resolution.
   const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only"))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
   if((installation&&!lockOnly)||(fetchingExec&&!args.includes("--no-install")))
-    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Use the original worktree dependency preparation with explicit installation selection and its shared-store/lifecycle receipt; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
+    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Prepare dependencies through the MetroPlat verb duty-worktree-open with explicit installation selection, input {\"duty\":\"<ready-duty>\",\"dependencies\":true} (it links the duty worktree through the shared store and returns the lifecycle receipt), or, to converge house package pins, run node scripts/converge-house-dependencies.mjs <package> --apply from computer-code-development-engine; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
   return true;
 }
 
