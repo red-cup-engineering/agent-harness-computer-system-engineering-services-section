@@ -905,7 +905,11 @@ function dependencyProduction(name, words, report) {
   // A lockfile-only resolution writes no node_modules and runs no lifecycle script; the repository's
   // own .pnpmfile.cjs (the house's one-version-per-family rule) must still shape that resolution.
   const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only"))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
-  if((installation&&!lockOnly)||(fetchingExec&&!args.includes("--no-install")))
+  // A frozen install reproduces exactly the committed lockfile into the shared store, so checks and tests can
+  // run; denying it left every dependency-bearing check unrun (Leader, 2026-10-30: fix the technology, never
+  // route around it).
+  const frozen=(name==="npm"&&action==="ci")||(name==="pnpm"&&["install","i"].includes(action)&&args.includes("--frozen-lockfile"));
+  if((installation&&!lockOnly&&!frozen)||(fetchingExec&&!args.includes("--no-install")))
     report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Prepare dependencies through the MetroPlat verb duty-worktree-open with explicit installation selection, input {\"duty\":\"<ready-duty>\",\"dependencies\":true} (it links the duty worktree through the shared store and returns the lifecycle receipt), or, to converge house package pins, run node scripts/converge-house-dependencies.mjs <package> --apply from computer-code-development-engine; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
   return true;
 }
