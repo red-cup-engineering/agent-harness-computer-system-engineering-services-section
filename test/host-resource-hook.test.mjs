@@ -302,6 +302,37 @@ test('raw dependency producers refuse while metadata and received execution rema
  assert.equal(verdict('pnpm install --lockfile-only').action,'deny','a resolution without --ignore-scripts may run lifecycle scripts');
 });
 
+test("installing, enabling or starting a clock is refused; retiring one is not", () => {
+  for (const command of [
+    "systemctl --user enable --now publish-local-landings.timer",
+    "systemctl --user start source-overlay-gate.timer",
+    "sudo systemctl enable audit-shift@x.timer",
+    "systemd-run --user --on-calendar=hourly node job.mjs",
+    "systemd-run --user --on-active 5min node job.mjs",
+    "git maintenance start",
+    "git -C repo maintenance register",
+    "crontab -e",
+    "crontab jobs.txt",
+    "cat > ~/.config/systemd/user/x.timer <<'EOF'\n[Timer]\nOnBootSec=5min\nEOF",
+    "printf '[Timer]\\n' >~/.config/systemd/user/x.timer",
+    "tee ~/.config/systemd/user/x.timer < unit",
+    "cp unit.timer ~/.config/systemd/user/",
+    "install -m 644 x.timer ~/.config/systemd/user/x.timer",
+    "bash -c 'systemctl --user enable x.timer'",
+  ]) assert.equal(verdict(command).action, "deny", command);
+  for (const command of [
+    "systemctl --user disable --now publish-local-landings.timer",
+    "systemctl --user stop x.timer",
+    "systemctl --user mask x.timer",
+    "systemctl --user list-timers --all",
+    "systemctl --user restart bare-cedar-fog-561-group.service",
+    "systemd-run --user --scope node job.mjs",
+    "git maintenance unregister",
+    "crontab -l",
+    "cat ~/.config/systemd/user/x.timer",
+  ]) assert.equal(verdict(command).action, "allow", command);
+});
+
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
   const confined = (command) => decide({ tool_name: "Bash", cwd: dirs.big, permission_mode: "dontAsk", tool_input: { command } }, { env, home });
   assert.equal(confined("git status").permissionDecision, "deny");

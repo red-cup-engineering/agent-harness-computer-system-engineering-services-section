@@ -914,10 +914,34 @@ function dependencyProduction(name, words, report) {
   return true;
 }
 
+// Rule machine-work-runs-as-mape-k-loops-not-clocks: a timer, calendar schedule or cron entry decides when work
+// runs, so installing, enabling or starting one is denied however it is spelled. Stopping, disabling or masking
+// one retires a clock and stays allowed.
+const CLOCK_VERBS = new Set(["enable", "reenable", "start", "restart", "try-restart", "reload-or-restart", "try-reload-or-restart", "link", "preset", "add-wants", "add-requires", "edit"]);
+const CLOCK_DENIAL = "rule machine-work-runs-as-mape-k-loops-not-clocks (Leader, 2026-10-25, rejected repeatedly since): a timer, calendar schedule or cron entry must not decide when work runs. Start the work from an event a house monitor already reports (PSI or memory.events, a filesystem notification, a capacity reading crossing its threshold, a git or GitHub event, a session ending) and execute it through the owning service; a deadline the Knowledge holds arms one wake from that reading.";
+const isTimerPath = (word) => /\.timer$/u.test(word) || /(?:^|\/)cron(?:tab|\.d|\.(?:hourly|daily|weekly|monthly))(?:\/|$)/u.test(word);
+
+function clockInstallation(name, raw, quoted, words, report) {
+  for (let i = 0; i < raw.length; i += 1) {
+    const m = quoted[i] ? null : /^(\d*|&)(>>?|&>>?)(.*)$/u.exec(raw[i]);
+    if (m !== null && isTimerPath(m[3] === "" ? raw[i + 1] ?? "" : m[3])) { report.deny(`writing a timer unit or cron entry: ${CLOCK_DENIAL}`); return true; }
+  }
+  const args = words.slice(1);
+  const denied =
+    (name === "systemctl" && args.some((arg) => CLOCK_VERBS.has(arg)) && args.some((arg) => /\.timer$/u.test(arg)))
+    || (name === "systemd-run" && args.some((arg) => /^--(?:on-[a-z-]+|timer-property)(?:=|$)/u.test(arg)))
+    || (name === "git" && args.includes("maintenance") && ["start", "register"].includes(args[args.indexOf("maintenance") + 1]))
+    || (name === "crontab" && !args.every((arg) => arg === "-l" || arg.startsWith("-u")))
+    || (["tee", "cp", "mv", "install", "ln"].includes(name) && positionals(args).some(isTimerPath));
+  if (denied) report.deny(`${name} installs or starts a clock: ${CLOCK_DENIAL}`);
+  return denied;
+}
+
 function simple(command, frame, ctx, report, depth) {
   const words = unwrap(withoutRedirections(command.words, command.quoted));
   if (words.length === 0) return;
   const name = path.basename(words[0].replaceAll("\\","/")).replace(/\.(?:exe|cmd|bat)$/iu, "").toLowerCase();
+  if (clockInstallation(name, command.words, command.quoted, words, report)) return;
   if (SKIPPED.has(name)) return;
   const cwdOf = (scope) => {
     if (!frame.cwds.has(scope)) frame.cwds.set(scope, cwdOf(frame.scopes[scope].parent));

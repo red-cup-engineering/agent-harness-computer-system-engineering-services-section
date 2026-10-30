@@ -61,7 +61,7 @@ test("original deny, provider rewrite, malformed event and containment contracts
   const event = { tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } };
   assert.equal(decide(event, { env }).permissionDecision, "deny");
   assert.equal(decide(event, { env, provider: "codex" }).permissionDecision, "deny");
-  assert.equal(decide({ ...event, tool_input: { command: "npm install", description: "keep" } }, { env, provider: "codex" }), undefined);
+  assert.equal(decide({ ...event, tool_input: { command: "npm test", description: "keep" } }, { env, provider: "codex" }), undefined);
   assert.equal(run("malformed", { env }), undefined);
   assert.equal(decide({ ...event, tool_input: { command: "echo small" } }, { env }), undefined);
   assert.match(launcherScript(), /--slice=agent-claude.slice/); assert.match(sliceUnit(), /MemorySwapMax=0/);
