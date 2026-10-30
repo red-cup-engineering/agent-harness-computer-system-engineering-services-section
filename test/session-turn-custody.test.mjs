@@ -8,6 +8,7 @@ import { harnessCapacitySnapshot, readHarnessSessionArtifacts, releaseProviderTu
 
 const dialect = Object.freeze({
   name: "fixture",
+  budget: { turns: 8, tokens: 1_000_000 },
   label: "fixture",
   unit: "fixture-task",
   pool: "fixture-provider",

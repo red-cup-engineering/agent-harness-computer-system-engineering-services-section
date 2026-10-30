@@ -1,6 +1,8 @@
 import { skillError, skillSuccess } from "@red-cup-engineering/animating/becoming/doing/working/governing/skill";
 import { skillResultSchema } from "@red-cup-engineering/animating/becoming/doing/working/governing/carriers";
 import { admitAgencyWorkResult, workResultFromSkillResult } from "@red-cup-engineering/organizing/work/schema";
+import { resolveIngress } from "./flow-bounds.mjs";
+import { proposalContext, workContext } from "./work-context.mjs";
 import { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SHAPE, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 export { RECEIVING_DECISIONS, RECEIVING_JUDGEMENT_SCHEMA, receivingJudgementMeaning } from "./receiving-judgement.mjs";
 
@@ -103,7 +105,11 @@ function worldAccess(dialect, server) {
 
 /** The suit a carrier session wears for one duty: the duty in the rail's own terms, the house's told
  *  fiber (read from `toldRoot`), and where the Group's knowledge is. */
-export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeName, mcpServer, enterprise, workspaceRule = dialect.workspaceRule }) {
+export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeName, mcpServer, enterprise, workspaceRule = dialect.workspaceRule, ingress = resolveIngress(dialect), contextDirectory }) {
+  if (typeof contextDirectory !== "string") throw new TypeError("a work suit needs the directory its large context is written to");
+  // The variable context, by value while it fits the carrier's ingress ceiling and otherwise by reference:
+  // written once into the session's directory, named in the prompt with its digest and a summary.
+  const context = workContext(item, { ingress, directory: contextDirectory });
   const workPrefix = enterprise === undefined ? "" : `@${enterprise} `;
   const access = worldAccess(dialect, mcpServer);
   const boardMethods = new Set((item.methodResources ?? []).map((resource) => resource.verb));
@@ -136,20 +142,20 @@ export function agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeNam
       `Scope: ${item.scope}; original subject: ${item.subject}; allocated office: ${item.office}`,
       ...(enterprise === undefined ? [] : [`This duty is owned by the ${enterprise} enterprise. Prefix its work-coordination commands with @${enterprise}, which selects its own settlement without granting authority. Work-board and agency records remain node operations; do not prefix those.${usesBoardOperations ? ` For a taken demand, find its current board thread with work-board ${JSON.stringify({ subject: takingSubjects[0], full: true, limit: 2 })}${takingSubjects.length === 1 ? "" : `; a witnessed extension is held under the taking it cites, so also try ${takingSubjects.slice(1).map((subject) => JSON.stringify(subject)).join(", ")}`}. Identify the current taking by this enterprise and exact admitted subject before any act. Migration can change thread ids while preserving that taking and subject; copied source receipts are historical evidence, not current routing addresses. If this duty assays a delivery rather than holding a taking, use its assay-of thread evidence.` : ""}`]),
       `When the method needs the original journal subject, use ${workPrefix}work-item ${JSON.stringify({ id: item.subject })}; do not substitute the demand id. When it needs dispatch state beyond this allocation, id means the Character; select only the necessary page, starting with ${workPrefix}agent-work-dispatch ${JSON.stringify({ id: item.agent, limit: 1 })}.`,
-      ...(item.methodResources === undefined ? [] : [`The holder has delegated these actual installed method Resources, including their exact input contracts: ${JSON.stringify(item.methodResources)}`]),
+      ...(context.has("method-resources") ? [context.get("method-resources")] : []),
       ...(publicationPlanResources.length === 1 && typeof publicationPlanResources[0].id === "string" && typeof publicationPlanResources[0].witness === "string"
         ? [`If the allocated method explicitly calls for the read-only package publication plan carried by its signed Action, return this native typed plan request ${JSON.stringify(workResultFromSkillResult(skillSuccess({kind:"npm-workspace-publication-plan-request@1",scope:item.scope,resource:publicationPlanResources[0].id,witness:publicationPlanResources[0].witness})))}. This requests only the host's fixed read-only plan at the end of this actual session; it does not publish, change package files, or authorize any other command. Do not request it unless this duty's stated method requires the plan.`] : []),
       `This duty is already allocated and invoked by the resident work controller: ${JSON.stringify({ allocation: item.allocation, scope: item.scope, provider: item.delegation?.provider, execution: item.execution })}. Perform its method in this worker; do not allocate this same duty again or require access to the controller's private execute/pump verbs.`,
       `When you need current execution state, read only your exact delegated duty: ${workPrefix}agency-work-delegated ${JSON.stringify({ scope: item.scope })}. Its native execution receipt and admitted session are process evidence, distinct from an assignment label. Missing a resource actually needed by your method is a separate obstruction.`,
-      ...(item.signedAction === undefined ? [] : [`Signed next Action and witnessed Resources: ${JSON.stringify(item.signedAction)}`]),
+      ...(context.has("signed-action") ? [context.get("signed-action")] : []),
       ...(item.sourceRepository === undefined ? [] : [`Admitted source repository: ${item.sourceRepository}`]),
       `Work: ${item.work}`,
-      ...(item.governing === undefined ? [] : [`Canonical governing terms at allocation, with their source revisions: ${JSON.stringify(item.governing)}`]),
+      ...(context.has("governing") ? [context.get("governing")] : []),
       `Skill: ${item.skill}`,
       `Method: ${item.method}`,
       `Received when: ${item.receiverCondition}`,
       ...(item.returns === undefined ? [] : [`The result's value is typed: ${JSON.stringify(item.returns)}`]),
-      ...(item.source === undefined ? [] : [`Source: ${typeof item.source === "string" ? item.source : JSON.stringify(item.source)}`]),
+      ...(item.source === undefined ? [] : [context.get("source") ?? `Source: ${item.source}`]),
       "",
       item.text,
       "",
@@ -193,9 +199,11 @@ function optionalJudgement(message) {
  * methods beside it. `sessionOptions({ item, receiving })` gives the harness's own session options
  * (effects, MCP, office projection, output constraint) in its dialect's terms.
  */
-export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [], toldRoot = dataRoot, characterName, nodeName, mcpServer, enterprise, cwd, workspaceOf, model, executable, sessionOptions = () => ({}), onSession, onReceivingSession, onSourceBinding, onSourceResult }) {
+export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [], toldRoot = dataRoot, characterName, nodeName, mcpServer, enterprise, cwd, workspaceOf, model, executable, sessionOptions = () => ({}), ceiling, bytesPerToken, onSession, onReceivingSession, onSourceBinding, onSourceResult }) {
   if (typeof workerId !== "string" || workerId.length === 0) throw new TypeError(`${dialect.label} carrier: the character it serves is required`);
   const executableOption = executable === undefined ? {} : { executable };
+  // The ingress ceiling (input tokens) and the session budget are the carrier's parameters: its caller's, else its dialect's.
+  const ingress = resolveIngress(dialect, { ceiling, bytesPerToken });
   const taskId = item => `agency-${createHash("sha256").update(item.allocation).digest("hex").slice(0, 32)}`;
   const directory = item => harnessTaskArtifactDirectory(dialect, dataRoot, taskId(item), formerRoots);
   const observedCarrier = (session, model, effort, sourceTask) => {
@@ -225,7 +233,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     return { producer, session: carrier, execution: session.ok ? `${dialect.evidence}:${session.thread ?? item.scope}` : `refused:${item.scope}`,
       result, ...(item.execution?.sourceBinding === undefined ? {} : { sourceBinding: item.execution.sourceBinding }), ...(item.execution?.sourceResult === undefined ? {} : { sourceResult: item.execution.sourceResult }), providerEvidence: evidence, ...(resources.length === 0 ? {} : { resources }) };
   };
-  const options = (item, receiving = false) => ({ cwd, ...executableOption, ...sessionOptions({ item, receiving }) });
+  const options = (item, receiving = false) => ({ cwd, ...executableOption, ...(item.budget === undefined ? {} : { budget: item.budget }), ...sessionOptions({ item, receiving }) });
   // A harness whose sessions must not share a tree gives each act its own workspace: `workspaceOf.open({ item, id, receiving })`
   // resolves the working directory (and fails the act when it cannot, so nothing runs in `cwd`), and
   // `workspaceOf.close({ item, id, receiving, workspace, session })` settles it once the session ended.
@@ -265,7 +273,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     }
     const run = async ({ onSession: bindSession } = {}) => {
       const selectedModel = item.allocatedModel ?? model;
-      const suitOf = sourceBinding => agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeName, mcpServer, enterprise, workspaceRule: workspaceOf?.rule?.({ item, id: taskId(item), receiving: false, sourceBinding }) ?? dialect.workspaceRule });
+      const suitOf = sourceBinding => agencyWorkSuit(item, { dialect, toldRoot, characterName, nodeName, mcpServer, enterprise, workspaceRule: workspaceOf?.rule?.({ item, id: taskId(item), receiving: false, sourceBinding }) ?? dialect.workspaceRule, ingress, contextDirectory: directory(item) });
       const observed = readHarnessSessionArtifacts(dialect, directory(item));
       const prior = observed.exitCode === undefined ? undefined : observed;
       const observe = onSession === undefined || selectedModel === undefined ? undefined : (session, sourceTask) => onSession(item, observedCarrier(session, selectedModel, requiredEffort(item), sourceTask));
@@ -427,6 +435,9 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
     // Ordered for the prompt cache, as the work suit is: identity, node and MCP use and the general
     // receiving rules are the same for every proposal this character receives; the office, enterprise
     // and the proposal follow.
+    // The proposal rides in the prompt while it fits the ingress ceiling and otherwise is read from the
+    // file it is written to in the attempt's directory.
+    const proposalLine = proposalContext(proposal, { ingress, directory: artifactDir });
     const suit = sessionContextImage({
       dataRoot: toldRoot, toldBudget: 2_000,
       identity: ["Attend to the 561 Group.", `You are ${characterName}, the ${dialect.label} character of this machine on node ${nodeName}${enterprise === undefined ? "" : `, working for the ${enterprise} enterprise`}, exercising the actually held office named below as an independent receiver. This is a direct receiving act, not a new production allocation.`],
@@ -440,7 +451,7 @@ export function agencyWorkCarrier({ dialect, workerId, dataRoot, formerRoots = [
       mission: [
         `Receiving office: ${office}; model ${staffing.carrier}${staffing.effort === undefined ? "" : `, reasoning effort ${staffing.effort}`}`,
         ...(enterprise === undefined ? [] : [`The proposal belongs to ${enterprise}. Prefix its work-coordination evidence reads with @${enterprise}; work-board and agency records remain node operations. This selects the owning settlement and confers no authority.`]),
-        `Review only this exact immutable proposal: ${JSON.stringify(proposal)}`,
+        proposalLine,
       ],
     });
     const session = await inWorkspace({ item: review, id, receiving: true, observeSourceTask: true }, async (workspace, _sourceBinding, sourceTask) => {

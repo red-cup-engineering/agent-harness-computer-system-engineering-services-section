@@ -145,3 +145,7 @@ This receives two real npm groups that held the one heavy slot after their
 900/1500-second TERM-only timeouts, retaining their partial outcomes for their
 original owners. Native tests include a TERM-ignoring process group, explicit
 caller grace, no-timeout status, and all existing slot/containment behavior.
+
+## Earlier work
+
+- Restored files at `lib/legacy/2026-06-16-ce3d939` (restore commit ce3d939); `lib/legacy/2026-06-23-ff20882` (restore commit ff20882), from the 561-group/bare-cedar-fog history.

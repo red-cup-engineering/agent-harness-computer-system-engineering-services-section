@@ -146,6 +146,13 @@ export const codexDialect = Object.freeze({
   evidence: "codex-thread",
   // Every Codex session on this account draws on its ChatGPT plan's stated windows (CIE content/allowances).
   allowance: "chatgpt-codex",
+  // Flow bounds of the carrier (agent-harness `carrier/flow-bounds.mjs`): what one task may draw when
+  // its caller states no route budget, and how much variable context a prompt may inline.
+  budget: Object.freeze({ turns: 6, tokens: 1_000_000 }),
+  ceiling: 6_000,
+  bytesPerToken: 4,
+  // Codex counts cached tokens inside `input_tokens`; a turn draws the uncached rest and its output.
+  tokensOf: (usage) => Math.max(0, (Number(usage.input_tokens) || 0) - (Number(usage.cached_input_tokens) || 0)) + (Number(usage.output_tokens) || 0),
   workspaceRule: CODEX_WORKSPACE_RULE,
   toolName: codexToolName,
   checkOptions: ({ sandbox }) => { sandboxOf(sandbox); },

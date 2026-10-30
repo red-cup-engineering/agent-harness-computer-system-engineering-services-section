@@ -14,7 +14,12 @@
  *              schema, else its response text; a result whose status is not SUCCESS is no message;
  *   usage      the result's token usage (`input_tokens`, `output_tokens`, `thinking_tokens`,
  *              `cache_read_tokens`) in the house's token-usage fields;
- *   quota      a weekly-compute refusal is allowance exhaustion, not a transient fault.
+ *   quota      a weekly-compute refusal is allowance exhaustion, not a transient fault;
+ *   windows    agy states its allowance windows on request (`agy --print /usage`: one tab-separated
+ *              row per pool and window, its remaining percentage and reset instant). Once a session has
+ *              ended the runner asks (`readQuota`) and keeps the text as `quota.txt`; `readSession`
+ *              reads it as the statement `subscriptionReadings` turns into ledger readings of the
+ *              allowance's stated meters (`quotaMeters` names which row is which meter).
  *
  * Authority is the runner's, not agy's (observed 2026-10-03): headless agy writes files in its
  * workspace and /tmp unasked, `--mode` has no effect while slash commands are disabled, and
@@ -25,7 +30,7 @@
  * login directory and, for `workspace-write`, its workspace and that workspace's git directory.
  * A reading session also keeps `--sandbox`. No session is given `--dangerously-skip-permissions`.
  */
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { existsSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 
@@ -122,6 +127,32 @@ export function antigravityTokenUsage(usage) {
   return Object.fromEntries(Object.entries(fields).filter(([, value]) => Number.isSafeInteger(value)));
 }
 
+/** agy's usage rows, `<pool>\t<window>\t<remaining>%\t<reset instant>`, as the windows of a statement in
+ *  the shape `subscriptionReadings` reads (`unifiedWindows`: utilization 0..1 and `resetsAt` in epoch
+ *  seconds). `meters` says which row stands for which meter of the allowance; a row it does not name
+ *  or one that does not parse says nothing. */
+export function antigravityAllowanceStatement(text, meters) {
+  const unifiedWindows = {};
+  for (const line of String(text).split(/\r?\n/u)) {
+    const [pool, window, remaining, reset] = line.split("\t").map((cell) => cell.trim());
+    const meter = meters.find((entry) => entry.pool === pool && entry.window === window)?.meter;
+    const left = /^(\d{1,3}(?:\.\d+)?)%$/u.exec(remaining ?? "")?.[1];
+    const resetsAt = Date.parse(reset ?? "") / 1000;
+    if (meter === undefined || left === undefined || Number(left) > 100 || !Number.isFinite(resetsAt)) continue;
+    unifiedWindows[meter] = { utilization: (100 - Number(left)) / 100, resetsAt };
+  }
+  return Object.keys(unifiedWindows).length === 0 ? undefined : { unifiedWindows };
+}
+
+/** Ask agy for its allowance windows as the carrier's own home, in the session's task worktree. */
+function readAntigravityQuota({ cwd, home, executable = "agy", environment = process.env }) {
+  return new Promise((resolve, reject) => {
+    execFile(executable, ["--print", "/usage"], { cwd, timeout: 60_000, maxBuffer: 1024 * 1024, encoding: "utf8",
+      env: { PATH: environment.PATH, HOME: antigravityHome(home), LANG: "C.UTF-8" } },
+    (error, stdout) => error ? reject(error) : resolve(stdout));
+  });
+}
+
 const QUOTA_REFUSAL = /quota|rate.?limit|resource.?exhausted|usage limit|\b429\b|weekly/iu;
 const TRANSIENT = /overloaded|unavailable|\b50[0234]\b|internal server error|deadline exceeded/iu;
 
@@ -168,6 +199,20 @@ export const antigravityDialect = Object.freeze({
   evidence: "antigravity-conversation",
   allowance: "google-ai-pro-antigravity",
   usageLimit: 1,
+  // Flow bounds of the carrier (agent-harness `carrier/flow-bounds.mjs`): what one task may draw when
+  // its caller states no route budget, and how much variable context a prompt may inline. Measured
+  // 2026-10-29: 200 KB prompts spent about 520k uncached input tokens an execution.
+  budget: Object.freeze({ turns: 6, tokens: 1_000_000 }),
+  ceiling: 6_000,
+  bytesPerToken: 4,
+  // Which row of agy's `/usage` is which stated meter of the allowance.
+  quotaMeters: Object.freeze([
+    Object.freeze({ pool: "Gemini Models", window: "Weekly Limit Remaining", meter: "week" }),
+    Object.freeze({ pool: "Gemini Models", window: "Five Hour Limit Remaining", meter: "five-hour" }),
+    Object.freeze({ pool: "Claude and GPT models", window: "Weekly Limit Remaining", meter: "claude-gpt-week" }),
+    Object.freeze({ pool: "Claude and GPT models", window: "Five Hour Limit Remaining", meter: "claude-gpt-five-hour" }),
+  ]),
+  readQuota: (options) => readAntigravityQuota(options),
   toolName: antigravityToolName,
   checkOptions: ({ effects, home }) => { checkEffects(effects); antigravityHome(home); },
   confinement: (options) => antigravityConfinement(options),
@@ -200,11 +245,14 @@ export const antigravityDialect = Object.freeze({
       : structured !== undefined && structured !== null ? JSON.stringify(structured)
         : typeof result.response === "string" && result.response.trim() !== "" ? result.response.trim() : undefined;
     const usage = antigravityTokenUsage(result?.usage);
+    const quota = readOptional(artifact(directory, "quota.txt"));
+    const allowance = quota === undefined ? undefined : antigravityAllowanceStatement(quota, antigravityDialect.quotaMeters);
     const frontier = existsSync(artifact(directory, "exit-code")) ? artifact(directory, "exit-code") : artifact(directory, "events.jsonl");
     const carrier = existsSync(frontier) ? readAntigravityLogModel(artifact(directory, LOG_FILE), { before: statSync(frontier).mtimeMs }) : undefined;
     return {
       thread, message, failed, errors,
       ...(usage === undefined ? {} : { usage }),
+      ...(allowance === undefined ? {} : { allowance }),
       ...(carrier === undefined ? {} : { model: carrier.model, ...(carrier.reasoningEffort === undefined ? {} : { reasoningEffort: carrier.reasoningEffort }), carrierEvidence: carrier.evidence }),
     };
   },

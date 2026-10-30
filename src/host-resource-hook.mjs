@@ -591,6 +591,37 @@ function partialWorktree(top, entries, ctx) {
 
 const partialReason = (what, why) => `${what} in a partial working tree stages every tracked file that is absent from it as a deletion (${why}): this is how ten repositories were emptied on 2026-10-19. Stage the paths you changed (git add -- <path>...), then git commit without -a; check git diff --cached --name-status before pushing.`;
 
+// Work parked under an archival name is work nobody processes again (requirement stale-branches-are-retired-or-merged,
+// clause archival-labels-are-unprocessed-source): stashes, refs and tags under these names are refused at the source.
+const PARKING = /^(?:refs\/)?(?:tags\/)?(?:archive|legacy|salvage|recovery|restored|backup)\//u;
+const STASH_READS = new Set(["list", "show", "pop", "apply", "drop", "clear", "branch"]);
+const TAG_VALUE = ["-m", "--message", "-F", "--file", "-u", "--local-user", "--cleanup", "--sort", "--format", "--contains", "--no-contains", "--merged", "--no-merged", "--points-at", "--color"];
+
+/** The parking a git invocation would do, or undefined. */
+function parkingRef(sub, args) {
+  if (sub === "stash") {
+    const action = positionals(args)[0];
+    return action === undefined || !STASH_READS.has(action) ? "git stash" : undefined;
+  }
+  if (sub === "update-ref" && !hasFlag(args, "d", ["--delete", "--stdin"])) {
+    const ref = positionals(args, ["-m"])[0];
+    return ref !== undefined && PARKING.test(ref) ? ref : undefined;
+  }
+  if (sub === "tag" && !hasFlag(args, "dlv", ["--delete", "--list", "--verify"])) {
+    const name = positionals(args, TAG_VALUE)[0];
+    return name !== undefined && PARKING.test(name) ? `refs/tags/${name}` : undefined;
+  }
+  if (sub === "push") {
+    const destination = positionals(args, ["-o", "--push-option", "--repo", "--receive-pack", "--exec"]).slice(1)
+      .map((spec) => spec.replace(/^\+/u, "")).filter((spec) => !spec.startsWith(":"))
+      .map((spec) => spec.includes(":") ? spec.slice(spec.indexOf(":") + 1) : spec).find((ref) => PARKING.test(ref));
+    return destination;
+  }
+  return undefined;
+}
+
+const parkingReason = (what) => `${what} parks work under a name nothing processes again; this is how the Group lost track of its own work. Land it instead: commit on a branch, open a pull request and merge it, or delete it if the default branch already holds it. Work already parked is processed by process-git-branches (red-cup-engineering/git-engineering-services-section, --local and --living-forest).`;
+
 function git(argv, state, ctx, report) {
   const rest = argv.slice(1);
   let i = 0;
@@ -628,6 +659,8 @@ function git(argv, state, ctx, report) {
     }
     return;
   }
+  const parked = parkingRef(sub, args);
+  if (parked !== undefined) { report.deny(parkingReason(parked)); return; }
   if (repo?.large !== true) return;
 
   // From here the repository is large: what reads or stats its whole working tree is the cost.
@@ -681,8 +714,21 @@ function colonyOf(dir, ctx) {
   return first && !first.startsWith(".") ? path.join(ctx.home, first) : undefined;
 }
 
-/** A running git process whose working directory is inside `top`, or undefined. Bounded in time: past the bound the answer is "none seen". */
-function gitProcessIn(top) {
+/** The git directory serving `dir`: the nearest `.git` directory, or the target of a `.git` file's `gitdir:` line. */
+function gitDirOf(dir) {
+  for (let at = dir; ; at = path.dirname(at)) {
+    const dotGit = path.join(at, ".git");
+    try {
+      if (statSync(dotGit).isDirectory()) return dotGit;
+      const target = /^gitdir:\s*(.+)$/mu.exec(readFileSync(dotGit, "utf8"))?.[1]?.trim();
+      if (target) return path.resolve(at, target);
+    } catch { /* no .git here */ }
+    if (at === path.dirname(at)) return undefined;
+  }
+}
+
+/** A running git process working on the git directory `gitDir` (through its cwd, `-C` or `--git-dir`), or undefined. Bounded in time: past the bound the answer is "none seen". */
+function gitProcessOn(gitDir) {
   const deadline = Date.now() + 30;
   let entries;
   try { entries = readdirSync("/proc"); } catch { return undefined; }
@@ -692,21 +738,30 @@ function gitProcessIn(top) {
     try {
       const command = readFileSync(`/proc/${entry}/comm`, "utf8").trim();
       if (command !== "git" && !command.startsWith("git-")) continue;
-      if (within(readlinkSync(`/proc/${entry}/cwd`), top)) return Number(entry);
+      let dir = readlinkSync(`/proc/${entry}/cwd`);
+      let explicit;
+      const args = readFileSync(`/proc/${entry}/cmdline`, "utf8").split("\0");
+      for (let i = 1; i < args.length - 1; i++) {
+        if (args[i] === "-C") dir = path.resolve(dir, args[i + 1]);
+        else if (args[i] === "--git-dir") explicit = path.resolve(dir, args[i + 1]);
+      }
+      if (args.some((arg) => arg.startsWith("--git-dir="))) explicit = path.resolve(dir, args.find((arg) => arg.startsWith("--git-dir=")).slice(10));
+      const served = explicit ?? gitDirOf(dir);
+      if (served !== undefined && path.resolve(served) === path.resolve(gitDir)) return Number(entry);
     } catch { /* it ended, or is not ours to read */ }
   }
   return undefined;
 }
 
-/** `rm .git/index.lock` while a git process is working in that repository would corrupt the index it is writing. */
+/** `rm .git/index.lock` while a git process is working on that git directory would corrupt the index it is writing. A submodule's git directory sits under its superproject's `.git/modules/`, so the lock's own directory, not the enclosing working tree, names the repository. */
 function indexLock(argv, state, ctx, report) {
   for (const word of positionals(argv.slice(1))) {
     if (path.basename(word) !== "index.lock") continue;
     const file = resolveDir(word, state.cwd, ctx);
-    const repo = file === undefined ? undefined : repoOf(path.dirname(file), ctx);
-    const running = repo === undefined ? undefined : gitProcessIn(repo.top);
+    const gitDir = file === undefined ? undefined : path.dirname(file);
+    const running = gitDir === undefined ? undefined : gitProcessOn(gitDir);
     if (running !== undefined) {
-      report.deny(`removing ${file} while git (pid ${running}) is running in ${repo.top} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
+      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
       return;
     }
   }
