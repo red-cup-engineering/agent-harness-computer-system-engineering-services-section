@@ -25,11 +25,11 @@ harness engineering beneath an inference provider.
   through (`agency-carrier.mjs`: execution, office-bound authority, receiving,
   outcome accounting, allowance). Each CLI is a dialect of the runner.
 - `src/host-resource-hook.mjs` is the host-resource controller: one zero-dependency PreToolUse
-  hook on Bash, shared by Claude Code and Codex, that denies the commands that exhaust a machine
-  (`find` over the disk or a home, `git worktree add`, `git clone` outside a scratchpad, unscoped
-  `git status`/`log --all`/`ls-files`/`submodule update` in a large repository) and runs the disk-
-  and CPU-heavy ones one at a time under a host-wide `flock`, at `nice 10` and idle I/O class. It
-  fails open and never waits itself. The node projection (`claude-harness-project`) writes it into
+  hook on Bash, shared by Claude Code and Codex, that places a Claude Code session's commands in
+  the kernel-bounded `agent-work.slice` (memory, CPU weight and task limits) and denies nothing:
+  what a command may use is the cgroup's to enforce, not a reading of the command line. A landing
+  that would remove most of a repository is refused by the lander, main's only writer. It fails
+  open and never waits itself. `scripts/project-info-claude-harness.mjs` writes it into
   `.claude/` and `.codex/`; `scripts/install-host-resource-hook.mjs` installs a reference to the
   same owning source for one user where no projection runs. `--settings` selects the configuration;
   the former copied-hook `--dest` is retired. Unrelated handlers in shared groups are retained.
