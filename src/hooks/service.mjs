@@ -232,11 +232,11 @@ export function harnessHookEventAdmissionOperation({ binding, recognize, partici
     effects: { class: "journal-write", replay: "idempotency-key", coordination: "coordination-free", deterministic: true, totality: "schema-bounded" },
     run: (input, _args, context) => {
       // Refuse malformed/missing-session input before host recognition or any journal/Body effect.
-      requireParticipationHook(input);
+      const admitted = requireParticipationHook(input);
       const subject = context?.invocation?.subject ?? "anonymous";
       const participant = recognize({ harness: input.harness, payload: input.payload, subject });
       const at = binding.now();
-      const session = typeof input.payload.session_id === "string" ? input.payload.session_id : undefined;
+      const session = admitted.sessionId;
       // A session's checkpoints (Stop, SubagentStop, SessionEnd) also admit its token usage from its
       // transcript whenever the node's binding can read one: the harness's own events are the monitor.
       const transcripts = typeof binding.statPathOrNull === "function" && typeof binding.readFileUtf8 === "function";

@@ -60,3 +60,19 @@ test("non-MCP real-session hook remains admissible without inventing a session o
   assert.equal(result.sessionId, "codex-original-session");
   assert.equal(result.hookEventName, "Stop");
 });
+
+
+test("canonical source session is preserved across codec's admitted alternate field names", () => {
+  for (const [field, value, canonical] of [
+    ["session_id", sourceSession, sourceSession],
+    ["sessionId", sourceSession, sourceSession],
+    ["session", sourceSession, sourceSession],
+    ["session_id", "  " + sourceSession + "  ", sourceSession],
+  ]) {
+    const payload = { hook_event_name: "SessionStart", [field]: value };
+    const admitted = requireParticipationHook({ harness: "mcp", payload });
+    assert.equal(admitted.sessionId, canonical, "source-qualified caller session is one canonical value");
+    assert.deepEqual(admitted.payload, payload, "do not rewrite original event testimony");
+    assert.equal(Object.hasOwn(admitted, "actor"), false, "session normalization never grants an Actor");
+  }
+});
