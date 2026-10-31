@@ -83,38 +83,20 @@ test("the hook denies nothing: it places commands in the work slice, and only a 
   assert.equal(isContained("0::/user.slice/agent-claude.slice/agent.scope"), true);
 });
 
-test("actual Claude projection keeps the local guard without erasing other hooks", async t => {
+test("actual Claude projection registers no hook, retracts an earlier guard and keeps other hooks", async t => {
   const { projectClaudeHarness, writeClaudeHarness, checkClaudeHarness } = await import("../services/claude-code-harness-services-section/src/claude-harness-projection.mjs");
   const root = scratch(t); const agencyRoot = join(root, "agency"); mkdirSync(agencyRoot); mkdirSync(join(root, ".claude"));
   const independent = { matcher: "Read", hooks: [{ type: "command", command: "echo independent" }] };
-  writeFileSync(join(root, ".claude/settings.local.json"), JSON.stringify({ hooks: { Stop: [independent], PreToolUse: [independent] }, custom: "keep" }));
+  const earlier = hookEntries(source).PreToolUse;
+  writeFileSync(join(root, ".claude/settings.local.json"), JSON.stringify({ hooks: { Stop: [independent], PreToolUse: [independent, ...earlier] }, custom: "keep" }));
   const projection = projectClaudeHarness({ node: root, agencyRoot, settlementRoot: root });
-  assert.equal(projection.counts.events, 1); assert.ok(projection.hooks.PreToolUse[0].hooks[0].command.includes(source));
+  assert.equal(projection.counts.events, 0);
   writeClaudeHarness(projection);
   const received = JSON.parse(readFileSync(join(root, ".claude/settings.local.json")));
   assert.equal(received.custom, "keep"); assert.deepEqual(received.hooks.Stop, [independent]);
-  assert.deepEqual(received.hooks.PreToolUse[0], independent); assert.equal(checkClaudeHarness(projection).current, true);
+  assert.deepEqual(received.hooks.PreToolUse, [independent]); assert.equal(checkClaudeHarness(projection).current, true);
 });
 
-
-test("actual Codex office CLI projects the configured resource consumer without trusting it", t => {
-  const root = scratch(t), agency = join(root, "agency");
-  mkdirSync(join(agency, "offices"), { recursive: true }); mkdirSync(join(root, ".codex"));
-  writeFileSync(join(agency, "offices/fixture.json"), JSON.stringify({ id: "fixture", name: "Source-only fixture" }));
-  const binding = join(root, ".codex/office.json");
-  writeFileSync(binding, JSON.stringify({ type: "SourceOfficeContextProjection", authority: "source-context-only", agencyRoot: agency, office: "fixture", target: "../office-context.md", hostResources: { node: "..", providers: ["codex"] } }));
-  const script = fileURLToPath(new URL("../services/codex-harness-services-section/services/codex-harness-projection-service/scripts/project-office-context.mjs", import.meta.url));
-  const received = spawnSync(process.execPath, [script, binding], { encoding: "utf8", timeout: 5000 });
-  assert.equal(received.status, 0, received.stderr);
-  const result = JSON.parse(received.stdout);
-  assert.equal(result.resources.codexTrustRequired, true); assert.equal(result.resources.activeSessionGuarded, false);
-  const hook = JSON.parse(readFileSync(join(root, ".codex/hooks.json"))).hooks.PreToolUse[0].hooks[0];
-  // The projection names the guard its script resolves (this source in a linked checkout, the installed package elsewhere): a real hook file, run by node.
-  const named = /'([^']*\/src\/host-resource-hook\.mjs)'/u.exec(hook.command)?.[1];
-  assert.ok(named !== undefined && existsSync(named), hook.command); assert.match(readFileSync(join(root, ".codex/config.toml"), "utf8"), /hooks = true/);
-  const ran = spawnSync("bash", ["-c", hook.command], { input: JSON.stringify({ tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } }), encoding: "utf8", timeout: 3000 });
-  assert.equal(ran.status, 0); assert.equal(ran.stdout, "", "a Codex command runs untouched");
-});
 
 test("headless Claude carries the same source hook despite disabled setting sources", async t => {
   const { claudeCodeDialect } = await import("../services/claude-code-harness-services-section/src/claude-code-session.mjs");

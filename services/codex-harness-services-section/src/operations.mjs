@@ -5,6 +5,7 @@
  * tasks as its slots free, and integrates their branches as its service.
  */
 import { existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -13,7 +14,7 @@ import { operation } from "@red-cup-engineering/computer-system-engine/rpc/opera
 import { sessionContextImage } from "@red-cup-engineering/feltos/agents/context-image";
 import { resolve as resolveAgencyRecord } from "@red-cup-engineering/organizing/agency";
 import { harnessAgencyAt } from "../../../src/agency-source.mjs";
-import { enterpriseRootOf, settlementsRootOf } from "@red-cup-engineering/organizing/enterprise";
+import { enterpriseRootOf } from "@red-cup-engineering/organizing/enterprise";
 import { bestStaffing, carrierStandingOf } from "@red-cup-engineering/organizing/work/staffing";
 import { recordCarrierAllowance } from "../../../src/carrier/agency-carrier.mjs";
 import { CODEX_WORKSPACE_RULE, codexDialect, codexWorldReading, codexTaskArtifactDirectory, codexTaskWorktree, codexTraceNamed, finishCodexWorktree, inTurn, prepareCodexWorktree, readCodexSessionArtifacts, releaseCodexWorktree, resolveCodexConflicts, retryTransientCodexSession, runCodexSession, systemdCommand, waitForCodexSession } from "./codex-exec.mjs";
@@ -24,6 +25,13 @@ const RANK = { queued: 0, running: 1, done: 2, failed: 2, refused: 2 };
 export const codexTaskType = "codex-task";
 /** The micro-enterprise this harness is the service of; its record sits in this section's agency. */
 export const CODEX_NODE = "codex-node";
+
+/** Where the node's settlement lives: METROPLAT_SETTLEMENTS_ROOT when the host names it, otherwise the
+ *  user's state directory, where the node's journals already are. organizing 0.8.0's default is its
+ *  own package directory, which is read-only where it is installed. */
+export const settlementsRootOf = (environment = process.env) => environment.METROPLAT_SETTLEMENTS_ROOT
+  ? path.resolve(environment.METROPLAT_SETTLEMENTS_ROOT)
+  : path.join(environment.XDG_STATE_HOME || path.join(os.homedir(), ".local", "state"), "561-group", "settlements");
 
 function codexNodeRecord(agencyRoot, options) {
   const record = resolveAgencyRecord(harnessAgencyAt(agencyRoot, options), "enterprises", CODEX_NODE);
