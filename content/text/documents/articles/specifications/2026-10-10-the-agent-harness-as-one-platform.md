@@ -125,7 +125,7 @@ The harness is platformized, not normalized. Two leaves are not merged; every pi
 ## 4. Behaviors
 
 1. Every provider is a configuration. A provider-specific rule, hook or script is a parameter of the shared upstream; a divergence between Claude and Codex is a defect (R1, R2).
-2. Agent calls that touch machine resources pass through the local handler platform. The resource controller measures memory, paging, disk I/O and agent count and acts by threshold, not by model reasoning; the concurrent-agent ceiling is its parameter. The house rule of four local agents is the present value, against the Leader's 2026-09-10 figure of about twelve (R3, R4).
+2. Agent calls that touch machine resources pass through the local handler platform. The resource controller measures memory, paging, disk I/O and agent count and acts by threshold, not by model reasoning; the concurrent-agent ceiling is its parameter. The Group rule of four local agents is the present value, against the Leader's 2026-09-10 figure of about twelve (R3, R4).
 3. Git: agents reach history, status and search through tools that do not read the whole disc, and a commit or checkout never discards another agent's uncommitted work; routine git operations are never blocked by the harness's own classifier (R5, R6, R7).
 4. The projector writes the whole of the harness from upstream software, including MCP configuration without disabled servers (ops_, LSpace) and with no hardcoded identity, and sets the permission mode of projected agents in one place (R8, R15, R18, R26).
 5. Rules are subject-predicate-object statements checkable by program; a conformance check on services-section names is the first such check (R9, R10).
