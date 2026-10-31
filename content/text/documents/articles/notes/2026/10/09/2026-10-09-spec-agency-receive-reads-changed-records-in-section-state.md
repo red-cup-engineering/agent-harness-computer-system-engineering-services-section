@@ -39,7 +39,7 @@ executes. `GH-CSS` is `red-cup-engineering/computer-services-section` on `main` 
 
 ## 1. The theory this note applies
 
-These statements are held by the house; each cites where.
+These statements are held by the Group; each cites where.
 
 1. A carrier session never works in the repository's shared checkout. Each act works in a Git worktree opened for
    that one task alone (`HARNESS/src/carrier/workspace.mjs:1-18`), and a working directory inside a primary
@@ -59,7 +59,7 @@ These statements are held by the house; each cites where.
    The Leader's words, 2026-10-08: "i want no ~/*/561-group no ~/.local/561-group/ no ~/.config/561-group/"
    (`561-group-services-section/content/text/documents/articles/notes/2026/10/09/2026-10-09-note-on-the-leaders-repeated-corrections.md`,
    table row for that rule).
-5. A node's per-task durable state lives in the carrier node's root, inside the house:
+5. A node's per-task durable state lives in the carrier node's root, inside the Group:
    `<dataRoot>/data/state/<dialect.tasks>/<id>/` (`HARNESS/src/carrier/session.mjs:6-7`; the dispatched Codex task
    records are already ignored there, `.gitignore` entry for `data/state/codex-tasks`). A task's checkout and a
    provider's lease belong in the same root; today they do not (section 2).
@@ -74,7 +74,7 @@ The running unit is `bare-cedar-fog-561-group.service`; its environment sets `ME
 and no worktree or capacity root (`561-group-services-section/services/561-group-operations-services-section/deployments/bare-cedar-fog-host/deploy/service.json:27-30`,
 `deploy/bare-cedar-fog-561-group.service:24`). The producing chain, in call order:
 
-| Step | Code (house copy, line numbers; see the note below the table for `STORE`) | Effect |
+| Step | Code (Group copy, line numbers; see the note below the table for `STORE`) | Effect |
 |---|---|---|
 | Host builds the Codex carrier with `cwd` = `METROPLAT_CODEX_WORKSPACE ?? METROPLAT_REPOSITORY_ROOT` | `HOST/src/agency-work.mjs:163-172` | the receiving act borrows objects from `/home/emsenn/info` |
 | Carrier names a receive `agency-receive-<sha256(receipt, workerId, office)[0:32]>` plus `-<n>` for retry n (up to 4) | `HARNESS/src/carrier/agency-carrier.mjs:274` | one task id, so one worktree path, per proposal and attempt |
@@ -85,7 +85,7 @@ and no worktree or capacity root (`561-group-services-section/services/561-group
 | Lease root | `session.mjs:98`: `$XDG_STATE_HOME` or `$HOME/.local/state`, then `561-group/<pool>-provider-capacity` | outside `/home/emsenn/info` |
 | Duty worktree root (the same engine) | `ENGINE/src/workspace/root.mjs:10-12`: `$METROPLAT_DUTY_WORKTREES`, else `homedir()/.local/state/561-group/duty-worktrees` | outside `/home/emsenn/info` |
 
-The deployed copies in `STORE/node_modules/@red-cup-engineering/` were compared with the house copies. `workspace.mjs`
+The deployed copies in `STORE/node_modules/@red-cup-engineering/` were compared with the Group copies. `workspace.mjs`
 is byte-identical. `agency-carrier.mjs`, `session.mjs` and the engine's `worktree.mjs` differ in unrelated parts, but
 the deployed `prepareWorktree` is the same legacy sequence (`STORE/.../computer-code-development-engine/src/workspace/worktree.mjs:156-166`:
 `fetchMain`, `add`, `resetBranch`, `clean`, `updateSubmodules`) and the deployed `sharedCapacityRoot`
@@ -94,7 +94,7 @@ So the chain above is what the process ran.
 
 Every push to `emsenn/bare-cedar-fog` main moves `origin/main`. A receive awaiting receipt, or a retry after an
 `unverified` judgement (`RECEIVING_RETRY_MS` = 10 minutes, `RECEIVING_ATTEMPTS` = 4, `agency-carrier.mjs:58-59`),
-opens a new task id and so a new full checkout. `.gitmodules` of the house declares 16 submodule paths, each updated
+opens a new task id and so a new full checkout. `.gitmodules` of the Group declares 16 submodule paths, each updated
 with `--force`. A failed act keeps its worktree, marked, up to `FAILED_WORKTREES_KEPT` = 10 of them
 (`workspace.mjs:26`, `:99-114`), so the retained bytes are ten full checkouts.
 
@@ -131,7 +131,7 @@ theory, already landed, not yet in effect on this node, and incomplete for D1 an
   is the 28-line `configuredSourceRepository` only; the deployed host `STORE/src/agency-work.mjs` has no
   `repositoryOf`; deployed proposals carry no `sourceRepository` or `sourceResult`
   (`STORE/node_modules/@red-cup-engineering/feltos/src/work/work-result-proposal.mjs`). Every receive therefore
-  takes the legacy path of section 2. The house copy of `HARNESS/src/carrier/workspace.mjs` (last commit
+  takes the legacy path of section 2. The Group copy of `HARNESS/src/carrier/workspace.mjs` (last commit
   `063645a41fb`, 2026-10-04) predates the mode as well.
 - Not wired: the mode needs the host's trusted `sourceBindingOf`, `bindSourceGit` and `publishSourceCandidate`
   ports, and the specification states "No runtime factory registration, host acquisition, source grant or
@@ -196,9 +196,9 @@ Keeping state in the section:
   `<dataRoot>/data/state/<dialect.pool>-provider-capacity/`.
 - **R12.** The code-development engine shall hold duty worktrees under `<dataRoot>/data/state/duty-worktrees/`.
 - **R13.** Where an environment variable names a root explicitly (`METROPLAT_<NAME>_WORKTREES`,
-  `METROPLAT_DUTY_WORKTREES`), the carrier shall refuse a value outside the house root unless the variable
+  `METROPLAT_DUTY_WORKTREES`), the carrier shall refuse a value outside the Group root unless the variable
   `METROPLAT_STATE_OUTSIDE_HOUSE` names it.
-- **R14.** When a directory lies under a dialect's task root, is ignored by the house's Git ignore rules, and holds
+- **R14.** When a directory lies under a dialect's task root, is ignored by the Group's Git ignore rules, and holds
   either its own `.git` file or the records marker file `.records-task`, the check `assertNotSharedCheckout` shall
   accept it.
 - **R15.** If a directory lies inside a primary checkout and does not satisfy R14, then `assertNotSharedCheckout`
@@ -208,7 +208,7 @@ Keeping state in the section:
 - **R17.** When the carrier opens the first task of a host run, it shall retire the former roots
   (`~/.local/state/561-group/<name>-worktrees`, `duty-worktrees`) by the existing `pruneRetiredWorktreeRoot`, and
   shall move a former capacity ledger into the new root only when it holds no live reservation.
-- **R18.** The house shall ignore `**/data/state/*-worktrees/`, `**/data/state/*-provider-capacity/` and
+- **R18.** The Group shall ignore `**/data/state/*-worktrees/`, `**/data/state/*-provider-capacity/` and
   `**/data/state/duty-worktrees/` in Git, and shall exclude them from the pnpm workspace.
 
 Evidence:
@@ -278,17 +278,17 @@ you need is not here, return unverified naming it."
 | `GH-CSS` agent harness `src/carrier/workspace.mjs` | records branch in `carrierWorkspaces.open`/`close`, `openRecordsWorkspace`, root default (R10), `assertNotSharedCheckout` (R14-R15), former-root retirement (R17) | code |
 | `GH-CSS` agent harness `src/carrier/session.mjs` | `sharedCapacityRoot` from `dataRoot` (R11) | code |
 | `GH-CSS` `apps/metroplat/src/source-repository.mjs` and `HOST/src/agency-work.mjs` | pass `dataRoot` to the dialects' workspaces; wire `sourceBindingOf`, `bindSourceGit` for exact mode so item 2 of 5.3 can occur | systems |
-| House (`emsenn/bare-cedar-fog`) | `.gitignore` and `pnpm-workspace.yaml` entries (R18); the deployment declaration carries no path outside the house | systems |
+| Group (`emsenn/bare-cedar-fog`) | `.gitignore` and `pnpm-workspace.yaml` entries (R18); the deployment declaration carries no path outside the Group | systems |
 
 Records mode needs a named source result, which exists only once the exact mode is wired and deployed, so the
-order of the three slices is: engine, then carrier and host, then house and deploy. The deployed node keeps its
+order of the three slices is: engine, then carrier and host, then Group and deploy. The deployed node keeps its
 current behaviour until the release is rebuilt and the unit restarted; this note does not do either.
 
 ### 6.2 Why records mode and not only exact mode
 
 Exact mode checks out the whole produced tree and every composed child. A receive judges a proposal whose result
 is, in the case that raised this, a few agency records. The diff of two commits and a batch blob read cost the
-size of the change; a checkout costs the size of the tree. The landed no-source scratch shows the house already
+size of the change; a checkout costs the size of the tree. The landed no-source scratch shows the Group already
 accepts a Git-free directory as a receiving workspace; records mode fills it with the proposal's own files.
 
 ### 6.3 Why the state root is `data/state/` and how that meets the old comment
@@ -339,7 +339,7 @@ Senior Engineer does not receive its own work) accepts each slice only when it h
 ## 8. What is returned and why not a pull request
 
 The smallest aligned change is not small. It adds a module to one repository, changes the carrier, the session
-runner and the host in a second, and changes the house's ignore and workspace files; the receiving mode it depends
+runner and the host in a second, and changes the Group's ignore and workspace files; the receiving mode it depends
 on (exact source result) is landed but not wired on this node. A change that moved only the root, or only
 shortened the checkout, would answer the words of the request and leave D3 and the lease in place (rule
 `leader-prompts-become-research-before-code`). It is therefore returned as three cloud slices that carry this

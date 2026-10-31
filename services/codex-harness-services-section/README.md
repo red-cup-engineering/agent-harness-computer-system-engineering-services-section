@@ -15,7 +15,7 @@ nor a machine actor is a competing harness implementation.
 
 This section is the service of the codex node micro-enterprise
 (`lib/agency/enterprises/codex-node.json`). The node keeps its queue in its own
-root, `<settlements root>/codex-node`, and not in the house root (561 Group note
+root, `<settlements root>/codex-node`, and not in the Group root (561 Group note
 of 2026-09-30, "Micro-enterprises hold their own work", slice 3).
 
 `codex-task` queues its assignment in the node's `codex-tasks` journal and
@@ -25,7 +25,7 @@ schedule runs that operation on every turn. Each turn starts the newly queued
 tasks, in turn, as slots free. Codex sessions doing allocated office work (the
 work rail's Codex provider) keep their artifacts in the same root, whichever
 micro-enterprise's work they do. Tasks and artifacts from before the move are
-still read from the house root. The house root also supplies the told fiber
+still read from the Group root. The Group root also supplies the told fiber
 each session wears.
 
 A session runs `codex exec` outside the node's cgroup, in the transient user

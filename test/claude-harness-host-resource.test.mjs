@@ -55,14 +55,14 @@ test("writing the projection references the owning hook source from the settings
   assert.equal(existsSync(path.join(node, ".codex")), false, "Codex is not this projection's to write");
 });
 
-test("the command the settings name is the hook, and it answers a runaway find with a deny", { skip }, () => {
+test("the command the settings name is the hook, and it denies nothing: a session with permission rules runs a command untouched", { skip }, () => {
   const node = nodeDir();
   projection.writeClaudeHarness(projectionAt(node));
   const { command } = JSON.parse(readFileSync(path.join(node, ".claude", "settings.local.json"), "utf8")).hooks.PreToolUse[0].hooks[0];
-  const event = JSON.stringify({ hook_event_name: "PreToolUse", cwd: node, tool_name: "Bash", tool_input: { command: "find / -name x" } });
+  const event = JSON.stringify({ hook_event_name: "PreToolUse", cwd: node, tool_name: "Bash", permission_mode: "default", tool_input: { command: "find / -name x" } });
   const result = spawnSync("sh", ["-c", command], { input: event, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
+  assert.equal(result.stdout, "");
 });
 
 test("a check reports the hook as current, then as drifted when its settings change", { skip }, () => {
