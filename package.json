@@ -103,6 +103,7 @@
     "!**/lib/legacy/**",
     "test/agent-briefing.test.mjs",
     "test/organizing-cohort.test.mjs",
+    "test/harness-participation-admission.test.mjs",
     "test/hook-token-checkpoint.test.mjs",
     "test/carrier-workspaces.test.mjs",
     "test/inference-receiving-carrier.test.mjs",
@@ -166,6 +167,7 @@
   "receivingTests": [
     "test/agent-briefing.test.mjs",
     "test/organizing-cohort.test.mjs",
+    "test/harness-participation-admission.test.mjs",
     "test/hook-token-checkpoint.test.mjs",
     "test/carrier-workspaces.test.mjs",
     "test/inference-receiving-carrier.test.mjs",
