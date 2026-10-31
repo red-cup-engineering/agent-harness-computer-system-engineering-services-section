@@ -1,0 +1,18 @@
+{
+  "id": "wo-claude-hooks-3480501e3d96",
+  "mintedAt": "2026-07-24T14:30:56.157Z",
+  "source": "leader-speech",
+  "demand": "The interactive session boots as a stranger because no SessionStart hook reads the episodic memory organs. Author .claude/hooks/session-start-episodic-memory.mjs, an executable Node ESM script in the exact style of the five existing session-start-*.mjs hooks in .claude/hooks (read one of them first for the output convention): it must read the memory index at $HOME/.claude/projects/-home-emsenn-info/memory/MEMORY.md and the final 40 lines of $HOME/.claude/projects/-home-emsenn-info/workspace/lab-notebook.md, print them to stdout as a compact 'Episodic memory (settled conclusions from prior sessions)' context block, always exit 0, and print nothing (still exit 0) when either file is absent. Do not modify any other file.",
+  "targetPath": ".claude/hooks",
+  "class": "repair",
+  "status": "diagnosed",
+  "evidence": {
+    "diagnosis": {
+      "resultDigest": "sha256:d8cd5493ace7e1cdc1f770d78f36a2d825c7d3e76970ba4c42c3f10572ad3633",
+      "response": "Root cause: The interactive session boots as a stranger because no SessionStart hook reads the episodic memory organs.\n\n Most likely root cause: The file $HOME/.claude/projects/-home-emsenn-info/memory/MEMORY.md is absent or empty, preventing the SessionStart hook from reading the episodic memory organs.\n\nThe file $HOME/.claude/projects/-home-emsenn-info/workspace/lab-notebook.md is also a suspect, since the SessionStart hook is supposed to read the final 40 lines of it as well.\n\nThe exact path from the evidence for these statements is:\n\n- Absence or emptiness of the file $HOME/.claude/projects/-home-emsenn-info/memory/MEMORY.md: There is no usage of this file in the provided grounding evidence.\n- Absence or emptiness of the final 40 lines of $HOME/.claude/projects/-home-emsenn-info/workspace/lab-notebook.md: There is no usage of the text of this file in the provided grounding evidence.\n\n\nRepair proposal: The owning settlement should write a non-empty MEMORY.md to $HOME/.claude/projects/-home-emsenn-info/memory and ensure the final 40 lines of $HOME/.claude/projects/-home-emsenn-info/workspace/lab-notebook.md are populated with episodic memory data.\n\nThis proposal is stated precisely enough to act on, citing the exact paths from the evidence.\n\nUnknown: There is no information in the provided grounding evidence about the implementation details of the SessionStart hook or the SessionAbsorption skill.",
+      "model": "llama-3.1-8b-instant",
+      "providerTeam": "groq-inference-team",
+      "dispatchedAt": "2026-07-24T14:31:24.266Z"
+    }
+  }
+}

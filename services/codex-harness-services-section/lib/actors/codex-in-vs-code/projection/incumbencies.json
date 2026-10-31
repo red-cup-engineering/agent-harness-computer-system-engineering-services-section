@@ -1,0 +1,15 @@
+{
+  "actor": "urn:ame:bare-cedar-fog-codex",
+  "offices": [
+    {
+      "office": "executive-officer-to-the-leader",
+      "status": "active",
+      "source": "Leader authority projected through AGENTS.md"
+    },
+    {
+      "office": "white-army",
+      "status": "active",
+      "source": "Leader correction, 2026-07-27"
+    }
+  ]
+}

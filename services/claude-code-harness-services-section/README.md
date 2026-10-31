@@ -65,6 +65,16 @@ capacity* (2026-10-03).
 | --- | --- | --- |
 | MetroPlat | `claude-harness-project`, `claude-harness-check` | The agency registry and one MetroPlat settlement to one node's `.claude/` and `.mcp.json` |
 
+## Claude enterprise
+
+`services/claude-enterprise-service/` projects the Claude enterprise's agent
+harness and permission policy, runs its census and seats its ActivityPub face;
+`services/claude-session-activity-provider/` issues its session-activity
+pulses. The enterprise's data is in this section: `lib/agency/` (characters,
+incumbencies, offices, harness policy), `content/text/glossary/terms/`,
+`data/records/` (work orders, custody records) and the unit templates in
+`lib/systemd/`.
+
 ## Legacy holdings
 
 `lib/legacy/` keeps the earlier Claude Code harness implementations together

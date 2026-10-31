@@ -1,0 +1,15 @@
+{
+  "profile": "org.bare-cedar-fog.codex-architectural-locus-seed.v1",
+  "locus": "unionification-criticality",
+  "actor": "urn:ame:codex-unionification-criticality-locus",
+  "owner": "urn:ame:bare-cedar-fog-codex",
+  "status": "seed-not-advertised",
+  "jurisdiction": "supercritical value yield, typed work orders, translation, folding, ossification, independent receipts, and cycle-rank coordination obstruction",
+  "source": "ni:///sha-256;3lZj_mwkAKto0aZEGI9ut5McNZZmpSGVvkVYCr_3tTQ",
+  "identityConstraint": "This locus supplies measurements to the stable Codex enterprise and is not a session identity.",
+  "executableBindings": [
+    "@rsc-quiescent/bare-cedar-fog-codex-enterprise",
+    "@red-cup-engineering/inference-work-lot-service"
+  ],
+  "missingFaces": ["activitypub", "evm", "a2a", "ocap", "x402"]
+}

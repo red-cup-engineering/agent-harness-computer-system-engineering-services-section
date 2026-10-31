@@ -1,0 +1,12 @@
+{
+  "id": "decomposing-union-change",
+  "name": "decomposing union change",
+  "from": "A high-level design with no low-level design or bounded work-lot plan under it -- too large a grain for any one purchase or mutation to execute against.",
+  "to": "A LowLevelDesignK and a WorkLotPlanK -- a DAG of bounded, provider-constrained, test-bearing work lots small enough to purchase and execute one at a time.",
+  "cost": "Provider purchase cost at the lowest observed fractional cost among compatible offers, plus the offices attention keeping the lot plan bounded rather than reopening the whole design.",
+  "otherwise": "The high-level design is actuated as one undifferentiated mutation, with no bounded lot a provider can price, execute, or be held to.",
+  "needs": [
+    "plan-low-level-design",
+    "plan-bounded-work-lots"
+  ]
+}

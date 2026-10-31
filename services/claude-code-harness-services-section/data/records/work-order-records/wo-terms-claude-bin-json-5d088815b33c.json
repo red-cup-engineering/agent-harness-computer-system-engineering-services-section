@@ -1,0 +1,27 @@
+{
+  "id": "wo-terms-claude-bin-json-5d088815b33c",
+  "mintedAt": "2026-07-24T02:13:16.682Z",
+  "source": "leader-speech",
+  "demand": "describe the scripts in .claude/bin",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/claude-bin.json",
+  "class": "define",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:6ae71f32aa3b777b35a9968d39d0025a9a984b6b9ffc3c5de861296b597a9776",
+    "response": "The scripts in .claude/bin are not explicitly listed in the provided repository contents. However, the contents suggest that the .claude/bin directory may contain executable scripts related to the management and skills of an enterprise. \n\nSome possible scripts that could be in .claude/bin include:\n\n- blockchain-trashpanda-formation-manifest.mjs: a manifest file for blockchain trash panda formation\n- induce-blockchain-trashpanda-formation.mjs: a script for inducing blockchain trash panda formation\n- dispatch-a-task.js: a script for dispatching a task\n- install-codex-as-an-agent.js: a script for installing codex as an agent\n- install-an-enterprise-in-claude.js: a script for installing an enterprise in Claude\n- install-an-enterprise-in-codex.js: a script for installing an enterprise in codex\n- install-claude-as-an-agent.js: a script for installing Claude as an agent\n- install-claude-as-an-office.js: a script for installing Claude as an office\n- mesh-scope.js: a script for mesh scope\n- resolve-an-identifier.js: a script for resolving an identifier\n- resolve-an-identifier.js: a script for resolving an identifier\n- sweep-the-movements.js: a script for sweeping the movements\n- write-a-concept-of-operations.js: a script for writing a concept of operations\n- write-a-concept-of-operations.js: a script for writing a concept of operations\n- write-a-configuration-management-plan.js: a script for writing a configuration management plan\n- write-a-configuration-management-plan.js: a script for writing a configuration management plan\n- write-a-duty.js: a script for writing a duty\n- write-a-duty.js: a script for writing a duty\n- write-a-verification-and-validation-specification.js: a script for writing a verification and validation specification\n- write-a-verification-and-validation-specification.js: a script for writing a verification and validation specification\n- write-a-work.js: a script for writing a work\n- write-a-work.js: a script for writing a work\n- write-a-software-requirements-specification.js: a script for writing a software requirements specification\n- write-a-software-requirements-specification.js: a script for writing a software requirements specification\n- write-a-low-level-design.js: a script for writing a low-level design\n- write-a-low-level-design.js: a script for writing a low-level design\n- write-a-high-level-design.js: a script for writing a high-level design\n- write-a-high-level-design.js: a script for writing a high-level design\n- write-a-system-operational-concept.js: a script for writing a system operational concept\n- write-a-system-operational-concept.js: a script for writing a system operational concept\n- write-a-documentation-plan.js: a script for writing a documentation plan\n- write-a-documentation-plan.js: a script for writing a documentation plan\n- write-a-documentation-plan.js: a script for writing a documentation plan\n- write-an-office.js: a script for writing an office\n- write-an-office.js: a script for writing an office\n- dispatch-release.schema.json: a schema for dispatch release\n- dispatch.schema.json: a schema for dispatch\n- work.schema.json: a schema for work\n- micro-enterprise.schema.json: a schema for micro enterprise\n- dispatch-release.schema.json: a schema for dispatch release\n- dispatch.schema.json: a schema for dispatch\n- work.schema.json: a schema for work\n- micro-enterprise.schema.json: a schema for micro enterprise\n\nPlease note that these are just possible scripts that could be in .claude/bin and are not explicitly listed in the provided repository contents.",
+    "model": "meta/llama-3.1-8b-instruct",
+    "provider": "eip155:31337:0x01dee67ad5eed252855bcc612b986cc96a91f353",
+    "providerTeam": "nvidia-inference-team",
+    "dispatchedAt": "2026-07-24T03:16:45.445Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/claude-bin.json",
+      "landing": "glossary-term",
+      "resultDigest": "sha256:677bc715ffddd5e3a7806a22bad5787d63cc88a4f3afba11a8dddc626760a126",
+      "commitSha": "c78af842e9be663c112539452465adb735355f73",
+      "committedAt": "2026-07-24T15:45:54.705Z",
+      "checkedAt": "2026-07-24T15:45:54.292Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

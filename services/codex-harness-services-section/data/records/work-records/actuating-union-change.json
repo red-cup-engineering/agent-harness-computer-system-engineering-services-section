@@ -1,0 +1,12 @@
+{
+  "id": "actuating-union-change",
+  "name": "actuating union change",
+  "from": "A work-lot plan sitting inert, and no Leader-issued authority yet consumed to make any of it a real filesystem mutation.",
+  "to": "An ActuationPlanK integrated against the requirement, architecture, high-level design, low-level design, and work lots, and -- only once LeaderAuthorityK is consumed -- a CandidatePatchK: an actual Codex-authored mutation on disk.",
+  "cost": "The offices own direct-incubation attention integrating five upstream knowledge classes into one plan, and then spending its one authority-bounded mutation privilege to execute it.",
+  "otherwise": "A plan is designed and decomposed and never actually reaches the filesystem, or the opposite failure -- a mutation reaches the filesystem without ever having consumed a Leader authority receipt.",
+  "needs": [
+    "plan-integrate-actuation",
+    "execute-repository-mutation"
+  ]
+}

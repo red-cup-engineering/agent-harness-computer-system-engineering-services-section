@@ -1,0 +1,20 @@
+{
+  "id": "exchange-20260728-123124-ac926f",
+  "packet": {
+    "sources": [
+      "/home/emsenn/.codex/sessions/2026/07/28/rollout-2026-07-28T12-08-42-019fa9b3-3694-7540-9265-c47e228a6cfd.jsonl"
+    ],
+    "prompt": "Return a CSV with one row per candidate implementation or migration record that could make RWIL/WIT/EAVT chain-carried. Columns: candidate_name, exact_role, chain_carried_data, offchain_data, migration_status (implemented|partial|superseded|uncertain), evidence_path, exact_evidence, contradicting_evidence, and cheapest falsifying observation. Do not infer absence from naming; include differently named candidates and explicitly separate source claims from deployed/receiver evidence.",
+    "artifact-type": "data-table"
+  },
+  "outcome": "artifact",
+  "cost": {
+    "fuel-consumed": 5,
+    "wall-time-seconds": 43.458,
+    "denomination": "notebooklm-cli-invocations"
+  },
+  "artifact": {
+    "type": "data-table",
+    "path": "/home/emsenn/info/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/service/bare-cedar-fog-services-section/services/bare-cedar-fog-codex-enterprise/data/records/supplier-exchanges/notebooklm/exchange-20260728-123124-ac926f.data-table.csv"
+  }
+}

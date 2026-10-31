@@ -12,9 +12,13 @@
 	branch = main
 [submodule "codex-session-rsi-sensor"]
 	path = services/codex-harness-services-section/services/codex-session-rsi-sensor
-	url = https://github.com/561-group/codex-session-rsi-sensor.git
+	url = https://github.com/red-cup-engineering/codex-session-rsi-sensor.git
 	branch = main
 [submodule "codex-session-activity-provider"]
 	path = services/codex-harness-services-section/services/codex-session-activity-provider
 	url = https://github.com/red-cup-engineering/codex-session-activity-provider.git
+	branch = main
+[submodule "session-transcript-dialects"]
+	path = services/session-transcript-dialects
+	url = https://github.com/red-cup-engineering/session-transcript-dialects.git
 	branch = main

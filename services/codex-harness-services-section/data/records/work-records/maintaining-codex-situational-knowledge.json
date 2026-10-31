@@ -1,0 +1,13 @@
+{
+  "id": "maintaining-codex-situational-knowledge",
+  "name": "maintaining codex situational knowledge",
+  "from": "The Codex actuation office holding only its own prior turns assumptions about the Leaders move, the repositorys state, and which providers are offering capability -- stale the instant any of the three changes underneath it.",
+  "to": "A content-addressed LeaderMoveK, RepositoryEvidenceK, and ProviderMarketK the office can cite instead of re-deriving from memory -- three monitor-stage skills kept current rather than trusted from the last time they were run.",
+  "cost": "The offices own attention spent re-observing the Leaders expression, the repositorys evidence, and the provider market on every cycle, rather than assuming yesterdays read still holds.",
+  "otherwise": "The office plans and executes against a picture of the Leaders move, the repository, or the market that has already drifted, and the drift is discovered only when a downstream skill fails against evidence it should have consumed fresh.",
+  "needs": [
+    "monitor-leader-move",
+    "monitor-repository-evidence",
+    "monitor-provider-market"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "wo-terms-we-need-to-know-what-claude-shit-is-in-claude-that-isn-23004bf35684",
+  "mintedAt": "2026-07-24T02:13:17.119Z",
+  "source": "leader-speech",
+  "demand": "We need to know what Claude shit is in .claude that isn't actually in a proper office in our real repo",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/we-need-to-know-what-claude-shit-is-in-claude-that-isn-t-act.json",
+  "class": "verify",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:af9f6ad21e006cc7ac39e65f7c9331f9771d1d821dd98594f953cfc011ffc024",
+    "response": "After examining the nearest existing ancestor of the target file, which is the 'lib' directory, I found the relevant skill descriptions and definitions.\n\nThe term \"Claude\" can be found in various skills' descriptions, including:\n\n- `installing-claude-as-an-office.js`: The skill description mentions Claude as an agent that can be installed.\n- `installing-claude-as-an-agent.js`: This skill description also mentions Claude as an agent.\n- `installing-an-enterprise-in-claude.js`: This skill description states that an enterprise can be installed in Claude.\n\nHowever, \"Claude shit\" could not be found in any skill description or definition within the 'lib' directory.\n\nPlease note that 'Claude shit' might be a colloquial or informal term that is not included in the provided grounding evidence. Without more context or explicit definitions, it's difficult to determine the precise meaning of this term.",
+    "model": "llama-3.1-8b-instant",
+    "provider": "eip155:31337:0x928fd195cc5d65cb7af86cb2b71900dceee9b399",
+    "providerTeam": "groq-inference-team",
+    "dispatchedAt": "2026-07-24T05:35:03.187Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/we-need-to-know-what-claude-shit-is-in-claude-that-isn-t-act.json",
+      "landing": "glossary-term",
+      "resultDigest": "sha256:97abd25624e735774e6508172692bf298f2fec55f98f2cb3415f9ef8b4962702",
+      "commitSha": "ca6c3e393ad9655d8758b2e1e9fc8d22dba4e418",
+      "committedAt": "2026-07-24T15:46:07.976Z",
+      "checkedAt": "2026-07-24T15:46:07.767Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

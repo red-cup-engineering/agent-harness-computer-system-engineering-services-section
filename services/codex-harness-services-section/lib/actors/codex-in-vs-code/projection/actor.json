@@ -1,0 +1,7 @@
+{
+  "kind": "union.civilian-actor",
+  "id": "urn:ame:bare-cedar-fog-codex",
+  "character": "codex-interactive-session",
+  "colony": "bare-cedar-fog",
+  "surface": "vscode-codex"
+}

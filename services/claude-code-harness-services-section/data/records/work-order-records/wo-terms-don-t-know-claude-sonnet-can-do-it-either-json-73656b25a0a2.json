@@ -1,0 +1,27 @@
+{
+  "id": "wo-terms-don-t-know-claude-sonnet-can-do-it-either-json-73656b25a0a2",
+  "mintedAt": "2026-07-24T02:13:10.822Z",
+  "source": "leader-speech",
+  "demand": "don't know Claude sonnet can do it either",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/don-t-know-claude-sonnet-can-do-it-either.json",
+  "class": "verify",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:f978386a896a76b54f37511af7002e45bcfe8f273053c2e4e72b4e162cf94d40",
+    "response": "The target path `lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/don-t-know-claude-sonnet-can-do-it-either.json` does not exist in the repository.\n\nA \"verify\" work order requires an artifact to verify against. No such artifact is present; the grounding evidence confirms only that the nearest existing ancestor is `lib`, and the term file has not been authored. The evidence is insufficient to discharge this verification: the file must be defined before it can be verified.",
+    "model": "claude-sonnet-4-6",
+    "provider": "eip155:31337:0xe81f78c659f23398a78c7048c8c65ec3b9a7e7d4",
+    "providerTeam": "claude-code-inference-team",
+    "dispatchedAt": "2026-07-24T04:16:53.653Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/don-t-know-claude-sonnet-can-do-it-either.json",
+      "landing": "glossary-term",
+      "resultDigest": "sha256:c3cd2a3c7d9e9d3b4adb6a098eb483b86d429089d0fb9e198c040676a0ccb93e",
+      "commitSha": "93b00148a601b194be6e8766d5f25aa9ee85b641",
+      "committedAt": "2026-07-24T15:44:57.871Z",
+      "checkedAt": "2026-07-24T15:44:57.603Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

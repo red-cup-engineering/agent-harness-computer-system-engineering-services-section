@@ -1,0 +1,40 @@
+{
+  "type": "MissingContractBoundary",
+  "id": "bare-cedar-fog-codex/context-warranted-duty-selection",
+  "consumer": "urn:ame:bare-cedar-fog-codex",
+  "requiredOperation": "select-context-warranted-office-duties",
+  "requiredInput": {
+    "context": "one exact OfficerContextBundle and ContextCompilationReceipt",
+    "office": "one stable office and its complete borne-duty repertoire",
+    "move": "one immutable Actor, demand, move, and session identity"
+  },
+  "requiredOutput": {
+    "type": "provider-authored typed selection receipt",
+    "binds": [
+      "provider and selection contract",
+      "context bundle and compilation receipt",
+      "stable Actor, office, demand, move, and session",
+      "the nonempty selected subset of duties borne by the office",
+      "context evidence warranting each selected duty"
+    ],
+    "conveys": [],
+    "doesNotConvey": [
+      "Founder or Leader acceptance",
+      "office appointment or incumbency",
+      "authority absent from the standing office",
+      "customer acceptance of provider work"
+    ]
+  },
+  "observedAdjacentContracts": [
+    {
+      "contract": "lib/emsenn/services/561-group/services/coesite-operations/services/coesite-agent-services-section/services/formation-lianqun/services/executive-officer-context-compilation-service/content/contracts/compile-officer-context.rml",
+      "boundary": "returns a reproducible context bundle and compilation receipt but explicitly performs no retrieval or inference"
+    },
+    {
+      "contract": "lib/emsenn/services/561-group/services/coesite-operations/services/coesite-agent-services-section/content/contracts/office-repertoire-market.rml",
+      "boundary": "requires the receiver to preselect exact duty or skill requirements and only matches Academy offices against them"
+    }
+  ],
+  "currentUnsafeSubstitute": "union.codex-office-move.duties is manually asserted without a provider selection receipt",
+  "admissionConsequence": "move duty projection cannot yet prove who selected the duties from context"
+}

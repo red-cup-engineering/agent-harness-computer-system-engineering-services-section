@@ -1,0 +1,12 @@
+{
+  "id": "accounting-for-capability-trade",
+  "name": "accounting for capability trade",
+  "authority": "emsenn",
+  "work": "accounting-for-capability-trade",
+  "claim": "emsenn",
+  "skills": [
+    "monitor-supplier-exchange",
+    "monitor-acceptance-pressure"
+  ],
+  "delegation": false
+}
