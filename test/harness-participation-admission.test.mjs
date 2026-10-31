@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import { requireParticipationHook, requireSuccessfulHookArrival } from "../src/hooks/service.mjs";
 
 const sourceSession = "actual-harness-session-from-transport";
@@ -98,4 +99,13 @@ test("the original arrival writer must return an admitted addressed receipt befo
     assert.throws(() => requireSuccessfulHookArrival(refused),
       /original arrival was not admitted before participation/);
   }
+});
+
+test("original harness admission qualification is shipped to packed consumers", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const originalTest = "test/harness-participation-admission.test.mjs";
+  assert.ok(manifest.files.includes(originalTest), "packing must retain original harness admission test");
+  assert.ok(manifest.receivingTests.includes(originalTest), "independent receiving must enumerate original harness admission test");
+  assert.match(manifest.scripts.test, /test\/\*\.test\.mjs/u,
+    "source test command must select the same source-owned test in workspaces");
 });
