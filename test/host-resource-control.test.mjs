@@ -4,6 +4,9 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { once } from "node:events";
+import { createServer } from "node:net";
+import { tmpdir } from "node:os";
 import { decide, run, hookEntries, hostResourceControl, writeHostResourceControl, launcherScript, sliceUnit, isContained, mergeHostResourceHooks } from "../src/host-resource-hook.mjs";
 
 const source = fileURLToPath(new URL("../src/host-resource-hook.mjs", import.meta.url));
@@ -56,14 +59,26 @@ test("invalid configuration refuses projection before any write; no trust is man
   assert.equal(existsSync(join(root, ".codex/hook-trust.json")), false);
 });
 
-test("original deny, provider rewrite, malformed event and containment contracts survive source recovery", t => {
-  const root = scratch(t), env = { ...process.env, AGENT_CONTAINMENT: "off" };
-  const event = { tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } };
-  assert.equal(decide(event, { env }).permissionDecision, "deny");
-  assert.equal(decide(event, { env, provider: "codex" }).permissionDecision, "deny");
-  assert.equal(decide({ ...event, tool_input: { command: "npm test", description: "keep" } }, { env, provider: "codex" }), undefined);
+test("the hook denies nothing: it places commands in the work slice, and only a Claude Code session's", async t => {
+  // A Unix socket path is at most 108 bytes, so the runtime directory holding the bus is a short temporary one.
+  const root = mkdtempSync(join(tmpdir(), "ahc-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const bus = createServer().listen(join(root, "bus"));
+  t.after(() => bus.close());
+  await once(bus, "listening");
+  const env = { ...process.env, XDG_RUNTIME_DIR: root, PATH: `${root}:${process.env.PATH}` };
+  writeFileSync(join(root, "systemd-run"), "#!/bin/sh\n", { mode: 0o755 });
+  const cgroup = "0::/user.slice/agent-claude.slice/session.scope";
+  const event = { tool_name: "Bash", cwd: root, permission_mode: "bypassPermissions", tool_input: { command: "find /home", description: "keep" } };
+  const contained = decide(event, { env, cgroup });
+  assert.equal(contained.permissionDecision, undefined);
+  assert.match(contained.updatedInput.command, /--slice=agent-work\.slice/); assert.equal(contained.updatedInput.description, "keep");
+  assert.equal(decide(event, { env, cgroup, provider: "codex" }), undefined);
+  assert.equal(decide({ ...event, tool_input: { command: "rm -r build" } }, { env, cgroup }), undefined, "removals stay readable to the harness");
+  assert.equal(decide(event, { env, cgroup: "0::/user.slice/agent-work.slice/run.scope" }), undefined);
+  assert.equal(decide({ ...event, permission_mode: "default" }, { env, cgroup }), undefined);
+  assert.equal(decide(event, { env: { ...env, AGENT_CONTAINMENT: "off" }, cgroup }), undefined);
   assert.equal(run("malformed", { env }), undefined);
-  assert.equal(decide({ ...event, tool_input: { command: "echo small" } }, { env }), undefined);
   assert.match(launcherScript(), /--slice=agent-claude.slice/); assert.match(sliceUnit(), /MemorySwapMax=0/);
   assert.equal(isContained("0::/user.slice/agent-claude.slice/agent.scope"), true);
 });
@@ -97,8 +112,8 @@ test("actual Codex office CLI projects the configured resource consumer without 
   // The projection names the guard its script resolves (this source in a linked checkout, the installed package elsewhere): a real hook file, run by node.
   const named = /'([^']*\/src\/host-resource-hook\.mjs)'/u.exec(hook.command)?.[1];
   assert.ok(named !== undefined && existsSync(named), hook.command); assert.match(readFileSync(join(root, ".codex/config.toml"), "utf8"), /hooks = true/);
-  const denied = spawnSync("bash", ["-c", hook.command], { input: JSON.stringify({ tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } }), encoding: "utf8", timeout: 3000 });
-  assert.equal(denied.status, 0); assert.equal(JSON.parse(denied.stdout).hookSpecificOutput.permissionDecision, "deny");
+  const ran = spawnSync("bash", ["-c", hook.command], { input: JSON.stringify({ tool_name: "Bash", cwd: root, tool_input: { command: "find /home" } }), encoding: "utf8", timeout: 3000 });
+  assert.equal(ran.status, 0); assert.equal(ran.stdout, "", "a Codex command runs untouched");
 });
 
 test("headless Claude carries the same source hook despite disabled setting sources", async t => {
