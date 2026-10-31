@@ -1,0 +1,13 @@
+{
+  "id": "maintaining-codex-situational-knowledge",
+  "name": "maintaining codex situational knowledge",
+  "authority": "emsenn",
+  "work": "maintaining-codex-situational-knowledge",
+  "claim": "emsenn",
+  "skills": [
+    "monitor-leader-move",
+    "monitor-repository-evidence",
+    "monitor-provider-market"
+  ],
+  "delegation": false
+}

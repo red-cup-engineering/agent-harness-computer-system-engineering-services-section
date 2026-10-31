@@ -1,0 +1,27 @@
+{
+  "id": "wo-terms-claude-hooks-scripts-json-02cc43b60f7b",
+  "mintedAt": "2026-07-24T02:13:16.614Z",
+  "source": "leader-speech",
+  "demand": "Describe .claude/hooks scripts.",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/claude-hooks-scripts.json",
+  "class": "define",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:dbe852d42e12d5f1a38608d1f921851f1699b35a858ec09a4545fcddfa0edba3",
+    "response": "The provided grounding evidence contains no information regarding \".claude/hooks\" scripts.",
+    "model": "gemini-3.1-flash-lite",
+    "provider": "eip155:31337:0xe6f21f62f70cd520743f97276497457294f8bfda",
+    "providerTeam": "gemini-inference-team",
+    "dispatchedAt": "2026-07-24T03:16:45.445Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/claude-hooks-scripts.json",
+      "landing": "glossary-term",
+      "resultDigest": "sha256:a41eaebeb7d8237651da6bb344f9a2594cf5a732469c68a56b661f2a67e1c9ed",
+      "commitSha": "e7cee5e98799571bc568573916db268452e67ebe",
+      "committedAt": "2026-07-24T15:45:52.602Z",
+      "checkedAt": "2026-07-24T15:45:52.235Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "UnionNetworkActuator",
+  "actor": "urn:ame:codex-authority-bounded-integration-actuator",
+  "customer": "urn:ame:bare-cedar-fog-codex",
+  "operation": "integrate-authorized-candidate",
+  "inputType": "LeaderAuthorityAndActuationPlanK",
+  "outputType": "CandidatePatchK",
+  "offer": "urn:offer:codex-authority-bounded-integration",
+  "protocols": ["MCP", "A2A 1.0", "RMN"],
+  "provider": { "requiredActor": "urn:ame:bare-cedar-fog-codex", "mode": "self-provisioned-execute" },
+  "compositionBoundary": "Optionally records one exact bounded mutation when Codex chooses this actuator for additional replay protection. The Leader's current expression already authorizes safe in-scope work; LeaderAuthorityK and an integrated plan are evidence projections, not prerequisites or sources of authority. Only the stable Codex actor writes; supplier artifacts remain authority-free.",
+  "consideration": { "quoteState": "not-applicable-self-provisioned", "incurredState": "requires-native-resource-receipt", "acceptedValueState": "unknown-until-customer-outcome", "unknownIsZero": false },
+  "receipt": "CandidatePatchK binds the plan, authority claim, exact before/after bytes, source-provider receipts, native resource receipt, and author process.",
+  "refusal": "Within this optional one-file actuator, refuse forged or stale projections, replay, changed preimage, scope/path escape, symlink, non-Codex actor, or malformed resource evidence. Never treat this actuator's stricter recording protocol as a refusal of the Leader's expression or a limit on Codex's ordinary authorized coding tools.",
+  "acceptance": "Candidate delivery is never verification, customer acceptance, demand closure, revenue, or proof that cost was incurred."
+}

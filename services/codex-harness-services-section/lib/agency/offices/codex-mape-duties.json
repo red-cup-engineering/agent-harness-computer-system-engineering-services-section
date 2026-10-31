@@ -1,0 +1,58 @@
+{
+  "type": "CodexMapeDutyRegistry",
+  "version": 1,
+  "office": "bare-cedar-fog-codex-actuation-office",
+  "duties": [
+    {
+      "id": "maintaining-codex-situational-knowledge",
+      "skills": [
+        "monitor-leader-move",
+        "monitor-repository-evidence",
+        "monitor-provider-market"
+      ]
+    },
+    {
+      "id": "diagnosing-the-union-system",
+      "skills": [
+        "analyze-pinned-union-corpus",
+        "analyze-schema-bound-corpus",
+        "analyze-reingested-structured-corpus",
+        "analyze-contradictions-and-obstructions"
+      ]
+    },
+    {
+      "id": "designing-union-change",
+      "skills": [
+        "plan-software-architecture-specification",
+        "plan-high-level-design"
+      ]
+    },
+    {
+      "id": "decomposing-union-change",
+      "skills": [
+        "plan-low-level-design",
+        "plan-bounded-work-lots"
+      ]
+    },
+    {
+      "id": "actuating-union-change",
+      "skills": [
+        "plan-integrate-actuation",
+        "execute-repository-mutation"
+      ]
+    },
+    {
+      "id": "observing-response-and-learning",
+      "skills": [
+        "monitor-receiver-outcome"
+      ]
+    },
+    {
+      "id": "accounting-for-capability-trade",
+      "skills": [
+        "monitor-supplier-exchange",
+        "monitor-acceptance-pressure"
+      ]
+    }
+  ]
+}

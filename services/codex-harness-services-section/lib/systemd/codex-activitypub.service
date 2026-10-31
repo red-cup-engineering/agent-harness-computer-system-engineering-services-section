@@ -1,0 +1,41 @@
+[Unit]
+Description=Bare Cedar Fog Codex customer enterprise ActivityPub face
+After=network-online.target union-alpha-chain-node.service
+Wants=network-online.target union-alpha-chain-node.service
+
+[Service]
+Type=exec
+WorkingDirectory=/home/emsenn/.local/share/561-group/releases/activitypub-services-section/current
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=19863
+Environment=EVM_RPC_URL=http://127.0.0.1:8561
+Environment=EVM_CHAIN_ID=5615610
+Environment=ONCHAIN_RESOURCE_CONTRACT=0x35D53D38B7603B73D76F4c1Dc1e95ECCd8631e58
+Environment=EVM_KEYSTORE_PATH=/home/emsenn/.config/red-cup-engineering/settlement-pulse/evm-wallet.json
+Environment=EVM_KEYSTORE_PASSWORD_PATH=/home/emsenn/.config/red-cup-engineering/settlement-pulse/evm-wallet.password
+Environment=ACTIVITYPUB_ORIGIN=https://bare-cedar-fog.561.group
+Environment=ACTIVITYPUB_IDENTIFIER=codex
+Environment=ACTIVITYPUB_A2A_AGENT_CARD=https://bare-cedar-fog.561.group/.well-known/agent-card.json
+EnvironmentFile=-/home/emsenn/.config/red-cup-engineering/bare-cedar-fog-codex/identity.env
+EnvironmentFile=/home/emsenn/.config/red-cup-engineering/r2-custody.env
+Environment=ACTIVITYPUB_ANNOUNCE_SETTLEMENT_PULSE=false
+Environment="ACTIVITYPUB_ACTOR_NAME=Bare Cedar Fog Codex"
+Environment="ACTIVITYPUB_ACTOR_SUMMARY=The stable VS Code Codex customer enterprise; sessions are transient faces and other Union Actors are suppliers."
+Environment=ACTIVITYPUB_KEYS_PATH=/home/emsenn/.config/red-cup-engineering/bare-cedar-fog-codex/activitypub-keys.json
+Environment=ACTIVITYPUB_INBOX_BEARER_TOKEN_FILE=/home/emsenn/.config/red-cup-engineering/bare-cedar-fog-codex/inbox-bearer.token
+ExecStart=/home/emsenn/.nvm/versions/node/v24.16.0/bin/node src/onchain-server.mjs
+Restart=always
+RestartSec=2
+TimeoutStopSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

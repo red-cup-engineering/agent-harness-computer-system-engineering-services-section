@@ -1,0 +1,23 @@
+{
+  "id": "wo-claude-skills-9bd825c09962",
+  "mintedAt": "2026-07-24T02:13:17.095Z",
+  "source": "leader-speech",
+  "demand": "Describe the purpose and functionality of .claude/skills.",
+  "targetPath": ".claude/skills",
+  "class": "define",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:5e719022c4d485ab0bbdb034bee6581b375f96d87b5e3a8b4f92a15094d8cd95",
+    "response": "The purpose of `.claude/skills` is to store and organize reusable skills or expertise in a structured manner. This directory contains subdirectories for specific skills, such as \"writing-a-low-level-design\" and \"writing-a-high-level-design\", each with its own set of related files.\n\nThe functionality of `.claude/skills` can be broken down as follows:\n\n- Each skill directory contains a `SKILL.md` file, which likely provides a detailed description of the skill, its purpose, and any relevant information.\n- The `scripts` subdirectory within each skill directory contains executable files, such as `write-a-low-level-design.js` and `write-a-high-level-design.js`, which implement the skill's functionality. These scripts can be used to automate tasks or provide a starting point for implementing the skill in a specific project.\n- The presence of `resolve-an-identifier.js` in the \"writing-a-high-level-design\" skill directory suggests that this skill may involve resolving or identifying specific entities, and the script provides a way to perform this task.\n\nOverall, `.claude/skills` appears to be a repository of reusable skills and expertise, with each skill being represented by a directory containing descriptive metadata and executable scripts.",
+    "model": "meta/llama-3.1-8b-instruct",
+    "provider": "eip155:31337:0x01dee67ad5eed252855bcc612b986cc96a91f353",
+    "providerTeam": "nvidia-inference-team",
+    "dispatchedAt": "2026-07-24T03:22:48.787Z",
+    "realization": {
+      "outcome": "skipped-exists",
+      "targetPath": ".claude/skills",
+      "checkedAt": "2026-07-24T15:46:07.297Z",
+      "reason": "a file already sits at this targetPath; a fulfilled verify/define response is never written over existing content"
+    }
+  }
+}

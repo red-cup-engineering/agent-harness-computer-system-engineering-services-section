@@ -1,0 +1,29 @@
+[Unit]
+Description=Claude Code inference team A2A service
+After=network-online.target rmn-semantic-conformance.service witness-journal-rdf-projection-service.service wit-transition-assay.service
+Wants=network-online.target
+Requires=rmn-semantic-conformance.service witness-journal-rdf-projection-service.service wit-transition-assay.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section
+EnvironmentFile=-%h/.config/561-group/agents.env
+Environment=PORT=8789
+Environment=HOST=127.0.0.1
+Environment=BASE_URL=http://127.0.0.1:8789
+Environment=RMN_CONFORMANCE_AGENT=http://127.0.0.1:8786/.well-known/agent-card.json
+Environment=WITNESS_JOURNAL_RDF_AGENT=http://127.0.0.1:8787/.well-known/agent-card.json
+Environment=WIT_TRANSITION_ASSAY_AGENT=http://127.0.0.1:19827/.well-known/agent-card.json
+Environment=CLAUDE_CODE_BIN=%h/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/src/claude-via-private-relay.mjs
+Environment=CLAUDE_RELAY_URL=http://127.0.0.1:19762/invoke
+Environment=AGENT_CARD_SIGNING_KEY=%h/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/data/agent-card-signing/ed25519-private.pem
+Environment=AGENT_CARD_JWKS=%h/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/content/agent-card-signing/jwks.json
+Environment=AGENT_CARD_SIGNING_KID=claude-code-inference-team-ed25519
+ExecStart=/usr/bin/node %h/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/bin/serve-a2a.mjs
+Restart=always
+RestartSec=0
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

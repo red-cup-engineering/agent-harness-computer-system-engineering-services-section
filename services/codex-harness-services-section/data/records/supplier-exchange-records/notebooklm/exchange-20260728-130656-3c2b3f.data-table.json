@@ -1,0 +1,20 @@
+{
+  "format": "csv",
+  "mediaType": "text/csv",
+  "byteLength": 14241,
+  "sha256": "sha256:723454e82ccf6f04c348d2bacc4a65481ddd0ef8512c3ea391eb1be949063f56",
+  "rowCount": 22,
+  "columnCount": 7,
+  "header": [
+    "failure-point",
+    "strongest-existing-exemplar-path",
+    "exact-repair",
+    "evidence",
+    "uncertainty",
+    "next-falsifier",
+    "Source"
+  ],
+  "formulaLikeCellCount": 2,
+  "assayRequired": true,
+  "providerArtifactId": "1a2f8e1b-458a-491a-bd53-c1620f2479c3"
+}

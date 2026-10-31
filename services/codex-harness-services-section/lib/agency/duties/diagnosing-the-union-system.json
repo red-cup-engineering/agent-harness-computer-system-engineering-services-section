@@ -1,0 +1,14 @@
+{
+  "id": "diagnosing-the-union-system",
+  "name": "diagnosing the union system",
+  "authority": "emsenn",
+  "work": "diagnosing-the-union-system",
+  "claim": "emsenn",
+  "skills": [
+    "analyze-pinned-union-corpus",
+    "analyze-schema-bound-corpus",
+    "analyze-reingested-structured-corpus",
+    "analyze-contradictions-and-obstructions"
+  ],
+  "delegation": false
+}

@@ -1,0 +1,12 @@
+{
+  "id": "actuating-union-change",
+  "name": "actuating union change",
+  "authority": "emsenn",
+  "work": "actuating-union-change",
+  "claim": "emsenn",
+  "skills": [
+    "plan-integrate-actuation",
+    "execute-repository-mutation"
+  ],
+  "delegation": false
+}

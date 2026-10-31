@@ -1,0 +1,498 @@
+{
+  "type": "OriginalPrivateCustomerSourceOwnershipTransfer",
+  "originalWork": "https://github.com/coesite-operations/operations-services-section/issues/10",
+  "repository": {
+    "id": 1314310299,
+    "nodeId": "R_kgDOTlbImw",
+    "original": "emsenn/bare-cedar-fog-claude-services-section",
+    "current": "561-group/bare-cedar-fog-claude-services-section",
+    "visibility": "private",
+    "defaultBranch": "main"
+  },
+  "sourceBeforeIdentityCorrection": {
+    "commit": "1e0f7b7795f6157b019db450963c5d13b79518ea",
+    "leafCount": 52,
+    "sourceBytes": 133826,
+    "refs": [
+      {
+        "ref": "refs/heads/main",
+        "sha": "1e0f7b7795f6157b019db450963c5d13b79518ea"
+      }
+    ],
+    "tags": [],
+    "allStatePulls": 0,
+    "allStateNonPullIssues": 0,
+    "leaves": [
+      {
+        "path": ".github/workflows/agent-work-intake.yml",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "ee077700dcdde1e71be3da2f8982c2ceae15b21e",
+        "bytes": 597
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "de8840761386c1f90e1f9125d099fcd3e059a18b",
+        "bytes": 79
+      },
+      {
+        "path": "content/character.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6d307edcaf67e52cc59f80aa19d744839eddea2d",
+        "bytes": 3162
+      },
+      {
+        "path": "content/characters/claude-content-librarian-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "baccfe68fa5fe9a531e44319ba938e7c83076f5d",
+        "bytes": 1201
+      },
+      {
+        "path": "content/characters/claude-internal-audit-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fb1962cb5e6a6f482e1c23b1bb26ab2aa5084f69",
+        "bytes": 1173
+      },
+      {
+        "path": "content/characters/claude-obsmetrologia-consultant-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "fe7c266bf352c4079b82c9d5bf208837bbf6d439",
+        "bytes": 1171
+      },
+      {
+        "path": "content/characters/claude-product-quality-assurance-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "098e0d542a5a161c36d792a4d85eca5d51dbbce6",
+        "bytes": 1212
+      },
+      {
+        "path": "content/characters/claude-requirements-implementation-team-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "11033a5ddc0545c233372b336b5a7b4d2fd272f9",
+        "bytes": 1170
+      },
+      {
+        "path": "content/characters/claude-system-architect-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "056cbfa8ab8ba6494f9a27b4bdc2b698e8a7eb05",
+        "bytes": 1211
+      },
+      {
+        "path": "content/characters/claude-white-army-session.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eff64150eb0ad124bd9f53d73f00bc37c9069ccc",
+        "bytes": 1141
+      },
+      {
+        "path": "content/glossary/claude-bin.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "5dc62bb80baf4bfbb7642f3b4fc0e40218135cd3",
+        "bytes": 4057
+      },
+      {
+        "path": "content/glossary/we-need-to-know-what-claude-shit-is-in-claude-that-isn-t-act.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "262331c172664d6668608f5c6fdab0be6805811f",
+        "bytes": 1542
+      },
+      {
+        "path": "content/harness/census-targets.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "6ac2bac72141e3013de2c5a14304734cdc4847ed",
+        "bytes": 4056
+      },
+      {
+        "path": "content/harness/claude-agent-harness.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "86227059d05a1e1cd114ac1b4739e11c9bd635af",
+        "bytes": 10601
+      },
+      {
+        "path": "content/harness/claude-permission-policy.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7c5f6d8cb946e668e2eb1bf10104efbee5a603e8",
+        "bytes": 1025
+      },
+      {
+        "path": "content/harness/claude-suppliers.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3c4f213315cb3c563d3cd1f37c15a48f97b424ca",
+        "bytes": 1223
+      },
+      {
+        "path": "content/incumbencies/bare-cedar-fog-claude-as-executive-officer-to-the-leader.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "15557562079b112f5da96bfd23c5db6c8471d21f",
+        "bytes": 1905
+      },
+      {
+        "path": "content/incumbencies/claude-content-librarian-session-as-content-librarian.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9710f4aad717fd8c8ecb5d514267cafb52710a47",
+        "bytes": 1748
+      },
+      {
+        "path": "content/incumbencies/claude-internal-audit-session-as-internal-audit.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8bfd5cec44178a730985d4b66d69a1b406b8a537",
+        "bytes": 1730
+      },
+      {
+        "path": "content/incumbencies/claude-obsmetrologia-consultant-session-as-obsmetrologia-consultant.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f6c56920e7130f8f3512825a75cd38ab458ca40f",
+        "bytes": 1790
+      },
+      {
+        "path": "content/incumbencies/claude-product-quality-assurance-session-as-product-quality-assurance.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e412526bcc40eefba6cabc51e0580a7ce8e7ac25",
+        "bytes": 1796
+      },
+      {
+        "path": "content/incumbencies/claude-requirements-implementation-team-session-as-requirements-implementation-team.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "82c06586dcd98bdfdfa1f26c95ec9146d0321d4a",
+        "bytes": 1838
+      },
+      {
+        "path": "content/incumbencies/claude-system-architect-session-as-system-architect.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c8a06221b2c4ce9ee49ed79700e14053cf9fdb11",
+        "bytes": 1742
+      },
+      {
+        "path": "content/incumbencies/claude-white-army-session-as-white-army.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "51ea62b5030f86f85e723b668883e1be1bff4547",
+        "bytes": 1706
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-claude-hooks-3480501e3d96.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9632c03e9ac7ce745a2034a27659ade750fc9fee",
+        "bytes": 2671
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-claude-interactive-session-authoring-gate-c9aabc710bd7.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d7c2cd0f2e926ceed07d3ec59ea16bc14babde47",
+        "bytes": 2981
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-claude-interactive-session-json-officer-incumbency-5b8af1c8c0ed.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3e6cbd97e1caadf51496bca747469d37a6fa4177",
+        "bytes": 2427
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-claude-skills-9bd825c09962.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "e0f1a235b16b35cee96bbcfbecfb0e2c8cc03221",
+        "bytes": 2160
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-incumbencies-bare-cedar-fog-claude-as-executive-officer-to-t-fb4319dd23e2.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "9a703405627184320e711a51836613c7b5e6bafb",
+        "bytes": 1179
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-skills-execute-repository-mutation-claude-57537d8ceb79.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f3560febd44fd92d0f3476b8744ad05b5303dca7",
+        "bytes": 515
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-claude-bin-json-5d088815b33c.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "eccf812d442f217e87927906107c390ede558a83",
+        "bytes": 4910
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-claude-fable-inference-json-9af3c96e7bbe.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8b43ade68b171dc6618b6f011c4a47f15532c6b1",
+        "bytes": 17440
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-claude-hooks-scripts-json-02cc43b60f7b.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3a2c1c9eba200d500f939a3ea8f9fc1615d0dcb0",
+        "bytes": 1422
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-claude-ready-json-f5e0aa661772.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "31525cdac531dad6f431be0dbcc050ec6d1e4df8",
+        "bytes": 1852
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-don-t-know-claude-sonnet-can-do-it-either-json-73656b25a0a2.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f6cd64f7ddff1e5ae455cfaf04d05f7a9b243764",
+        "bytes": 1952
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-review-recent-claude-session-transcripts-json-4bd117f0ae51.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "0d5873b2e7d62dd7c4ef4e3a2a6940528f332fef",
+        "bytes": 1471
+      },
+      {
+        "path": "content/lmt-history/work-orders/wo-terms-we-need-to-know-what-claude-shit-is-in-claude-that-isn-23004bf35684.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c774a0060728d226f03974d5df122051fae431f0",
+        "bytes": 2423
+      },
+      {
+        "path": "content/offices/bare-cedar-fog-claude-actuation-office.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "b68471ae208ee7a21826841e1e709fad21ed59b1",
+        "bytes": 5890
+      },
+      {
+        "path": "data/records/systemd/claude-code-inference-a2a.service",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "11df0b497223d439a66c6d8ced8144404411d78c",
+        "bytes": 2140
+      },
+      {
+        "path": "lib/systemd/bare-cedar-fog-claude-activitypub.service",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "dc357d2aed0ed8427f0e46d5f220e771899d32f2",
+        "bytes": 2014
+      },
+      {
+        "path": "package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3dca569bde22a363ca911c58a8d38a0a10086cc8",
+        "bytes": 519
+      },
+      {
+        "path": "package.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "d07180909af2fa681f1a3584fb91438c70e311f4",
+        "bytes": 1312
+      },
+      {
+        "path": "scripts/lib/supplier.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "c91ffed61885ce2d7c63e68c3be5df8d2eb93f26",
+        "bytes": 1788
+      },
+      {
+        "path": "scripts/project-claude-agent-harness.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "f95fba72bef0f445ea787f73baf6b3d6ae7d777b",
+        "bytes": 1885
+      },
+      {
+        "path": "scripts/project-claude-permissions.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "3b8ff0955730509f98dcbf98cbbb4dc1c2843f41",
+        "bytes": 1722
+      },
+      {
+        "path": "scripts/provision-claude-enterprise-account.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "101c43b447a235cf70e3bef84c1d00cc617630e6",
+        "bytes": 4077
+      },
+      {
+        "path": "scripts/run-census.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "287b16ca7739c2414816c12304a78d5515685db1",
+        "bytes": 3340
+      },
+      {
+        "path": "scripts/seat-claude-activitypub-face.sh",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "76a7526ea5fd5c1e58ced002c0f4dd85dde53112",
+        "bytes": 4512
+      },
+      {
+        "path": "services/claude-session-activity-provider/content/contracts/bare-cedar-fog-colony-claude-session-activity-pulse.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8ffb3d3bbb436a0888c34ce32ebed8868ea5fb0d",
+        "bytes": 754
+      },
+      {
+        "path": "services/claude-session-activity-provider/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "46f7cece74a0a4489cc1520b27ef69d1c44f474b",
+        "bytes": 703
+      },
+      {
+        "path": "services/claude-session-activity-provider/src/collect-colony-activity.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "8e4084f61630e55ecb905f4fbd0255cc2597613d",
+        "bytes": 5683
+      },
+      {
+        "path": "services/claude-session-activity-provider/test/collect-colony-activity.test.mjs",
+        "mode": "100644",
+        "type": "blob",
+        "sha": "7cafc103daae7f97357bea8c3612b5bd986efb66",
+        "bytes": 5208
+      }
+    ]
+  },
+  "originalProviderReceipt": {
+    "kind": "github.repository-transfer.receipt.v1",
+    "state": "PROVIDER_RECEIVED",
+    "plan": {
+      "schema": "github.repository-transfer.plan.v1",
+      "requestId": "emsenn-bcf-claude-561-group-20261021",
+      "workRef": "https://github.com/coesite-operations/operations-services-section/issues/10",
+      "source": "emsenn/bare-cedar-fog-claude-services-section",
+      "target": "561-group/bare-cedar-fog-claude-services-section",
+      "destinationOrganization": "561-group",
+      "repositoryId": 1314310299,
+      "defaultBranch": "main",
+      "visibility": "private"
+    },
+    "principal": "github:user:111507",
+    "preparedAt": "2026-10-21T06:54:44.390Z",
+    "attemptedAt": "2026-10-21T06:54:44.392Z",
+    "completedAt": "2026-10-21T06:55:32.350Z",
+    "repositoryId": 1314310299,
+    "fullName": "561-group/bare-cedar-fog-claude-services-section",
+    "evidence": "provider-readback-original-numeric-repository-id-v1"
+  },
+  "actualTransferReceiving": {
+    "numericIdReadback": {
+      "id": 1314310299,
+      "nodeId": "R_kgDOTlbImw",
+      "fullName": "561-group/bare-cedar-fog-claude-services-section",
+      "private": true,
+      "visibility": "private",
+      "defaultBranch": "main"
+    },
+    "secondTransferPOST": false,
+    "audience": {
+      "sourceCollaboratorIds": [
+        111507
+      ],
+      "destinationMemberIds": [
+        111507
+      ],
+      "outsideCollaborators": 0,
+      "completeDestinationRepositoryInventory": 54,
+      "unchangedPrivateVisibility": true
+    },
+    "obsoleteWorkflow": {
+      "id": 381518962,
+      "path": ".github/workflows/agent-work-intake.yml",
+      "sourceBlob": "ee077700dcdde1e71be3da2f8982c2ceae15b21e",
+      "state": "disabled_manually",
+      "basis": "Exact original retired CD caller matcher; file and history preserved, no new hosted job",
+      "disposition": "Exact CD-retired caller removed from active source in this proposal; original52-leaf commit/history and workflow logs retained.",
+      "activeInterface": false
+    }
+  },
+  "boundedSourceCorrection": {
+    "package": "@561-group/bare-cedar-fog-claude-services-section",
+    "repositoryUrl": "git+https://github.com/561-group/bare-cedar-fog-claude-services-section.git",
+    "version": "0.1.0",
+    "private": true,
+    "onlyMetadataFields": [
+      "package.json name",
+      "package.json repository.url",
+      "package-lock.json name",
+      "package-lock.json packages[empty].name"
+    ],
+    "originalBinScriptsDependenciesAndAllOtherFieldsPreserved": true,
+    "rootNameReferenceScope": "All52 original source files received: the old root package name occurs only in package.json and the two root lock fields; external legacy workspace consumers remain unreceived.",
+    "exactRetiredWorkflowRemoval": {
+      "path": ".github/workflows/agent-work-intake.yml",
+      "beforeBlob": "ee077700dcdde1e71be3da2f8982c2ceae15b21e",
+      "basis": "Original qualified CD matcher, now remote-disabled; no unrelated test entrance removed."
+    }
+  },
+  "contentDisposition": [
+    {
+      "contents": "Customer policy, character, seven colleague seatings and original incumbencies",
+      "status": "All original source preserved; historical authored seatings are not current native powers or appointments."
+    },
+    {
+      "contents": "Historical work orders and glossary",
+      "status": "All original data/history preserved; original obligations not declared completed."
+    },
+    {
+      "contents": "Harness projector/permissions/supplier descriptors",
+      "status": "All original runtime bytes preserved; old supplier paths, repo-root assumptions and actual deployed harness receiving remain unresolved."
+    },
+    {
+      "contents": "Claude session activity provider implementation/test and transcript-dialect dependency",
+      "status": "Original capability and tests preserved; old private child package/provider scopes unchanged, selected supplier/native useful activity unreceived."
+    },
+    {
+      "contents": "Account provisioning/ActivityPub scripts and systemd units",
+      "status": "Original files preserved; no host account, unit, grant, hook, machine or provider operation executed."
+    },
+    {
+      "contents": "Root package/lock metadata",
+      "status": "Canonical private source identity repaired only. Preexisting extra lock bin serve-claude-enterprise-mcp points at an absent root src/mcp-server.mjs; retained as unresolved original capability/history debt, not qualified away."
+    }
+  ],
+  "remaining": [
+    "Canonical parent/customer mount and active source selection unknown; no invented parent gitlink.",
+    "Runtime hard-home/old supplier references and legacy package callers require original owner/consumer reconciliation.",
+    "Native actor/office/governance/import, harness/host deployment and useful operating acceptance remain unreceived.",
+    "Original Semioverse repository/Work sync-back remains separate.",
+    "No package publication, registry version claim, install, new graph, test execution or paid Actions."
+  ],
+  "receivingGrade": "MET_SAME_ID_PRIVATE_NAMESPACE_AND_ORIGINAL_SOURCE_PRESERVATION_ONLY; source identity correction is a bounded proposal, not content integration/native acceptance."
+}

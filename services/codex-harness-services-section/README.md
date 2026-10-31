@@ -90,6 +90,16 @@ fallback.
 | `codex-harness-projection-service` | `project-codex-harness <configuration> <output>` | One machine actor configuration to an explicit disposable runtime output, plus owned lifecycle-hook slices into an explicit project root; never an implicit user `.codex` tree |
 | `codex-office-agent-projection-service` | `install-codex-as-an-agent <office> <node>` | One enterprise office record and its held skills to one project-scoped Codex custom agent |
 
+## Codex enterprise
+
+`services/codex-enterprise-service/` is the Codex enterprise engine: its MCP
+server, MAPE office, A2A executor, ActivityPub face and harness projectors. It
+reads the enterprise's data from this section: `lib/agency/` (enterprise,
+offices, duties, actuators, loci, harness policy, skills, agent card),
+`lib/actors/` (the configuration a machine's Codex actor supplies to the
+projector), and `data/records/` (work and supplier-exchange records).
+`lib/systemd/` holds the unit templates for its ActivityPub and A2A faces.
+
 ## Legacy holdings
 
 `lib/legacy/` keeps the earlier Codex harness packages together with their

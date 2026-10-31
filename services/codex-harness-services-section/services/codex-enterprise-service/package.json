@@ -1,0 +1,92 @@
+{
+  "name": "@rsc-quiescent/bare-cedar-fog-codex-enterprise",
+  "version": "0.4.1",
+  "private": true,
+  "type": "module",
+  "description": "The stable Bare Cedar Fog VS Code Codex Actor's customer enterprise, supplier trajectory, and market-pressure boundary.",
+  "files": [
+    "src/",
+    "scripts/",
+    "agents/actuators/",
+    "agents/agent-card-signing/",
+    "agents/agent-cards/",
+    "agents/duties/",
+    "agents/enterprise.json",
+    "agents/harness/",
+    "agents/loci/",
+    "agents/office/",
+    "agents/offices/",
+    "agents/skills/",
+    "lib/systemd/"
+  ],
+  "exports": {
+    ".": "./src/client.mjs",
+    "./a2a-client": "./src/a2a-client.mjs",
+    "./enterprise": "./src/enterprise.mjs",
+    "./mape-office": "./src/mape-office.mjs",
+    "./tool-evidence": "./src/tool-evidence.mjs",
+    "./harness-parity": "./src/harness-parity.mjs",
+    "./duty-selection": "./src/duty-selection.mjs",
+    "./relevant-history": "./src/relevant-history.mjs",
+    "./requirement-trajectory": "./src/requirement-trajectory.mjs",
+    "./source-pinned-analysis": "./src/source-pinned-analysis.mjs",
+    "./authority-bounded-integration": "./src/authority-bounded-integration.mjs",
+    "./agential-forms": "./src/agential-forms.mjs",
+    "./locus-registry": "./src/locus-registry.mjs",
+    "./semiotic-circuit": "./src/semiotic-circuit.mjs",
+    "./a2a-executor": "./src/a2a-executor.mjs"
+  },
+  "bin": {
+    "serve-codex-enterprise-mcp": "src/mcp-server.mjs",
+    "observe-codex-enterprise-hook": "src/codex-enterprise-hook.mjs",
+    "project-codex-hooks": "scripts/project-codex-hooks.mjs",
+    "project-codex-user-harness": "scripts/project-codex-user-harness.mjs",
+    "project-codex-agent-harness": "scripts/project-codex-agent-harness.mjs",
+    "execute-codex-enterprise-a2a-message": "scripts/execute-a2a-message.mjs",
+    "observe-codex-native-usage": "scripts/observe-native-usage.mjs",
+    "execute-bounded-discovery": "scripts/execute-bounded-discovery.mjs"
+  },
+  "scripts": {
+    "check": "node --check src/enterprise.mjs && node --check src/harness-routing.mjs && node --check src/harness-efficiency.mjs && node --check src/harness-parity.mjs && node --check src/duty-selection.mjs && node --check src/relevant-history.mjs && node --check src/requirement-trajectory.mjs && node --check src/source-pinned-analysis.mjs && node --check src/authority-bounded-integration.mjs && node --check src/agential-forms.mjs && node --check src/locus-registry.mjs && node --check src/native-usage.mjs && node --check src/tool-evidence.mjs && node --check src/prompt-cycle.mjs && node --check src/client.mjs && node --check src/mcp-server.mjs && node --check src/mape-office.mjs && node --check src/mape-office-mcp.mjs && node --check src/codex-enterprise-hook.mjs && node --check src/a2a-executor.mjs && node --check scripts/serve-activitypub.mjs && node --check scripts/execute-a2a-message.mjs && node --check scripts/observe-native-usage.mjs && node --check scripts/execute-bounded-discovery.mjs && node --check scripts/process-prompt-cycle.mjs && node --check scripts/assay-prompt-cycle.mjs && node --check scripts/assay-harness-efficiency.mjs && node --check scripts/assay-harness-candidate.mjs && node --check scripts/contract-harness-semantic-review.mjs && node --check scripts/project-codex-mape-cycle.mjs && node --check scripts/project-codex-hooks.mjs && node --check scripts/project-codex-user-harness.mjs && node --check scripts/project-codex-agent-harness.mjs && node --check scripts/check-codex-runtime.mjs && node --test test/codex-user-harness.test.mjs && node --test test/harness-parity.test.mjs && npm run check:runtime",
+    "project:harness-hooks": "node scripts/project-codex-hooks.mjs",
+    "check:harness-hooks": "node scripts/project-codex-hooks.mjs --check",
+    "project:user-harness": "node scripts/project-codex-user-harness.mjs",
+    "check:user-harness": "node scripts/project-codex-user-harness.mjs --check",
+    "project:agent-harness": "node scripts/project-codex-agent-harness.mjs",
+    "check:agent-harness": "node scripts/project-codex-agent-harness.mjs --static",
+    "assay:agent-harness": "node scripts/project-codex-agent-harness.mjs --check --live",
+    "assay:prompt-cycle": "node scripts/assay-prompt-cycle.mjs",
+    "assay:harness-candidate": "node scripts/assay-harness-candidate.mjs",
+    "assay:harness-efficiency": "node scripts/assay-harness-efficiency.mjs",
+    "contract:harness-semantic-review": "node scripts/contract-harness-semantic-review.mjs",
+    "admit:historical-demand": "node scripts/admit-next-historical-demand.mjs",
+    "check:runtime": "node scripts/check-codex-runtime.mjs",
+    "test": "CODEX_ENTERPRISE_DATA_ROOT=\"$PWD/test/fixtures\" node --test --test-concurrency=1 test/*.test.mjs",
+    "verify": "npm run check && npm test"
+  },
+  "dependencies": {
+    "@a2a-js/sdk": "1.0.0-beta.0",
+    "@red-cup-engineering/a2a-rmn-part-service": "1.0.1",
+    "@red-cup-engineering/a2a-rmn-task-client-service": "1.1.4",
+    "@red-cup-engineering/activitypub-services-section": "1.0.5",
+    "@red-cup-engineering/semantic-content-identify-service": "0.2.2",
+    "@red-cup-engineering/semantic-record-journal-service": "0.1.0"
+  },
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "LicenseRef-561Group-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/561-group/bare-cedar-fog-codex-enterprise.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/561-group/.github/blob/main/TIPS.md"
+  }
+}

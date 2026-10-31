@@ -1,0 +1,14 @@
+{
+  "type": "ClaudePermissionProjection",
+  "actor": "urn:ame:bare-cedar-fog-claude",
+  "defaultMode": "bypassPermissions",
+  "allow": [
+    "mcp__bare-cedar-fog-claude-enterprise",
+    "Bash(npm --prefix lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section run:*)"
+  ],
+  "x-provenance": {
+    "authorized-by": "urn:leader:emsenn",
+    "authorized-on": "2026-07-30",
+    "basis": "Leader wrote these exact values into .claude/settings.local.json by hand (bash-input, 20:10Z) after the auto-mode classifier refused the session's own edit; this record makes that authorization replayable law. Each allow rule is justified by an observed friction: C1 headless run 2026-07-30 (trip report failure: exact-match npm rules denied; ledger MCP tools needed per-run flags)."
+  }
+}

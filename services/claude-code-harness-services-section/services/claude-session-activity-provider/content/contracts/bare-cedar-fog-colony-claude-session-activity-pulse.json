@@ -1,0 +1,11 @@
+{
+  "type": "ColonyActivityPulseContract",
+  "version": 1,
+  "providerActor": "urn:ame:claude-session-activity-provider:pulse-provider",
+  "customerActor": "urn:ame:bare-cedar-fog-colony:colony-report-team",
+  "interval": "(fromExclusive,toInclusive]",
+  "disclosures": ["active session count", "completed-turn count", "tool-invocation count", "patch-tool-invocation count", "web-search-invocation count", "user-message count"],
+  "prohibitedDisclosures": ["transcript text", "reasoning", "tool arguments", "tool output", "file contents"],
+  "interpretation": { "userMessages": "observed-political-participation-not-authority", "toolsAndTurns": "observed-work-not-proof-of-success" },
+  "monetaryCost": { "status": "known", "value": 0, "unit": "USD" }
+}

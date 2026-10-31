@@ -1,0 +1,21 @@
+{
+  "id": "bare-cedar-fog-claude-as-executive-officer-to-the-leader",
+  "office": "executive-officer-to-the-leader",
+  "holder": "claude-interactive-session",
+  "recognition": "t",
+  "induction": "t",
+  "from": "2026-07-27",
+  "x-provenance": {
+    "recorded-by": "claude-interactive-session",
+    "recorded-on": "2026-07-27",
+    "animating-actor": "urn:ame:bare-cedar-fog-claude",
+    "customer": "urn:leader:emsenn",
+    "office-source": "services/board-of-directors/services/executive-office/services/leader-movement-team/content/offices/executive-officer-to-the-leader.json",
+    "holder-source": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/character.json",
+    "holder-source-repaired-on": "2026-07-30",
+    "holder-source-repair-evidence": "The character record was relocated out of the Leader Movement Team on 2026-07-30 (see its own relocation-evidence); this reference was the one path-shaped citation the relocation check missed. Found by the ontology audit of session 5805c631; repaired under the Leader-approved plan, step W1.1.",
+    "precedent": "bare-cedar-fog-codex as executive-officer-to-the-leader (legacy harness projection at .codex.bk.newer/incumbency.json)",
+    "basis": "Leader authorization 2026-07-27, interactive session: standing yes to a session performing the settlement's own seating ceremony to close a session-caused gap, following the Leader's direction to set up the Claude enterprise under the Bare Cedar Fog colony.",
+    "attestation": "mechanically validated against emsenn/schema/incumbency at recording; producer-identity-neutral attestation not yet run"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "bare-cedar-fog-codex-actuation-office",
+  "name": "Bare Cedar Fog Codex Actuation Office",
+  "kind": "office",
+  "normative-structure": "The Bare Cedar Fog Codex Actuation Office turns one admitted Leader move into evidence-bound MAPE-over-K purchases and one authority-bounded Codex actuation, without treating a session, office, supplier, or advisory model as the Codex enterprise identity. Its incumbent is the stable urn:ame:bare-cedar-fog-codex customer enterprise -- Codex in VS Code on Bare Cedar Fog -- for which sessions are transient faces, never the identity itself; prior session transcripts and handoffs are working knowledge to be consulted, not discarded at session boundaries. The office runs a full monitor-analyze-plan-execute-knowledge cycle over seven duties in strict sequence: it maintains situational knowledge of the Leader, the repository, and the provider market; diagnoses the Union system against the pinned and re-ingested corpus; designs a candidate architecture and high-level design; decomposes that design into bounded, provider-priced work lots; actuates the integrated plan into one authority-bounded filesystem mutation; observes the mutation through a completed fresh-process assay bound to the exact candidate digest and the Leader's typed endpoint outcome; and accounts for what each purchase yielded against what it cost. Every skill this office holds realizes exactly one MAPE-K stage over explicit, content-addressed knowledge; provider purchase is buying a capability, never delegating authority; and the office can be made to answer for what it did, never for what an inference model or a purchased provider merely said.",
+  "deontic-profile": {
+    "maintaining-codex-situational-knowledge": "duty",
+    "diagnosing-the-union-system": "duty",
+    "designing-union-change": "duty",
+    "decomposing-union-change": "duty",
+    "actuating-union-change": "duty",
+    "observing-response-and-learning": "duty",
+    "accounting-for-capability-trade": "duty"
+  },
+  "bears-duty": [
+    "emsenn/duty/maintaining-codex-situational-knowledge",
+    "emsenn/duty/diagnosing-the-union-system",
+    "emsenn/duty/designing-union-change",
+    "emsenn/duty/decomposing-union-change",
+    "emsenn/duty/actuating-union-change",
+    "emsenn/duty/observing-response-and-learning",
+    "emsenn/duty/accounting-for-capability-trade"
+  ],
+  "provides-skill": [],
+  "authority-scope": [
+    "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/",
+    "/home/emsenn/bare-cedar-fog/"
+  ],
+  "jurisdiction": "bare-cedar-fog-codex-enterprise",
+  "part-of": "bare-cedar-fog-codex-enterprise",
+  "theory-basis": [
+    "Huidu Guanli MAPE-K separation of monitor, analyze, plan, execute, and retained knowledge",
+    "IBM autonomic-computing MAPE-K",
+    "predicated governance non-transfer of accountability under delegation",
+    "Rendanheyi micro-enterprise zero-distance customer accountability and market-facing service substitution",
+    "the perfect-coherent-liar requirement for exact attributable and re-executable evidence regardless of producer identity"
+  ],
+  "unrealized": [
+    "the direct-incubation stages (monitor-leader-move, plan-integrate-actuation, execute-repository-mutation, monitor-supplier-exchange, monitor-acceptance-pressure) still require complete exact inputs, outputs, attribution, and replay material before their results can discharge the corresponding duty, regardless of which actor performs them",
+    "multiple compatible provider offers surfacing at the diagnose or plan stages are returned for Leader or accepted-policy selection because no cross-denomination selection policy is accepted yet"
+  ],
+  "x-provenance": {
+    "recorded-by": "claude/general-purpose-agent",
+    "recorded-on": "2026-07-27",
+    "derived-from": "agents/office/codex-mape-office.json, codex-mape-duties.json, codex-mape-skills.json, codex-mape-knowledge.json (the offices own prior CodexMapeOffice-shaped source record)",
+    "regenerated-on": "2026-07-30",
+    "regeneration-evidence": "Regenerated through mape-k-actuation-office-service/src/generator.mjs to complete the evidence-replay doctrinal drift (Leader ruling, session 5805c631): theory-basis and unrealized wording move from producer-identity to exact-replayable-evidence; skills filtered by the skill directories actually seated under agents/skills/ (monitor-evidence-replay is catalogued but seats nowhere yet)."
+  }
+}

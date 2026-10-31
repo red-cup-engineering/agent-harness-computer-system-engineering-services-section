@@ -1,0 +1,26 @@
+{
+  "name": "Bare Cedar Fog Codex Enterprise",
+  "description": "A2A operation vocabulary for the active Bare Cedar Fog Codex enterprise. It is carried only in a canonical CloudEvents envelope inside signed ActivityPub activities; it has no direct HTTP A2A listener.",
+  "supportedInterfaces": [],
+  "x-carrier": {
+    "protocol": "ActivityPub",
+    "actor": "https://bare-cedar-fog.561.group/actors/codex",
+    "profile": "org.harmonious-union.activitypub.cloudevent.a2a.v1",
+    "stack": ["ActivityPub", "ActivityStreams", "CloudEvents", "A2A", "UCAN", "CapTP", "x402", "EVM", "RMN"]
+  },
+  "provider": { "url": "https://bare-cedar-fog.561.group/actors/codex", "organization": "Bare Cedar Fog Codex" },
+  "version": "0.2.0",
+  "capabilities": { "streaming": false, "pushNotifications": true, "extendedAgentCard": false },
+  "defaultInputModes": ["application/rmn+cbor"],
+  "defaultOutputModes": ["application/rmn+cbor"],
+  "skills": [{
+    "id": "observe-codex-enterprise-position",
+    "name": "Observe Codex enterprise position",
+    "description": "Return supplier acceptance pressure, unresolved direct-execution demand, and honest P/L unknowns without permitting public ledger mutation.",
+    "tags": ["codex", "customer-enterprise", "market-pressure", "rmn"],
+    "examples": [],
+    "inputModes": ["application/rmn+cbor"],
+    "outputModes": ["application/rmn+cbor"]
+  }],
+  "signatures": []
+}
