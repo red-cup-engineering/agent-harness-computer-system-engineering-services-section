@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requireParticipationHook } from "../src/hooks/service.mjs";
+import { requireParticipationHook, requireSuccessfulHookArrival } from "../src/hooks/service.mjs";
 
 const sourceSession = "actual-harness-session-from-transport";
 const event = (name = "SessionStart", sessionId = sourceSession) => ({
@@ -74,5 +74,28 @@ test("canonical source session is preserved across codec's admitted alternate fi
     assert.equal(admitted.sessionId, canonical, "source-qualified caller session is one canonical value");
     assert.deepEqual(admitted.payload, payload, "do not rewrite original event testimony");
     assert.equal(Object.hasOwn(admitted, "actor"), false, "session normalization never grants an Actor");
+  }
+});
+
+
+test("the original arrival writer must return an admitted addressed receipt before participation", () => {
+  const admitted = Object.freeze({
+    kind: "system.arrival.receipt", ok: true,
+    obstructions: [], admission: { type: "arrival", thread: "2026-10-31", address: "ni:///sha-256;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+  });
+  assert.equal(requireSuccessfulHookArrival(admitted), admitted);
+  for (const refused of [
+    undefined,
+    null,
+    { kind: "metroplat.hook.admission-report", ok: false, errors: ["missing hook event"] },
+    { ...admitted, ok: false, obstructions: ["invalid packet"] },
+    { ...admitted, ok: true, obstructions: ["contradictory packet"] },
+    { ...admitted, obstructions: undefined },
+    { ...admitted, admission: undefined },
+    { ...admitted, admission: { address: "" } },
+    { ...admitted, admission: { address: "   " } },
+  ]) {
+    assert.throws(() => requireSuccessfulHookArrival(refused),
+      /original arrival was not admitted before participation/);
   }
 });

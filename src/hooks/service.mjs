@@ -213,6 +213,18 @@ export function requireParticipationHook(input) {
   return admitted;
 }
 
+/** Refuse to participate when the original arrival writer has not returned a
+ * complete admitted receipt. A nonthrowing refusal is not a held session.
+ * This checks only the source-owned arrival result, not the issuer's rights. */
+export function requireSuccessfulHookArrival(receipt) {
+  if (receipt?.kind !== "system.arrival.receipt" || receipt.ok !== true
+      || !Array.isArray(receipt.obstructions) || receipt.obstructions.length !== 0
+      || typeof receipt.admission?.address !== "string" || !receipt.admission.address.trim()) {
+    throw new TypeError("harness-hook-event-admit: original arrival was not admitted before participation");
+  }
+  return receipt;
+}
+
 /**
  * One node operation for one harness utterance. The host owns recognition of its
  * harness character and participation effects; this service owns the sole hook
@@ -240,7 +252,7 @@ export function harnessHookEventAdmissionOperation({ binding, recognize, partici
       // A session's checkpoints (Stop, SubagentStop, SessionEnd) also admit its token usage from its
       // transcript whenever the node's binding can read one: the harness's own events are the monitor.
       const transcripts = typeof binding.statPathOrNull === "function" && typeof binding.readFileUtf8 === "function";
-      appendHookEventAtRoot(binding.dataRoot, input.payload, {
+      const arrival = appendHookEventAtRoot(binding.dataRoot, input.payload, {
         at,
         harness: input.harness,
         rootName: "@red-cup-engineering/metroplat",
@@ -251,6 +263,7 @@ export function harnessHookEventAdmissionOperation({ binding, recognize, partici
           ...(session === undefined ? {} : { session }),
         }),
       });
+      requireSuccessfulHookArrival(arrival);
       return participate({ harness: input.harness, payload: input.payload, subject, participant, at }) ?? Object.freeze({});
     },
   });
