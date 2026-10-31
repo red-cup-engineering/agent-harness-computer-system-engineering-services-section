@@ -145,7 +145,7 @@
     "@red-cup-engineering/feltos": "0.20.2",
     "@red-cup-engineering/organizing": "0.8.0-dev.1103",
     "@red-cup-engineering/animating": "0.2.4",
-    "@red-cup-engineering/agentic-organization-services-section-engineering-services-section": "0.1.2"
+    "@red-cup-engineering/agentic-computer-system-organization-services-section-engineering-services-section": "0.1.2"
   },
   "engines": {
     "node": ">=22"

@@ -1,7 +1,7 @@
 /** The harness receives the host's named source sections through Organizing's original reader. */
 import { readAgency } from "@red-cup-engineering/organizing/agency";
 import { agencyAt } from "@red-cup-engineering/organizing/agency/held";
-import { admitAgencySections } from "@red-cup-engineering/agentic-organization-services-section-engineering-services-section/agency-layout";
+import { admitAgencySections } from "@red-cup-engineering/agentic-computer-system-organization-services-section-engineering-services-section/agency-layout";
 
 function selection({ agencySections, environment = process.env }) {
   if (agencySections !== undefined) return admitAgencySections(agencySections);
