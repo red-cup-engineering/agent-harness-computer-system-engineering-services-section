@@ -42,7 +42,7 @@ harness engineering beneath an inference provider.
   names it. It never blocks a session: a board it cannot read is said in the journal.
   `scripts/install-session-journal-hook.mjs --settings <file> -- <hook arguments>` installs a
   reference to this owning source, keeping every other hook and replacing an earlier journal entry.
-- `src/house-context-hook.mjs` is the house-context carrier (rule
+- `src/house-context-hook.mjs` is the Group-context carrier (rule
   capitalized-leader-statements-mark-a-failed-carrier): one zero-dependency hook for SessionStart,
   SubagentStart and UserPromptSubmit that projects the 561 Group's binding rules, standing Leader
   decisions, open campaign carriers and a "before asking the Leader" checklist into every Claude Code

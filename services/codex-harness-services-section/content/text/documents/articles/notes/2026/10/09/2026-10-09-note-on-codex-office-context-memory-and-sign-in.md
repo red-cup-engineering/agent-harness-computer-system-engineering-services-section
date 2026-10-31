@@ -34,7 +34,7 @@ In the project carrier (`/home/emsenn/info/.codex`, the project-scoped Codex con
 - `office.json` names `target: ../.office-context/office-context.md`. That directory is in the workspace, outside `.codex`, and ignored by its own `.gitignore`. A session in the sandbox can regenerate the briefing there.
 - `config.toml` developer instructions point at the new path and state the exit-3 meaning. The stale briefing at the old path was removed.
 
-The projector and its tests live only in the house snapshot. `red-cup-engineering/computer-services-section` main holds no `codex-harness-projection-service`, so there is no org-repository tree to branch a pull request from; carrying the service into that repository, with its actuators, is a separate act and is returned as a slice.
+The projector and its tests live only in the Group snapshot. `red-cup-engineering/computer-services-section` main holds no `codex-harness-projection-service`, so there is no org-repository tree to branch a pull request from; carrying the service into that repository, with its actuators, is a separate act and is returned as a slice.
 
 ## Memory
 
