@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "description": "Project only non-interactive Bare Cedar Fog Codex lifecycle hooks.",
+  "handlers": {
+    "enterprise": "src/codex-enterprise-hook.mjs"
+  },
+  "projections": {},
+  "events": {
+    "PreToolUse": [
+      {
+        "handler": "enterprise",
+        "matcher": "*",
+        "statusMessage": "Declaring a typed tool budget and routing risky discovery through bounded capture"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "handler": "enterprise",
+        "matcher": "*",
+        "statusMessage": "Recording routed provider work"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "handler": "enterprise",
+        "matcher": "*",
+        "statusMessage": "Recording routed provider quantities and addressed result"
+      }
+    ],
+    "Stop": [
+      {
+        "handler": "enterprise",
+        "statusMessage": "Recording native inference quantities and final boundary"
+      }
+    ]
+  }
+}

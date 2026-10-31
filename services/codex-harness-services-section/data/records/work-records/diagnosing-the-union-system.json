@@ -1,0 +1,14 @@
+{
+  "id": "diagnosing-the-union-system",
+  "name": "diagnosing the union system",
+  "from": "A LeaderMoveK and RepositoryEvidenceK sitting unexamined -- evidence gathered but not yet reduced to what it implies, so no requirement or contradiction has been named.",
+  "to": "An AdvisorySynthesisK, StructuredDataK, DataTableK, and ContradictionSetK -- the Unions own corpus read against the current move and reduced to named hypotheses with falsifiers, purchased from NotebookLM rather than asserted from the offices own recollection.",
+  "cost": "Provider purchase cost (NotebookLM digest, workspace, and studio lots) plus the offices attention integrating four analyze-stage skills output into one coherent diagnosis.",
+  "otherwise": "The office designs a change against its own unaudited impression of the Unions corpus, and a real contradiction the corpus already recorded surfaces only after the change is built.",
+  "needs": [
+    "analyze-pinned-union-corpus",
+    "analyze-schema-bound-corpus",
+    "analyze-reingested-structured-corpus",
+    "analyze-contradictions-and-obstructions"
+  ]
+}

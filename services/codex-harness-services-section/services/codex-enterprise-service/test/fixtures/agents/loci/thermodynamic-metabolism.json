@@ -1,0 +1,15 @@
+{
+  "profile": "org.bare-cedar-fog.codex-architectural-locus-seed.v1",
+  "locus": "thermodynamic-metabolism",
+  "actor": "urn:ame:codex-thermodynamic-metabolism-locus",
+  "owner": "urn:ame:bare-cedar-fog-codex",
+  "status": "seed-not-advertised",
+  "jurisdiction": "knowledge-order history, truth-order state, attention solvent, exact resource gauges, kinetic proofreading, and reversible versus irreversible commitments",
+  "source": "ni:///sha-256;DUi9avms8kWcvdEn9IGog8m7dpzQ1GTWVKSZKFHykSE",
+  "identityConstraint": "Mutable session state cannot write itself into the stable enterprise germline without an external gate.",
+  "executableBindings": [
+    "@rsc-quiescent/bare-cedar-fog-codex-enterprise",
+    "@harmonious-union/reconciling-a-context-trade"
+  ],
+  "missingFaces": ["activitypub", "evm", "a2a", "ocap", "x402"]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "we-need-to-know-what-claude-shit-is-in-claude-that-isn-t-act",
+  "name": "we need to know what claude shit is in claude that isn t act",
+  "definition": "After examining the nearest existing ancestor of the target file, which is the 'lib' directory, I found the relevant skill descriptions and definitions.\n\nThe term \"Claude\" can be found in various skills' descriptions, including:\n\n- `installing-claude-as-an-office.js`: The skill description mentions Claude as an agent that can be installed.\n- `installing-claude-as-an-agent.js`: This skill description also mentions Claude as an agent.\n- `installing-an-enterprise-in-claude.js`: This skill description states that an enterprise can be installed in Claude.\n\nHowever, \"Claude shit\" could not be found in any skill description or definition within the 'lib' directory.\n\nPlease note that 'Claude shit' might be a colloquial or informal term that is not included in the provided grounding evidence. Without more context or explicit definitions, it's difficult to determine the precise meaning of this term.",
+  "x-source": {
+    "source": "work-order:wo-terms-we-need-to-know-what-claude-shit-is-in-claude-that-isn-23004bf35684 (verify, source leader-speech)"
+  },
+  "x-provenance": {
+    "recorded-by": "leader-movement-team/realize-fulfilled-work-products",
+    "recorded-on": "2026-07-24",
+    "drafted-by": "llama-3.1-8b-instant (via groq-inference-team)",
+    "work-order-id": "wo-terms-we-need-to-know-what-claude-shit-is-in-claude-that-isn-23004bf35684"
+  }
+}

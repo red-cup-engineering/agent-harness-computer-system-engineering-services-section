@@ -1,0 +1,26 @@
+{
+  "type": "CodexMapeKnowledgeRegistry",
+  "version": 1,
+  "classes": [
+    { "id": "LeaderExpressionK", "authorityBearing": false, "description": "Immutable expression observed from the Leader; not yet interpreted as authority." },
+    { "id": "LeaderMoveK", "authorityBearing": false, "description": "Content-addressed translation of the current Leader move with source language preserved." },
+    { "id": "RequirementK", "authorityBearing": false, "description": "Typed desired outcome and independently observable completion conditions." },
+    { "id": "RepositoryEvidenceK", "authorityBearing": false, "description": "Digest-bound repository evidence and deterministic lookup receipts." },
+    { "id": "ProviderMarketK", "authorityBearing": false, "description": "Provider-authored offers, availability, and explicit refusals." },
+    { "id": "AdvisorySynthesisK", "authorityBearing": false, "description": "Source-grounded NotebookLM synthesis carrying no execution or governance authority." },
+    { "id": "StructuredDataK", "authorityBearing": false, "description": "Schema-bound JSON product validated at the NotebookLM membrane and still pending receiver assay." },
+    { "id": "DataTableK", "authorityBearing": false, "description": "Content-addressed native NotebookLM CSV with structural validation, formula-risk observation, and ephemeral cleanup receipt." },
+    { "id": "ContradictionSetK", "authorityBearing": false, "description": "Constitutional, topological, kinetic, and local hypotheses with falsifiers." },
+    { "id": "SoftwareArchitectureSpecificationK", "authorityBearing": false, "description": "Candidate SAS linked to requirements and evidence." },
+    { "id": "HighLevelDesignK", "authorityBearing": false, "description": "Candidate HLD linked to an assayed SAS." },
+    { "id": "LowLevelDesignK", "authorityBearing": false, "description": "Candidate LLD linked to an assayed HLD and current repository evidence." },
+    { "id": "WorkLotPlanK", "authorityBearing": false, "description": "Bounded work-lot DAG with provider constraints, tests, and refusal conditions." },
+    { "id": "ActuationPlanK", "authorityBearing": false, "description": "Optional Codex-integrated mutation plan used when it improves safety or coordination; never a prerequisite for directly requested work." },
+    { "id": "LeaderAuthorityK", "authorityBearing": true, "description": "A projection of the Leader's current expression. The expression itself is sufficient; a receipt may record it but never creates, narrows, or gates its authority." },
+    { "id": "CandidatePatchK", "authorityBearing": false, "description": "Codex-authored candidate filesystem mutation pending a reproducible assay." },
+    { "id": "CustomerOutcomeK", "authorityBearing": true, "description": "Receiver-issued acceptance, rejection, correction, or continued objection; may close demand but never authorize Execute retroactively." },
+    { "id": "ProviderReceiptK", "authorityBearing": false, "description": "Provider-authored offer, refusal, delivery, and resource receipt." },
+    { "id": "SupplierExchangeK", "authorityBearing": false, "description": "Codex-owned observation of one provider exchange, pending customer outcome." },
+    { "id": "EconomicPressureK", "authorityBearing": false, "description": "Observed accepted yield and attributable fractional cost without invented conversion." }
+  ]
+}

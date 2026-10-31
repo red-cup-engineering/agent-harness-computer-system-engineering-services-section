@@ -1,0 +1,12 @@
+{
+  "id": "accounting-for-capability-trade",
+  "name": "accounting for capability trade",
+  "from": "Provider receipts and customer outcomes accumulating unread -- every purchase and every acceptance a separate fact with no running account of what the office is actually getting for what it spends.",
+  "to": "A SupplierExchangeK per provider exchange and an EconomicPressureK -- observed accepted yield against attributable fractional cost, with no invented conversion -- that future routing can act on.",
+  "cost": "The offices own attention closing the loop from receipt to outcome to pressure, on every cycle, rather than letting receipts pile up as an audit nobody performs.",
+  "otherwise": "The office keeps buying from the same providers regardless of whether their yield justifies their cost, because nothing in the loop ever turns receipts into pressure that routes the next purchase.",
+  "needs": [
+    "monitor-supplier-exchange",
+    "monitor-acceptance-pressure"
+  ]
+}

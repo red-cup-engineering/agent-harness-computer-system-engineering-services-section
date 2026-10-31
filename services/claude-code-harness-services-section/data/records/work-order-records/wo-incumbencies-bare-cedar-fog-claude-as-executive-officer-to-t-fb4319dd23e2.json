@@ -1,0 +1,10 @@
+{
+  "id": "wo-incumbencies-bare-cedar-fog-claude-as-executive-officer-to-t-fb4319dd23e2",
+  "mintedAt": "2026-07-28T00:30:08.833Z",
+  "source": "manual",
+  "demand": "Attest, as a producer-identity-neutral locus, the incumbency record seating character claude-interactive-session into office executive-officer-to-the-leader: confirm the record validates against emsenn/schema/incumbency (lib/emsenn/services/board-of-directors/services/executive-office/lib/schemas/incumbency.schema.json), that its office and holder references resolve to existing records in the leader-movement-team content pools, that its recognition/induction cells and provenance basis are consistent with the bare-cedar-fog-codex precedent and the Leader authorization it cites, and that no schema-forbidden key was rounded in from the legacy harness projection form. Return an affirmed/refused/insufficient verdict per cell, not prose approval.",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/incumbencies/bare-cedar-fog-claude-as-executive-officer-to-the-leader.json",
+  "class": "verify",
+  "status": "open",
+  "evidence": null
+}

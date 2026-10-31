@@ -1,0 +1,12 @@
+{
+  "id": "designing-union-change",
+  "name": "designing union change",
+  "from": "A named requirement and a contradiction set with no architecture or high-level design yet standing between them and an implementation.",
+  "to": "A candidate SoftwareArchitectureSpecificationK and HighLevelDesignK, purchased from a high-reasoning provider and linked to the requirement and the evidence that grounds them.",
+  "cost": "Provider purchase cost on the inference-work-lot market at the high reasoning class, plus the offices attention reviewing what the provider returns before treating it as a candidate rather than a decision.",
+  "otherwise": "Decomposition and actuation proceed against no architecture at all, and the shape of the change is discovered by the mutation itself rather than decided before it.",
+  "needs": [
+    "plan-software-architecture-specification",
+    "plan-high-level-design"
+  ]
+}

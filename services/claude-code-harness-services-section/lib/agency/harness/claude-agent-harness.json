@@ -1,0 +1,63 @@
+{
+  "type": "ClaudeAgentHarnessProjection",
+  "actor": "urn:ame:bare-cedar-fog-claude",
+  "rootOffice": "executive-officer-to-the-leader",
+  "ownsAgentDirectory": true,
+  "spawnDiscipline": "Dispatch only a named agent already projected into .claude/agents/ from a defined office. A bare, unprimed model prompted fresh at dispatch time is not a dispatch this harness authorizes.",
+  "agents": {
+    "enabled": true,
+    "defaultModel": "sonnet",
+    "restrictToProjectedRoster": true
+  },
+  "colleagueOffices": [
+    "services/board-of-directors/services/executive-office/content/offices/content-librarian.json",
+    "services/board-of-directors/services/executive-office/content/offices/system-architect.json",
+    "services/board-of-directors/services/executive-office/content/offices/requirements-implementation-team.json",
+    "services/board-of-directors/services/executive-office/content/offices/product-quality-assurance.json",
+    "services/board-of-directors/services/executive-office/content/offices/internal-audit.json",
+    "services/board-of-directors/services/executive-office/content/offices/white-army.json",
+    "services/board-of-directors/services/executive-office/content/offices/obsmetrologia-consultant.json"
+  ],
+  "colleagueSeatings": {
+    "content-librarian": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-content-librarian-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-content-librarian-session-as-content-librarian.json"
+    },
+    "system-architect": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-system-architect-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-system-architect-session-as-system-architect.json"
+    },
+    "requirements-implementation-team": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-requirements-implementation-team-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-requirements-implementation-team-session-as-requirements-implementation-team.json"
+    },
+    "product-quality-assurance": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-product-quality-assurance-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-product-quality-assurance-session-as-product-quality-assurance.json"
+    },
+    "internal-audit": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-internal-audit-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-internal-audit-session-as-internal-audit.json"
+    },
+    "white-army": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-white-army-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-white-army-session-as-white-army.json"
+    },
+    "obsmetrologia-consultant": {
+      "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-obsmetrologia-consultant-session.json",
+      "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/claude-obsmetrologia-consultant-session-as-obsmetrologia-consultant.json"
+    }
+  },
+  "rootSeating": {
+    "character": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/character.json",
+    "incumbency": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/incumbencies/bare-cedar-fog-claude-as-executive-officer-to-the-leader.json"
+  },
+  "shortReminder": "Read this node's law before authoring; use the enterprise's own instruments, not a freelance substitute. Verification is a real command and its real exit status. Short replies, work over narration.",
+  "dispatchLaw": "Every agent this session dispatches is bound by the same law as the session: its prompt must (1) name the nearest AGENTS.md of every node the task touches and instruct the agent to read it before authoring, (2) carry the FULL scope of the Leader's ask, never a patch-scoped fragment chosen to finish faster, and (3) name the settlement's own instruments for the task instead of licensing substitute code. A dispatched agent reports what it changed, what broke, and what it could not finish, with exact paths and real command output; a partial cutover with an honest break list is a good outcome. A dispatched agent must not modify safety guards, hooks, or their tests. Dispatching a reviewer agent is not verification and must never be described as such -- the receipt is the command and its exit status.",
+  "x-provenance": {
+    "recorded-by": "claude-requirements-implementation-team-session/requirements-implementation-team",
+    "recorded-on": "2026-07-30",
+    "basis": "Leader-approved plan (session 5805c631), step W1.2: anomaly harness-seats-bare-offices-without-incumbency found the seven colleague offices, and the root office, projected as dispatchable with no seated character or incumbency behind them, flattening office+character+recognition+induction=officer. The seven character/incumbency pairs and the root pair (content/characters/, content/incumbencies/, content/character.json, this node) landed 2026-07-30 under W1.1; colleagueSeatings and rootSeating are the policy's own reference to that seating, read by claude-harness-projection-service's loadPolicy and projectClaudeHarness so a colleague office cannot be projected without a real incumbent behind it.",
+    "shape-rationale": "colleagueSeatings is a map keyed by office id, not a fourth array parallel to colleagueOffices: an array position is an accident of list order that a projector would have to zip against colleagueOffices by index and could silently misalign on a reorder; a lookup by office id cannot misalign. colleagueOffices is left untouched for compatibility -- callers that only need the roster still walk it alone. Paths are repo-root-relative, matching colleagueOffices' own convention, so the same join(repoRoot, path) resolves either."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "exchange-20260728-162352-2ce6c0",
+  "packet": {
+    "sources": [
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/services/software-services-section/services/model-services-section/services/logical-inference-services-section/services/notebooklm-inference-team/data/codex-session-corpus/codex-transcripts-004.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/services/software-services-section/services/model-services-section/services/logical-inference-services-section/services/notebooklm-inference-team/data/codex-session-corpus/codex-transcripts-003.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/services/software-services-section/services/model-services-section/services/logical-inference-services-section/services/notebooklm-inference-team/data/codex-session-corpus-small/codex-transcripts-028.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/services/software-services-section/services/model-services-section/services/logical-inference-services-section/services/notebooklm-inference-team/data/codex-session-corpus-small/codex-transcripts-034.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-07-12-fizzos/package.json",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-07-12-fizzos/src/index.mts",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-07-12-fizzos/ROADMAP.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-07-12-fizzos/README.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/apps/fizzos/ROADMAP.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/board-of-directors/lib/agency/characters/emsenn/content/documents/articles/notes/2026/06/05/2026-06-05-survey-swarm-theory.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/board-of-directors/lib/agency/characters/emsenn/content/documents/articles/notes/2026/06/05/2026-06-05-swarm-app-readme.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/board-of-directors/lib/agency/characters/emsenn/content/documents/articles/notes/2026/06/22/2026-06-22-survey-of-561-group-jsnode-ecosystem.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/board-of-directors/lib/agency/characters/emsenn/content/documents/articles/notes/2026/06/29/2026-06-29-survey-of-past-capabilities.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/board-of-directors/lib/agency/characters/emsenn/content/documents/articles/notes/2026/06/26/2026-06-26-survey-of-package-capability-rehoming.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/rsc-quiescent/services/software-development-services-section/algora-work-board/services/repository-material-observation-service/data/material-artifacts/sha256/14/1439a278adaea5c335867415b33ac0abc966ac46f83035180235c8ccb96e7426.jsonl",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/rsc-quiescent/services/software-development-services-section/algora-work-board/services/repository-material-observation-service/data/material-artifacts/sha256/ee/eef43af54dcea2744567a2ab4e81b9b0d2398334a13a2ef205c537d5c2d1183a.jsonl",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/rsc-quiescent/services/software-development-services-section/algora-work-board/services/repository-material-observation-service/data/observations/2026/07/26/2026-07-26-repository-material-observation.jsonl",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/claude-code-harness/articulating/library/aperiodic-articulation-category/hacking/library/claude-code/capturing/capturing.jsonl",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/games/aletheon/package.json",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/games/aletheon/README.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/tools/tab/package.json",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/tools/swarm/docs/dev/notes/2026-06-05-seam-interface-world.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/tools/swarm/docs/dev/notes/2026-06-05-swarm-needs-revisiting.md",
+      "/home/emsenn/info/lib/emsenn/services/561-group/services/red-cup-engineering/src/content/assets/legacy/2026-06-17-archive.emsenn.net/dev/ref/src/from-content-source/apps/tools/swarm/docs/dev/journal/2026-06-06-swarm-is-a-mud-of-nested-semiospheres.md"
+    ],
+    "prompt": "Produce one CSV row per distinct constructed engine or work/governance substrate. Columns: component, source_path, executable_entry_or_export, authoritative_state_carrier, settlement_or_tick_law, federation_or_transport_boundary, work_or_governance_contribution, directly_observed_fact, inferred_reuse_for_modeled_union_dimension, uncertainty, contradiction, cheapest_falsifying_observation. Deduplicate archived copies by implementation identity. Do not recommend code or architecture; classify the supplied evidence.",
+    "artifact-type": "data-table"
+  },
+  "outcome": "refusal",
+  "cost": {
+    "fuel-consumed": 3,
+    "wall-time-seconds": 9.884,
+    "denomination": "notebooklm-cli-invocations"
+  },
+  "refusal": {
+    "grounds": "notebooklm source wait 7c35d5b4-bb64-4600-af3c-dc5f2b68c2b7 --notebook c622756f-78f7-4f00-8e1e-f7ea165d3d7e failed (exit 1): ?: {\n  \"source_id\": \"7c35d5b4-bb64-4600-af3c-dc5f2b68c2b7\",\n  \"status\": \"error\",\n  \"status_code\": 3,\n  \"error\": \"Source 7c35d5b4-bb64-4600-af3c-dc5f2b68c2b7 failed to process\"\n}\n",
+    "unmet": [
+      "cli-failure: source"
+    ]
+  }
+}

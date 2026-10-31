@@ -1,0 +1,23 @@
+{
+  "format": "csv",
+  "mediaType": "text/csv",
+  "byteLength": 3576,
+  "sha256": "sha256:dbe4511eb6ff6801b38ebcef1b8772f780a745942d305df9790c25996766eda3",
+  "rowCount": 5,
+  "columnCount": 10,
+  "header": [
+    "candidate_name",
+    "exact_role",
+    "chain_carried_data",
+    "offchain_data",
+    "migration_status (implemented|partial|superseded|uncertain)",
+    "evidence_path",
+    "exact_evidence",
+    "contradicting_evidence",
+    "cheapest falsifying observation",
+    "Source"
+  ],
+  "formulaLikeCellCount": 0,
+  "assayRequired": true,
+  "providerArtifactId": "54d12f1b-479f-4a2c-8aa9-38d02a980072"
+}

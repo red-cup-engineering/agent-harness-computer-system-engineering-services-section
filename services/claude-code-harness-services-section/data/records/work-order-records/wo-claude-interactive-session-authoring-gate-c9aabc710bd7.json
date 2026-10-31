@@ -1,0 +1,27 @@
+{
+  "id": "wo-claude-interactive-session-authoring-gate-c9aabc710bd7",
+  "mintedAt": "2026-07-24T15:19:39.049Z",
+  "source": "manual",
+  "demand": "Author the process control that converts interactive-session conduct from advisory prose into an enforced gate, mirroring the raw-git denial pattern: a PreToolUse hook installed in the node's settings that intercepts a session's direct Edit/Write into any settlement's content/ or data/records/ pools and denies it with the sanctioned route named in the denial (the node's own management skill for that record kind, or the work-order mint front door src/mint-work-order.mjs when the work belongs to the swarm), so that hand-authoring records is mechanically impossible rather than merely discouraged; the hook must allow writes made by the node's own instruments and their subprocesses, and its denial text must be short and name the exact command to run instead.",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/.claude#interactive-session-authoring-gate",
+  "class": "define",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:339f97685928b0961b0b4d84025f31d91a7f25c2919e58c6848c69044c30be57",
+    "response": "// services/board-of-directors/services/executive-office/.claude#interactive-session-authoring-gate.js\n// (installed in the node's settings)\nimport { PreToolUse } from 'services/supervisor/hooks';\nimport { getOwnInstrument, getManagementSkill } from 'services/supervisor/instrumentation';\n\nconst PreToolUseHook = new PreToolUse(async (session, path, mode, data) => {\n  if (mode === 'Edit' || mode === 'Write') {\n    if (path.startsWith('content/') || path.startsWith('data/') || path.startsWith('records/')) {\n      let managementSkill;\n      if (data.swarm_id) {\n        managementSkill = src.mint-work-order;\n      } else {\n        managementSkill = await getManagementSkill(session, path);\n      }\n      return {\n        denied: true,\n        message: `Hand-authoring records is mechanically impossible. Instead, run the command \"${managementSkill}\" to fulfill your intent.`,\n      };\n    }\n  }\n});\n\nexport default PreToolUseHook;",
+    "model": "llama-3.1-8b-instant",
+    "provider": "eip155:31337:0x928fd195cc5d65cb7af86cb2b71900dceee9b399",
+    "providerTeam": "groq-inference-team",
+    "dispatchedAt": "2026-07-24T15:31:18.435Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/.claude#interactive-session-authoring-gate",
+      "landing": "markdown-document",
+      "resultDigest": "sha256:f5f4fcda4d194bc8352464550489c46ae664cafc50fe97a331567e9dce651bd8",
+      "commitSha": "cf2e4c5db6aa5203e6ec1777418e9546b9ce7ece",
+      "committedAt": "2026-07-24T15:46:17.564Z",
+      "checkedAt": "2026-07-24T15:46:17.366Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

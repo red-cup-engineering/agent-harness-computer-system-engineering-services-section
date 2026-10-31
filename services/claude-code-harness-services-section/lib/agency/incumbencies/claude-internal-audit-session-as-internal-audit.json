@@ -1,0 +1,19 @@
+{
+  "id": "claude-internal-audit-session-as-internal-audit",
+  "office": "internal-audit",
+  "holder": "claude-internal-audit-session",
+  "recognition": "t",
+  "induction": "t",
+  "from": "2026-07-30",
+  "x-provenance": {
+    "recorded-by": "claude-interactive-session/executive-officer-to-the-leader",
+    "recorded-on": "2026-07-30",
+    "animating-actor": "urn:ame:bare-cedar-fog-claude",
+    "customer": "urn:leader:emsenn",
+    "office-source": "services/board-of-directors/services/executive-office/content/offices/internal-audit.json",
+    "holder-source": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/content/characters/claude-internal-audit-session.json",
+    "precedent": "bare-cedar-fog-claude-as-executive-officer-to-the-leader (this pool)",
+    "basis": "Leader-approved plan (session 5805c631, 2026-07-30), step W1.1 officer-attribution repair: the harness projected this office as a dispatchable subagent since 2026-07 with no seated character or incumbency, a flattening of office+character+recognition+induction=officer. Recognition t reads backward on the office having been animated by Claude subagent sessions under the harness projection (receipts in content/lmt-history/); induction t commits forward per the office record's duties as projected into .claude/agents/.",
+    "attestation": "mechanically validated against emsenn/schema/incumbency at recording; producer-identity-neutral attestation not yet run"
+  }
+}

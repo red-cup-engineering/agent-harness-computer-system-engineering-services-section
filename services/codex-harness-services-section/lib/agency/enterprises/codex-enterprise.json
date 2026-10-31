@@ -1,0 +1,25 @@
+{
+  "type": "SovereignCustomerEnterprise",
+  "actor": "urn:ame:bare-cedar-fog-codex",
+  "name": "Bare Cedar Fog Codex",
+  "character": "codex-interactive-session",
+  "surface": "vscode-codex",
+  "territory": "/home/emsenn/bare-cedar-fog",
+  "customer": "urn:leader:emsenn",
+  "controller": "unrealized:codex-enterprise-controller-account",
+  "faces": {
+    "host": ".codex/config.toml",
+    "mcp": "stdio:serve-codex-enterprise-mcp",
+    "activityPub": "https://bare-cedar-fog.561.group/actors/codex",
+    "a2aOperation": "https://bare-cedar-fog.561.group/.well-known/agent-card.json#activitypub-carrier",
+    "evm": "unrealized:eip155:5615610"
+  },
+  "resourceOffer": {
+    "amount": { "numerator": "200", "denominator": "1" },
+    "denomination": "USD",
+    "interval": "P1M",
+    "source": "Leader-supplied Codex Pro subscription statement",
+    "allocationToAnySessionOrToken": "unknown"
+  },
+  "economicInvariant": "Profit is unknown until independently observed customer value or revenue and attributable cost share exist; lower activity is not profit."
+}

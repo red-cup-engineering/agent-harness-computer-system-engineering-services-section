@@ -1,5 +1,5 @@
 // Recovered native tool accounting: bounded read of source observed by the CLI carrier.
-// The full provider-neutral transcript dialects are restored in 561-group/session-transcript-dialects.
+// The full provider-neutral transcript dialects are services/session-transcript-dialects.
 // Only structural counts leave this module, never prompt, arguments, outputs, paths, or call ids.
 import { lstatSync, readFileSync } from "node:fs";
 import { projectCodexToolAccounting } from "./codex-tool-accounting.mjs";

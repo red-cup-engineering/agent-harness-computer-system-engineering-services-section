@@ -1,0 +1,110 @@
+{
+  "description": "Observe the Bare Cedar Fog Codex enterprise lifecycle without replaying bulky session doctrine.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Locating addressed continuity evidence",
+            "additionalContextLimit": 512
+          }
+        ],
+        "matcher": "startup|resume|clear|compact"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Addressing the active Leader cycle",
+            "additionalContextLimit": 512
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Observing make-or-buy demand"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Settling a Codex enterprise observation",
+            "additionalContextLimit": 4000
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Recording bounded provider work",
+            "additionalContextLimit": 512
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Recording provider exchange pending customer assay"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Closing the Codex enterprise move"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node /home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/codex-enterprise-hook.mjs",
+            "timeout": 3,
+            "statusMessage": "Recording the Codex enterprise lifecycle boundary"
+          }
+        ]
+      }
+    ]
+  }
+}

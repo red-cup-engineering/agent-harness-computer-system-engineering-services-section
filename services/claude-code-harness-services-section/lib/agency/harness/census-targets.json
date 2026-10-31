@@ -1,0 +1,72 @@
+{
+  "id": "census-targets",
+  "type": "ClaudeEnterpriseCensusTargets",
+  "$comment": "The nodes whose own verification commands the census re-runs. A target's truth is its command's exit status, observed fresh at census time \u2014 never a report of it. Paths are repo-root-relative; command runs with cwd at the target path. Red is recorded, never smoothed: the census completes regardless and exits 3 if any target is red, 0 only when all are green.",
+  "targets": [
+    {
+      "id": "claude-harness-projection-service",
+      "path": "services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/services/claude-code-harness-services-section/services/claude-harness-projection-service",
+      "command": [
+        "npm",
+        "test"
+      ]
+    },
+    {
+      "id": "mape-k-actuation-office-service",
+      "path": "services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/agent-services-section/services/agent-harness-services-section/services/mape-k-actuation-office-service",
+      "command": [
+        "npm",
+        "test"
+      ]
+    },
+    {
+      "id": "bcf-claude-agent-harness-roster",
+      "path": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section",
+      "command": [
+        "npm",
+        "run",
+        "check:agent-harness"
+      ]
+    },
+    {
+      "id": "session-transcript-dialects",
+      "path": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/session-transcript-dialects",
+      "command": [
+        "node",
+        "--test"
+      ]
+    },
+    {
+      "id": "claude-session-activity-provider",
+      "path": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-claude-services-section/services/claude-session-activity-provider",
+      "command": [
+        "node",
+        "--test"
+      ]
+    },
+    {
+      "id": "codex-session-activity-provider",
+      "path": "lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/services/codex-session-activity-provider",
+      "command": [
+        "node",
+        "--test"
+      ]
+    },
+    {
+      "id": "union-officer-academy",
+      "path": "services/union-officer-academy",
+      "command": [
+        "npm",
+        "run",
+        "verify"
+      ]
+    }
+  ],
+  "x-provenance": {
+    "recorded-by": "claude-interactive-session/executive-officer-to-the-leader",
+    "recorded-on": "2026-07-30",
+    "basis": "Leader-approved plan (session 5805c631), step W5-min: census-as-CI \u2014 ground truth on a cadence, per-node exit statuses recorded as dated log records; the m\u00edngf\u01ce reading of evals-as-CI",
+    "amended-on": "2026-07-30",
+    "amendment-evidence": "node --test test/ (trailing slash) fails under spawnSync; bare node --test discovers the test directory itself. Census-side defect found by the baseline run's own record: three suites green by direct run, red in census at ~100ms."
+  }
+}

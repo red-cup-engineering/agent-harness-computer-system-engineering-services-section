@@ -1,0 +1,33 @@
+{
+  "name": "@561-group/bare-cedar-fog-claude-services-section",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The stable Bare Cedar Fog Claude Code Actor customer enterprise, its supplier trajectory, and its market-pressure boundary.",
+  "keywords": [
+    "capability-cell",
+    "customer-enterprise",
+    "rendanheyi",
+    "claude",
+    "bare-cedar-fog"
+  ],
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/561-group/bare-cedar-fog-claude-services-section.git"
+  },
+  "bin": {
+    "project-claude-agent-harness": "./scripts/project-claude-agent-harness.mjs"
+  },
+  "scripts": {
+    "check": "node --check scripts/project-claude-agent-harness.mjs && node --check scripts/project-claude-permissions.mjs && node --check scripts/lib/supplier.mjs && node --check scripts/run-census.mjs && bash -n scripts/seat-claude-activitypub-face.sh",
+    "project:agent-harness": "node scripts/project-claude-agent-harness.mjs",
+    "check:agent-harness": "node scripts/project-claude-agent-harness.mjs --check",
+    "project:permissions": "node scripts/project-claude-permissions.mjs",
+    "check:permissions": "node scripts/project-claude-permissions.mjs --check",
+    "verify": "npm run check"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,77 @@
+web_search = "disabled"
+
+[features]
+hooks = true
+goals = true
+apps = false
+browser_use = false
+remote_plugin = false
+plugins = false
+plugin_sharing = false
+in_app_browser = false
+computer_use = false
+image_generation = false
+
+[agents]
+enabled = true
+interrupt_message = true
+
+[mcp_servers.codex_enterprise]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section/src/mcp-server.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/lib/emsenn/services/union-services-section/services/computer-services-section/services/computer-machine-services-section/services/persistent-computer-machine-services-section/services/bare-cedar-fog-services-section/bare-cedar-fog-inference-services-section/services/bare-cedar-fog-codex-services-section"
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 30
+enabled_tools = ["observe_codex_enterprise_position", "observe_codex_usage_gauges", "observe_codex_work_board", "update_codex_work", "open_codex_demand", "record_codex_demand_obstruction", "record_supplier_offer", "record_supplier_exchange", "record_supplier_consideration", "record_customer_outcome", "record_codex_resource", "close_codex_demand"]
+
+[mcp_servers.inference_work_market]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/inference-work-lot-service/bin/serve-codex-mcp.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/inference-work-lot-service"
+enabled = true
+required = false
+env = { EXPECTED_RESOLUTION_PRICE_URL = "http://127.0.0.1:8800/", WITNESS_JOURNAL_RDF_AGENT = "http://127.0.0.1:19764/.well-known/agent-card.json" }
+enabled_tools = ["classify_codex_demand", "contract_inference_work", "record_inference_outcome"]
+
+[mcp_servers.notebooklm_workspace_market]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/inference-services-section/services/notebooklm-inference-team/src/workspace-mcp.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/inference-services-section/services/notebooklm-inference-team"
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 1800
+enabled_tools = ["observe_notebooklm_market", "authorize_notebooklm_resource_budget", "quote_notebooklm_workspace", "accept_notebooklm_workspace_offer", "open_notebooklm_workspace", "compile_notebooklm_corpus", "add_notebooklm_corpus", "ask_notebooklm_workspace", "quote_notebooklm_studio", "generate_notebooklm_studio", "settle_notebooklm_studio", "condense_notebooklm_artifact", "propose_union_advisory_promotion", "destroy_notebooklm_workspace"]
+
+[mcp_servers.notebooklm_knowledge_library]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/notebooklm-inference-team/src/notebook-library-mcp.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/notebooklm-inference-team"
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 1800
+enabled_tools = ["observe_live_notebooklm_library", "describe_live_notebooklm_notebook", "ask_live_notebooklm_notebook"]
+
+[mcp_servers.officer_repertoire_market]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/services/coesite-operations/services/coesite-agent-services-section/src/serve-office-repertoire-mcp.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/services/coesite-operations/services/coesite-agent-services-section"
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 30
+enabled_tools = ["shop_office_repertoire"]
+
+[mcp_servers.union_reaction_network]
+command = "/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node"
+args = ["/home/emsenn/bare-cedar-fog/services/board-of-directors/services/union-reaction-network-service/src/mcp-server.mjs"]
+cwd = "/home/emsenn/bare-cedar-fog/services/board-of-directors/services/union-reaction-network-service"
+enabled = true
+required = false
+startup_timeout_sec = 10
+tool_timeout_sec = 180
+env = { UNION_CHAIN_RPC_URL = "http://127.0.0.1:8561", WITNESS_JOURNAL_RDF_AGENT = "http://127.0.0.1:19764/.well-known/agent-card.json", UNION_ACTIVITYPUB_ORIGIN = "https://bare-cedar-fog.561.group" }
+enabled_tools = ["observe_union_reaction_network", "discover_public_sources", "acquire_public_sources", "purchase_glossary_term_definition"]

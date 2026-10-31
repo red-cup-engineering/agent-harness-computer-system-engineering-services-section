@@ -1,0 +1,18 @@
+{
+  "description": "Bare Cedar Fog's supplier parameters: which upstream provider this enterprise hires for each Claude capability, addressed by proof path from the repository root. This file is the ONLY place these addresses live — scripts read it, never restate it.",
+  "suppliers": {
+    "harness-projection": {
+      "root": "services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section/services/claude-code-harness-services-section/services/claude-harness-projection-service",
+      "modules": {
+        "projector": "src/projector.mjs",
+        "permissions": "src/permissions.mjs"
+      }
+    },
+    "session-spend-meter": {
+      "root": "services/red-cup-engineering/services/software-services-section/services/inference-services-section/services/llm-services-section/services/anthropic-services-section/services/claude-services-section/services/claude-code-services-section",
+      "modules": {
+        "meter": "scripts/measure-claude-session-spend.mjs"
+      }
+    }
+  }
+}

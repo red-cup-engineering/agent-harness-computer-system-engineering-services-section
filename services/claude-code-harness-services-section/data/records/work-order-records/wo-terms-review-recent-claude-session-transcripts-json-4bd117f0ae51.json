@@ -1,0 +1,27 @@
+{
+  "id": "wo-terms-review-recent-claude-session-transcripts-json-4bd117f0ae51",
+  "mintedAt": "2026-07-24T02:13:12.128Z",
+  "source": "leader-speech",
+  "demand": "Review recent Claude session transcripts.",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/review-recent-claude-session-transcripts.json",
+  "class": "verify",
+  "status": "fulfilled",
+  "evidence": {
+    "resultDigest": "sha256:3e045b434d3aab6bb4f47217a92299db9cff8a300765efd22220b5289806e26d",
+    "response": "No recent Claude session transcripts were found in the repository.",
+    "model": "meta/llama-3.1-8b-instruct",
+    "provider": "eip155:31337:0x01dee67ad5eed252855bcc612b986cc96a91f353",
+    "providerTeam": "nvidia-inference-team",
+    "dispatchedAt": "2026-07-24T04:24:55.082Z",
+    "realization": {
+      "outcome": "written",
+      "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/glossary/terms/review-recent-claude-session-transcripts.json",
+      "landing": "glossary-term",
+      "resultDigest": "sha256:724fb6cfbf0b41483a9bb90343e8da91797e6cfd38a3ff6cccb6075116d3d8b9",
+      "commitSha": "2619a266adb49e2ce9b399160097bbaea22764e8",
+      "committedAt": "2026-07-24T15:45:09.191Z",
+      "checkedAt": "2026-07-24T15:45:08.871Z",
+      "commitRoot": "lib/emsenn/services/board-of-directors/services/executive-office"
+    }
+  }
+}

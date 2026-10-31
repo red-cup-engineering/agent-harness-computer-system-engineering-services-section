@@ -1,0 +1,19 @@
+{
+  "name": "@rsc-quiescent/claude-session-activity-provider",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Privacy-bounded exact-interval civic pulses derived from Claude Code session metadata, thin over the shared session-transcript-dialects seam.",
+  "dependencies": {
+    "@rsc-quiescent/session-transcript-dialects": "0.1.0"
+  },
+  "scripts": {
+    "check": "node --check src/collect-colony-activity.mjs",
+    "test": "node --test test/*.test.mjs",
+    "verify": "npm run check && npm test"
+  },
+  "exports": {
+    "./src/collect-colony-activity.mjs": "./src/collect-colony-activity.mjs",
+    "./collect-colony-activity": "./src/collect-colony-activity.mjs"
+  }
+}

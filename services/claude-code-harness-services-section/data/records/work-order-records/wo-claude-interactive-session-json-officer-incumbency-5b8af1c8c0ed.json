@@ -1,0 +1,23 @@
+{
+  "id": "wo-claude-interactive-session-json-officer-incumbency-5b8af1c8c0ed",
+  "mintedAt": "2026-07-26T18:24:06.717Z",
+  "source": "manual",
+  "demand": "claude-interactive-session.json is a session character record with no officer binding: no incumbency.json anywhere in this repo joins it to an office, and a grep across the corpus turns up no incumbency-shaped record naming a Claude actor. codex-interactive-session, by contrast, holds a live officer seat: .codex/incumbency.json binds urn:ame:bare-cedar-fog-codex, character codex-interactive-session, into office executive-officer-to-the-leader, with a stated customer, a clinical duty, and a resourceEconomy block naming its accounting duty. Decide whether the root Claude interactive session shares that same office as a second incumbent, or realizes a distinct office, and realize the chosen incumbency as a record written by the owning office instrument, in the pattern of executive-officer-to-the-leader.json and .codex/incumbency.json, naming the Claude actor, a resourceEconomy.inferenceSource stating the Leader-contributed Claude Max allocation, and an accountingDuty. A Claude session holding a character record and no seated office cannot be held to a duty, credited with a completed outcome, or charged against an allocation the way the Codex officer already is; that gap is what this work order closes.",
+  "targetPath": "lib/emsenn/services/board-of-directors/services/executive-office/services/leader-movement-team/content/characters/claude-interactive-session.json#officer-incumbency",
+  "class": "define",
+  "status": "awarded",
+  "evidence": {
+    "marketTaskId": "975f99d2-a9c8-45ba-988b-372ded075306",
+    "marketInputNi": "ni:///sha-256;rHNJ7bxfZjn22WhHnK3CZEdke3xXj3vQtFExh8zdLIY",
+    "marketAgentUrl": "https://bare-cedar-fog.561.group/a2a/inference-work-lot/.well-known/agent-card.json",
+    "marketAccount": "eip155:5615610:0x3ffa8ce2459902f2d07cd046359c69dff7841f23",
+    "marketSubmittedAt": "2026-07-26T23:41:25.943Z",
+    "lastMarketInterruption": {
+      "type": "ResumableMarketTaskInterruption",
+      "observedAt": "2026-07-27T01:12:59.120Z",
+      "taskId": "975f99d2-a9c8-45ba-988b-372ded075306",
+      "inputNi": "ni:///sha-256;rHNJ7bxfZjn22WhHnK3CZEdke3xXj3vQtFExh8zdLIY",
+      "reason": "contracted executor refused with code 1 signal none: inference-work-lot-refusal: pricing service refused /deliver: not-found\n"
+    }
+  }
+}

@@ -642,7 +642,7 @@ function git(argv, state, ctx, report) {
     if (why !== undefined) { report.deny(partialReason(sub === "commit" ? "git commit -a" : "git add -A/-u", why)); return; }
   }
   if (sub === "worktree") {
-    if (args[0] === "add") report.deny("git worktree add makes a second working tree of a repository the colony already holds: work in that section's own checkout inside the colony directory (~/<colony>), on a branch.");
+    if (args[0] === "add") report.deny("git worktree add makes a second working tree of a repository the colony already holds: work in that section's own checkout inside the colony directory (~/<colony>) on a branch (git -C ~/<colony>/<section> switch -c <branch>), or open a duty worktree with the MetroPlat verb duty-worktree-open {\"duty\":\"<ready-duty>\"}.");
     return;
   }
   if (sub === "clone") {
@@ -694,7 +694,7 @@ function clone(words, state, ctx, report) {
   }
   const resolved = destination === undefined ? undefined : resolveDir(destination, state.cloneCwd, ctx);
   if (resolved === undefined) {
-    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory (~/<colony>).");
+    report.deny("git clone destination cannot be established: a missing or unresolved cd/pushd target is not a successful directory change, and an unresolved source cannot supply a destination basename. Use an explicit absolute destination inside the colony directory, e.g. git clone <url> ~/<colony>/<section>.");
     return;
   }
   // Everything the Group writes stays inside the colony directory (~/<colony>, e.g. ~/bare-cedar-fog);
@@ -761,7 +761,7 @@ function indexLock(argv, state, ctx, report) {
     const gitDir = file === undefined ? undefined : path.dirname(file);
     const running = gitDir === undefined ? undefined : gitProcessOn(gitDir);
     if (running !== undefined) {
-      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish; the lock is stale only once no git process is left there.`);
+      report.deny(`removing ${file} while git (pid ${running}) is working on ${gitDir} corrupts the index it is writing: wait for that git process to finish (check with pgrep -a git); the lock is stale only once no git process is left there.`);
       return;
     }
   }
@@ -889,7 +889,7 @@ function scanner(name, argv, piped, state, ctx, report) {
     const dir = resolveDir(word, state.cwd, ctx);
     // Rule no-whole-tree-scans-on-bare-cedar-fog: a recursive scan of a disk, a home or a large working tree is denied like
     // `find`, not run; the settings deny list matches command prefixes, so `cd … && grep -r …` reaches only this hook.
-    if (dir !== undefined && isBroad(dir, ctx)) { report.deny(`${name} recursing from ${dir} scans the whole disk or a large working tree (rule no-whole-tree-scans-on-bare-cedar-fog): search a named section's directory, read the file a note or term already cites, or hand a broad sweep to an Explore agent.`); return; }
+    if (dir !== undefined && isBroad(dir, ctx)) { report.deny(`${name} recursing from ${dir} scans the whole disk or a large working tree (rule no-whole-tree-scans-on-bare-cedar-fog): search a named section's directory (rg -n <pattern> <section-dir>), read the file a note or term already cites, or hand a broad sweep to an Explore agent.`); return; }
   }
 }
 
@@ -905,15 +905,43 @@ function dependencyProduction(name, words, report) {
   // A lockfile-only resolution writes no node_modules and runs no lifecycle script; the repository's
   // own .pnpmfile.cjs (the house's one-version-per-family rule) must still shape that resolution.
   const lockOnly=args.includes("--ignore-scripts")&&(name==="npm"&&args.includes("--package-lock-only")||name==="pnpm"&&["install","i","add"].includes(action)&&args.includes("--lockfile-only"))&&!args.some(arg=>["--package-lock-only=false","--lockfile-only=false"].includes(arg));
-  if((installation&&!lockOnly)||(fetchingExec&&!args.includes("--no-install")))
-    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Use the original worktree dependency preparation with explicit installation selection and its shared-store/lifecycle receipt; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
+  // A frozen install reproduces exactly the committed lockfile into the shared store, so checks and tests can
+  // run; denying it left every dependency-bearing check unrun (Leader, 2026-10-30: fix the technology, never
+  // route around it).
+  const frozen=(name==="npm"&&action==="ci")||(name==="pnpm"&&["install","i"].includes(action)&&args.includes("--frozen-lockfile"));
+  if((installation&&!lockOnly&&!frozen)||(fetchingExec&&!args.includes("--no-install")))
+    report.deny("direct dependency installation or fetch-on-exec can allocate an unreceived graph/cache. Prepare dependencies through the MetroPlat verb duty-worktree-open with explicit installation selection, input {\"duty\":\"<ready-duty>\",\"dependencies\":true} (it links the duty worktree through the shared store and returns the lifecycle receipt), or, to converge house package pins, run node scripts/converge-house-dependencies.mjs <package> --apply from computer-code-development-engine; use already received dependencies for checks. Lockfile-only metadata resolution remains available as `pnpm install --lockfile-only --ignore-scripts` (or `npm install --package-lock-only --ignore-scripts`), and no-install execution as `npx --no-install`.");
   return true;
+}
+
+// Rule machine-work-runs-as-mape-k-loops-not-clocks: a timer, calendar schedule or cron entry decides when work
+// runs, so installing, enabling or starting one is denied however it is spelled. Stopping, disabling or masking
+// one retires a clock and stays allowed.
+const CLOCK_VERBS = new Set(["enable", "reenable", "start", "restart", "try-restart", "reload-or-restart", "try-reload-or-restart", "link", "preset", "add-wants", "add-requires", "edit"]);
+const CLOCK_DENIAL = "rule machine-work-runs-as-mape-k-loops-not-clocks (Leader, 2026-10-25, rejected repeatedly since): a timer, calendar schedule or cron entry must not decide when work runs. Start the work from an event a house monitor already reports (PSI or memory.events, a filesystem notification, a capacity reading crossing its threshold, a git or GitHub event, a session ending) and execute it through the owning service; a deadline the Knowledge holds arms one wake from that reading.";
+const isTimerPath = (word) => /\.timer$/u.test(word) || /(?:^|\/)cron(?:tab|\.d|\.(?:hourly|daily|weekly|monthly))(?:\/|$)/u.test(word);
+
+function clockInstallation(name, raw, quoted, words, report) {
+  for (let i = 0; i < raw.length; i += 1) {
+    const m = quoted[i] ? null : /^(\d*|&)(>>?|&>>?)(.*)$/u.exec(raw[i]);
+    if (m !== null && isTimerPath(m[3] === "" ? raw[i + 1] ?? "" : m[3])) { report.deny(`writing a timer unit or cron entry: ${CLOCK_DENIAL}`); return true; }
+  }
+  const args = words.slice(1);
+  const denied =
+    (name === "systemctl" && args.some((arg) => CLOCK_VERBS.has(arg)) && args.some((arg) => /\.timer$/u.test(arg)))
+    || (name === "systemd-run" && args.some((arg) => /^--(?:on-[a-z-]+|timer-property)(?:=|$)/u.test(arg)))
+    || (name === "git" && args.includes("maintenance") && ["start", "register"].includes(args[args.indexOf("maintenance") + 1]))
+    || (name === "crontab" && !args.every((arg) => arg === "-l" || arg.startsWith("-u")))
+    || (["tee", "cp", "mv", "install", "ln"].includes(name) && positionals(args).some(isTimerPath));
+  if (denied) report.deny(`${name} installs or starts a clock: ${CLOCK_DENIAL}`);
+  return denied;
 }
 
 function simple(command, frame, ctx, report, depth) {
   const words = unwrap(withoutRedirections(command.words, command.quoted));
   if (words.length === 0) return;
   const name = path.basename(words[0].replaceAll("\\","/")).replace(/\.(?:exe|cmd|bat)$/iu, "").toLowerCase();
+  if (clockInstallation(name, command.words, command.quoted, words, report)) return;
   if (SKIPPED.has(name)) return;
   const cwdOf = (scope) => {
     if (!frame.cwds.has(scope)) frame.cwds.set(scope, cwdOf(frame.scopes[scope].parent));
@@ -1120,12 +1148,12 @@ const WATCH_TOOLS = /^Monitor$/u;
  *  `systemd-run … bash -c` carrier that check cannot see into, so it refuses every removal. */
 const SELF_CHECKED_PROGRAMS = new Set(["rm", "rmdir", "unlink"]);
 
-/** Whether every simple command of `command` is a removal the harness checks itself: light work,
- *  left uncontained so that check reads it. */
+/** Whether any simple command of `command` is a removal the harness checks itself. The whole line is
+ *  left uncontained so that check reads it and asks, instead of refusing an unreadable carrier. */
 export function isSelfCheckedRemoval(command) {
   try {
     const { commands } = parseShell(command);
-    return commands.length > 0 && commands.every(({ words, piped }) => !piped && SELF_CHECKED_PROGRAMS.has(words[0]));
+    return commands.some(({ words }) => SELF_CHECKED_PROGRAMS.has(words[0]));
   } catch {
     return false;
   }

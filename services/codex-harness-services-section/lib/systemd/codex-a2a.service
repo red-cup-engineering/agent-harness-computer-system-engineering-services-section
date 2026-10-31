@@ -1,0 +1,22 @@
+[Unit]
+Description=Bare Cedar Fog Codex customer enterprise signed A2A face
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/emsenn/info/lib/emsenn/services/561-group/services/rsc-quiescent/services/persistent-machines-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-codex-enterprise
+Environment=HOST=127.0.0.1
+Environment=PORT=19864
+Environment=BASE_URL=https://bare-cedar-fog.561.group/a2a/codex
+Environment=AGENT_CARD_SIGNING_KEY=/home/emsenn/.local/share/emsenn/a2a/bare-cedar-fog-codex-ed25519-private.pem
+Environment=AGENT_CARD_JWKS=/home/emsenn/info/lib/emsenn/services/561-group/services/rsc-quiescent/services/persistent-machines-services-section/services/bare-cedar-fog-services-section/services/bare-cedar-fog-codex-enterprise/agents/agent-card-signing/jwks.json
+Environment=AGENT_CARD_SIGNING_KID=bare-cedar-fog-codex-2026-07
+ExecStart=/home/emsenn/.config/nvm/versions/node/v24.13.1/bin/node scripts/serve-a2a.mjs
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

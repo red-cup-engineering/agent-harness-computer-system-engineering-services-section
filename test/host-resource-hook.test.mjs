@@ -296,10 +296,41 @@ test("raw clone denial has no native effect even at a resolved in-colony target"
 });
 
 test('raw dependency producers refuse while metadata and received execution remain usable',()=>{
- for(const command of ['npm ci','npm --prefix /tmp/job install','pnpm install','pnpm add package','pnpm dlx package','npx package','npx --offline package','npm exec --offline -- package','yarn','yarn add package','bun install','bunx package','git.exe clone https://example.com/o/r.git ./r','npm.cmd ci','PNPM.EXE install','bash -c "npm install"'])assert.equal(verdict(command).action,'deny',command);
- for(const command of ['npm test','npm pack --ignore-scripts','npm view package version','pnpm exec already-received','npm install --package-lock-only --ignore-scripts','pnpm install --lockfile-only --ignore-scripts --ignore-pnpmfile','pnpm install --lockfile-only --ignore-scripts','npx --no-install already-received'])assert.equal(verdict(command).action,'allow',command);
+ for(const command of ['npm --prefix /tmp/job install','pnpm install','pnpm add package','pnpm dlx package','npx package','npx --offline package','npm exec --offline -- package','yarn','yarn add package','bun install','bunx package','git.exe clone https://example.com/o/r.git ./r','PNPM.EXE install','bash -c "npm install"'])assert.equal(verdict(command).action,'deny',command);
+ for(const command of ['npm test','npm pack --ignore-scripts','npm view package version','pnpm exec already-received','npm install --package-lock-only --ignore-scripts','pnpm install --lockfile-only --ignore-scripts --ignore-pnpmfile','pnpm install --lockfile-only --ignore-scripts','npx --no-install already-received','npm ci','npm.cmd ci','pnpm install --frozen-lockfile'])assert.equal(verdict(command).action,'allow',command);
  assert.equal(verdict('pnpm install --lockfile-only --lockfile-only=false').action,'deny');
  assert.equal(verdict('pnpm install --lockfile-only').action,'deny','a resolution without --ignore-scripts may run lifecycle scripts');
+});
+
+test("installing, enabling or starting a clock is refused; retiring one is not", () => {
+  for (const command of [
+    "systemctl --user enable --now publish-local-landings.timer",
+    "systemctl --user start source-overlay-gate.timer",
+    "sudo systemctl enable audit-shift@x.timer",
+    "systemd-run --user --on-calendar=hourly node job.mjs",
+    "systemd-run --user --on-active 5min node job.mjs",
+    "git maintenance start",
+    "git -C repo maintenance register",
+    "crontab -e",
+    "crontab jobs.txt",
+    "cat > ~/.config/systemd/user/x.timer <<'EOF'\n[Timer]\nOnBootSec=5min\nEOF",
+    "printf '[Timer]\\n' >~/.config/systemd/user/x.timer",
+    "tee ~/.config/systemd/user/x.timer < unit",
+    "cp unit.timer ~/.config/systemd/user/",
+    "install -m 644 x.timer ~/.config/systemd/user/x.timer",
+    "bash -c 'systemctl --user enable x.timer'",
+  ]) assert.equal(verdict(command).action, "deny", command);
+  for (const command of [
+    "systemctl --user disable --now publish-local-landings.timer",
+    "systemctl --user stop x.timer",
+    "systemctl --user mask x.timer",
+    "systemctl --user list-timers --all",
+    "systemctl --user restart bare-cedar-fog-561-group.service",
+    "systemd-run --user --scope node job.mjs",
+    "git maintenance unregister",
+    "crontab -l",
+    "cat ~/.config/systemd/user/x.timer",
+  ]) assert.equal(verdict(command).action, "allow", command);
 });
 
 test("a session confined to an allow-list is denied what is runaway but never rewritten", () => {
@@ -537,11 +568,12 @@ test("commands go to the work slice, from a session outside the slices or inside
     const answer = (input, cgroup = OUTSIDE, provider = "claude") => decide(input, { env: live, provider, cgroup })?.updatedInput?.command;
     // Without permission rules, every command is contained.
     assert.ok(answer(shellEvent("ls -la", "bypassPermissions")).includes(slice));
-    // Except a line of removals only, which the harness's own removal check must read as written.
+    // Except a line holding a removal, which the harness's own removal check must read as written.
     const removal = ["r" + "m", "src/old.mjs"].join(" ");
     assert.equal(answer(shellEvent(removal, "bypassPermissions")), undefined);
     assert.equal(answer(shellEvent(`${"r" + "mdir"} a/b && ${"r" + "mdir"} a`, "bypassPermissions")), undefined);
-    assert.ok(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")).includes(slice), "a removal beside other work is contained");
+    assert.equal(answer(shellEvent(`${removal}; ls -la`, "bypassPermissions")), undefined, "a removal beside other work is left readable");
+    assert.equal(answer(shellEvent(`jq -e . a.json && ${removal}`, "bypassPermissions")), undefined);
     // With them, only a watch, so no allow rule stops matching an ordinary command.
     assert.equal(answer(shellEvent("ls -la", "default")), undefined);
     assert.equal(answer(shellEvent("git fetch origin", "default")), undefined);
@@ -782,4 +814,14 @@ test("the partial-worktree check is bounded: where git cannot answer in time the
   const overflow = (command, args) => (args.includes("config") ? { status: 1, stdout: "" } : { status: null, stdout: "a\0b\0", truncated: true });
   assert.equal(classify("git commit -am wip", { cwd: dir, env, home, run: overflow }).action, "deny");
   assert.ok(LIMITS.massDeletion.worktreeMilliseconds + LIMITS.massDeletion.worktreeMilliseconds < 15_000);
+});
+
+test('the dependency installation denial names the runnable sanctioned preparation',()=>{
+ for(const command of ['npm install','pnpm install','npx some-tool']){
+  const result=verdict(command);
+  assert.equal(result.action,'deny',command);
+  assert.match(result.reason,/duty-worktree-open/u,command);
+  assert.match(result.reason,/"dependencies":true/u,command);
+  assert.match(result.reason,/scripts\/converge-house-dependencies\.mjs <package> --apply/u,command);
+ }
 });
