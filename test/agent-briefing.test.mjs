@@ -18,8 +18,8 @@ function agencyFixture() {
   writeFileSync(join(pool("offices"), "owner.json"), JSON.stringify({ id: "owner", name: "shop owner", kind: "office", "normative-structure": "The owner answers for the shop.", "deontic-profile": { "answering-mail": "duty" } }));
   writeFileSync(join(pool("duties"), "answering-mail.json"), JSON.stringify({ id: "answering-mail", name: "answering mail", skills: ["running-the-shop"], "required-act-or-state": "Answer every letter.", "receiver-condition": "No letter waits a week.", correlative: "the letter writer", "required-evidence": ["the sent reply"], "effect-limits": ["no promise of refunds"], "ceo-board-relation": "The board receives the monthly count.", "x-provenance": { source: "shop-services-section/notes/mail.md" } }));
   mkdirSync(join(pool("skills"), "running-the-shop"), { recursive: true });
-  writeFileSync(join(pool("skills"), "running-the-shop", "SKILL.md"), "---\nname: running-the-shop\ndescription: Run the shop.\ntype: skill\nrequires-capabilities:\n  - work-item\n---\n\n# Run the shop\n\nRead the mail first.\n");
-  writeFileSync(join(pool("incumbencies"), "owner-as-pat.json"), JSON.stringify({ id: "owner-as-pat", office: "owner", holder: "password:pat", recognition: "t", induction: "t" }));
+  writeFileSync(join(pool("skills"), "running-the-shop", "SKILL.md"), "---\nid: running-the-shop\nname: running-the-shop\ndescription: Run the shop.\ntype: skill\nrequires-capabilities:\n  - work-item\n---\n\n# Run the shop\n\nRead the mail first.\n");
+  writeFileSync(join(pool("incumbencies"), "owner-as-pat.json"), JSON.stringify({ id: "owner-as-pat", name: "owner-as-pat", office: "owner", holder: "password:pat", recognition: "t", induction: "t" }));
   return root;
 }
 
@@ -38,8 +38,8 @@ test("the host names the original section; the harness preserves the original ho
   assert.equal(harnessAgencyAt(root, { environment }), agencyAt(root, { sections: [section] }),
     "selection retains the original Organizing registry identity");
   assert.throws(() => harnessAgencyAt(root, { agencySections: ["data/logs/copied/" + section] }),
-    /copy under data or a vendored package/u);
-  assert.throws(() => harnessAgencyAt(root, { agencySections: ["../" + section] }), /not a section path/u);
+    /snapshot or vendored copy/u);
+  assert.throws(() => harnessAgencyAt(root, { agencySections: ["../" + section] }), /confined source-relative section paths/u);
   assert.throws(() => harnessAgencyAt(root, { environment: { METROPLAT_AGENCY_SECTIONS: '"shop-services-section"' } }), /array/u);
   assert.deepEqual(projectAgentBriefing({ ...common, agencySections: [], environment }).offices, [],
     "an explicit empty host selection must not fall back to ambient sections");

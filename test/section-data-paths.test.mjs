@@ -8,10 +8,10 @@ const HOME_ENVIRONMENT = { HOME: "/home/nobody", XDG_STATE_HOME: "/home/nobody/.
 
 test("the harness keeps its state under its own section root, whatever the home environment says", () => {
   assert.equal(sectionRootOf(HOME_ENVIRONMENT), SECTION_ROOT);
-  assert.equal(carrierWorktreeRoot({ name: "claude" }, HOME_ENVIRONMENT), dataKindDirectory(SECTION_ROOT, "state", "claude-worktrees"));
+  assert.equal(carrierWorktreeRoot({ name: "claude" }, HOME_ENVIRONMENT), dataKindDirectory(SECTION_ROOT, "state", "claude-worktree"));
 });
 
 test("a section kept elsewhere is named by AGENT_HARNESS_SECTION_ROOT, not discovered from the home", () => {
   const environment = { ...HOME_ENVIRONMENT, AGENT_HARNESS_SECTION_ROOT: "/sections/harness" };
-  assert.equal(carrierWorktreeRoot({ name: "codex" }, environment), dataKindDirectory("/sections/harness", "state", "codex-worktrees"));
+  assert.equal(carrierWorktreeRoot({ name: "codex" }, environment), dataKindDirectory("/sections/harness", "state", "codex-worktree"));
 });

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, appendFileSync } from "node:fs";
 import { scratchRoot } from "./support/scratch.mjs";
 import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { dataArtifactAddress } from "@red-cup-engineering/eavt-services-section/data-artifact-address";
 import { jsonToTerm } from "@red-cup-engineering/computer-data-engineering-services-section/semiotic-expression-notation/json-codec";
@@ -14,13 +13,31 @@ import {
   rowToCloudEvent,
 } from "../scripts/admit-set-of-session-event-arrivals.mjs";
 
-const TEST_DIR = dirname(fileURLToPath(import.meta.url));
-const FIXTURE_ROOT = join(TEST_DIR, "fixtures", "session-event-journal-tree");
+const direct = (row) => ({ ...row, e: jsonToTerm(row.e), a: jsonToTerm(row.a), v: jsonToTerm(row.v) });
 
-test("first run emits one CloudEvent per lifecycle row, skips non-lifecycle rows, and refuses secret-looking rows", async () => {
+// A journal at its data-law address in a scratch tree, built per test: a committed file under a
+// data/logs path is itself a log, and the log compactor seals it.
+function journalTree(t) {
+  const root = mkdtempSync(join(scratchRoot(), "session-event-journal-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const address = dataArtifactAddress({ root, tier: "log", encoding: "jsonl", at: "2026-09-01", action: "admit", subject: "witness-journal-seavt" });
+  mkdirSync(dirname(address.path), { recursive: true });
+  const observation = { actor: "actor:fixture", sessionDigest: "sha256:fixture", type: "BareCedarFogClaudeLifecycleObservation", version: 2 };
+  const rows = [
+    { e: "ni:///sha-256;fixture1", a: "lifecycle.UserPromptSubmit", v: { ...observation, event: "UserPromptSubmit", occurredAt: "2026-09-01T00:04:29.771Z", promptDigest: "sha256:fixture" }, t: "2026-09-01T00:04:29.771Z" },
+    { e: "ni:///sha-256;fixture2", a: "lifecycle.Stop", v: { ...observation, event: "Stop", occurredAt: "2026-09-01T00:11:27.339Z" }, t: "2026-09-01T00:11:27.339Z" },
+    { e: "ni:///sha-256;notlifecycle", a: "deployment", v: { note: "not a lifecycle row, must be skipped" }, t: "2026-09-01T00:12:00.000Z" },
+    { e: "ni:///sha-256;fixture3", a: "lifecycle.SubagentStop", v: { actor: "actor:fixture", apiKey: "should-never-be-admitted", event: "SubagentStop" }, t: "2026-09-01T00:13:00.000Z" },
+  ];
+  writeFileSync(address.path, rows.map((row) => `${JSON.stringify(direct(row))}\n`).join(""));
+  return { root, source: address.path.slice(root.length + 1) };
+}
+
+test("first run emits one CloudEvent per lifecycle row, skips non-lifecycle rows, and refuses secret-looking rows", async (t) => {
+  const { root, source } = journalTree(t);
   const cursor = await loadCursor("/nonexistent/cursor.json");
-  const { events, cursor: nextCursor } = await admitSetOfSessionEventArrivals({ logsRoot: FIXTURE_ROOT, repoRoot: TEST_DIR, cursor });
-  // Fixture has 4 rows: UserPromptSubmit, Stop (both lifecycle, admitted),
+  const { events, cursor: nextCursor } = await admitSetOfSessionEventArrivals({ logsRoot: root, repoRoot: root, cursor });
+  // The journal has 4 rows: UserPromptSubmit, Stop (both lifecycle, admitted),
   // a non-lifecycle "deployment" row (skipped), and a lifecycle row whose
   // v carries "apiKey" (refused).
   assert.equal(events.length, 2);
@@ -28,15 +45,16 @@ test("first run emits one CloudEvent per lifecycle row, skips non-lifecycle rows
   const [event] = events;
   assert.equal(event.specversion, "1.0");
   assert.equal(event.type, "org.561-group.session-event.v1");
-  assert.equal(event.source, "fixtures/session-event-journal-tree/data/logs/witness-journal-seavt-logs/2026-09-01-admit-witness-journal-seavt.jsonl");
+  assert.equal(event.source, source);
   assert.match(event.id, /^sha256:[0-9a-f]{64}$/u);
   assert.equal(Object.values(nextCursor.files)[0] > 0, true);
 });
 
-test("second run against the unchanged fixture file is idempotent and emits nothing new", async () => {
+test("second run against the unchanged journal is idempotent and emits nothing new", async (t) => {
+  const { root } = journalTree(t);
   const cursor = await loadCursor("/nonexistent/cursor.json");
-  const first = await admitSetOfSessionEventArrivals({ logsRoot: FIXTURE_ROOT, repoRoot: TEST_DIR, cursor });
-  const second = await admitSetOfSessionEventArrivals({ logsRoot: FIXTURE_ROOT, repoRoot: TEST_DIR, cursor: first.cursor });
+  const first = await admitSetOfSessionEventArrivals({ logsRoot: root, repoRoot: root, cursor });
+  const second = await admitSetOfSessionEventArrivals({ logsRoot: root, repoRoot: root, cursor: first.cursor });
   assert.equal(first.events.length, 2);
   assert.deepEqual(second.events, []);
 });
