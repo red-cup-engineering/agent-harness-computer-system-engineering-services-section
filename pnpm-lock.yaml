@@ -75,8 +75,8 @@ importers:
         specifier: 0.2.2
         version: 0.2.2
       '@red-cup-engineering/organizing':
-        specifier: 0.8.0-dev.1103
-        version: 0.8.0-dev.1103(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)
+        specifier: 0.8.0
+        version: 0.8.0(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)
       '@red-cup-engineering/semiotic-eavt-services-section':
         specifier: 0.3.0
         version: 0.3.0
@@ -677,6 +677,9 @@ packages:
     resolution: {integrity: sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ==}
     engines: {node: '>=12'}
 
+  '@lenticule-science/agent-science-services-section@0.1.0':
+    resolution: {integrity: sha512-IAQCiRHHwjYcnA0sNXMcr42JrExIkCMa35Vophymhio2QnGJRGjsgFv7zQ7iiJBC1+BclKzRJX1hkMprLMQOVw==}
+
   '@lenticule-science/articulating@0.2.2':
     resolution: {integrity: sha512-namzkMve433Wf34Ek8juKOnUK9bgv7Hqm3PHHcBHtmfHwXvJhRv2qKqNj7pEcL9Eca7ljKWih7UNQHfg0cMpMg==}
 
@@ -867,8 +870,17 @@ packages:
   '@red-cup-engineering/agent-section-descent-assay-service@0.1.2':
     resolution: {integrity: sha512-ZhspRc4Nzb7XJGMbVeTl7B9CpNyDyQgKaaav9TLc54GjgXCQrvnt+diXLCRdHUlwtIdO9kW0jqhumZcEMvBMyA==}
 
+  '@red-cup-engineering/agentic-character-engineering-services-section@0.1.0':
+    resolution: {integrity: sha512-A7iqGh10Sv/4c7gfZXopN2ShXdaBwPZYrbFE+nSEsIEB1UrtChdw648riFmFjWex9ZH/SRFibvhyWoeohsGuZg==}
+    engines: {node: '>=24'}
+
   '@red-cup-engineering/agentic-computer-system-organization-services-section-engineering-services-section@0.1.2':
     resolution: {integrity: sha512-7vu/Yh1HKYiHIzjDAiCCGQ+OStOMQt+it8aM5v7XIolxz49lo2DGjplet1zjXmPPpHvVv9U1jabuj7nCeJnQ3w==}
+    engines: {node: '>=24.2.0'}
+    hasBin: true
+
+  '@red-cup-engineering/agentic-organization-services-section-engineering-services-section@0.1.2':
+    resolution: {integrity: sha512-FwoK6z5uhRAj6ErL4hCMBuZmayr3a2NZdDbZRfZ5FLjEFIcnI8aDHZpLJ3tfV7M/6y/C35KGO10ebCZrlmaw6g==}
     engines: {node: '>=24.2.0'}
     hasBin: true
 
@@ -1272,11 +1284,6 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@red-cup-engineering/eavt-services-section@0.14.0':
-    resolution: {integrity: sha512-W47Msnv6iWUltbCqRDuRKLt+fLegDsAmYFT3Jrc0Ni7kXDk6slFdATTu+3iuiK+DwuXVLPR+2Q7FEbOPc1vkZw==}
-    engines: {node: '>=22'}
-    hasBin: true
-
   '@red-cup-engineering/eavt-services-section@0.14.1':
     resolution: {integrity: sha512-bSZxuciCWWG6f3cvZbMmDfKLCjuE5DpzSDZO0oy3npfYybQULJJZnyH+8Jr112yQsByo7mvYO+VU3BEx7zRB4g==}
     engines: {node: '>=22'}
@@ -1646,12 +1653,8 @@ packages:
     resolution: {integrity: sha512-UEIcGwpazSu5MscBkXORFQMEboTP/0nEm8/PIQFmxlcLc6mQrjfMWKWNcIeHETZ1jdflwL6em7n0NoELPCWJuA==}
     engines: {node: '>=22'}
 
-  '@red-cup-engineering/metrologic@0.14.3-dev.1':
-    resolution: {integrity: sha512-RQzyIK013/95MzttXB7ZWjv4jOvdBx+kZ5KIWfO61E84SiShpA7QT4wOu3j4pdUnFOWgEyYXzq9nuQ//f54z1g==}
-    engines: {node: '>=22'}
-
-  '@red-cup-engineering/metrologic@0.14.3-dev.1325':
-    resolution: {integrity: sha512-1WcA+2yY0GCd9Wsx66C0OyvEOArJwXgkw2zvp5Wwklu2rxcB/aGR45ZAYFwJz2g65kmU7aBM2kcW1JjTscPBEw==}
+  '@red-cup-engineering/metrologic@0.14.3':
+    resolution: {integrity: sha512-+syfo/m1oPIrcNe9SjVF7x9oarir147YyXeX1idu2r5CfLEyOpHsIHrs5Lo8VfPOZWie/pJkbRbBiuI046pl8g==}
     engines: {node: '>=22'}
 
   '@red-cup-engineering/metrologic@0.14.3-dev.1364':
@@ -1660,10 +1663,6 @@ packages:
 
   '@red-cup-engineering/metrologic@0.14.3-dev.1377':
     resolution: {integrity: sha512-43xdVH+/FR0K+lFV+EplKPr7enD0lgNfFtvQSmQR+ZrpVx9gG09BYpz9vLWWGbQ07o7Lz5sQJG+rXq9KHXmgWQ==}
-    engines: {node: '>=22'}
-
-  '@red-cup-engineering/metrologic@0.14.3-dev.3':
-    resolution: {integrity: sha512-WfG3k21DwhgxO81GoZV3I/7fIFbjevB7Oo9H/pRWE1SoHBnRmssXHYsWZSzBf0BKku/ExCuxLqd0JZY/Te7VRg==}
     engines: {node: '>=22'}
 
   '@red-cup-engineering/metrologic@0.3.0':
@@ -1806,8 +1805,8 @@ packages:
     engines: {node: '>=22.18'}
     hasBin: true
 
-  '@red-cup-engineering/organizing@0.8.0-dev.1103':
-    resolution: {integrity: sha512-62nVHkbo4S1aEo+rHMyslN7rw9zbdv7WBUbqlWQJ0yqlT4+z8hGarYv7GbL3zeLB/7kNb8CDiIE59aPaXvMVmw==}
+  '@red-cup-engineering/organizing@0.8.0':
+    resolution: {integrity: sha512-f8oCkuMptK2+NRGw/dNdUwAp06+njMRgfvKb3ROt0SejJbj0murtX+gtJyNBMe+ni6j1jLyJ/h2v3mFBkMVd+w==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -1826,6 +1825,10 @@ packages:
 
   '@red-cup-engineering/playing@0.2.9':
     resolution: {integrity: sha512-BWXsEZjGcGzBQQPRK3kGGsSvO9I/B+B5yYguGbmk4gG7WERnGTHIPEHekjdpcwEiltIvfPyuiwpkA1de3/9w0g==}
+    engines: {node: '>=22.18'}
+
+  '@red-cup-engineering/playing@0.3.0':
+    resolution: {integrity: sha512-bJqXMeZlWi+whoKekFTmFhHHnxuVLlkcVDlwz11g9iUGbutIRViy+CyV1WtMWLlzTeSvXsagisLpLpPQbroh5Q==}
     engines: {node: '>=22.18'}
 
   '@red-cup-engineering/pluggable-venue-adapter-service@0.1.7':
@@ -1975,11 +1978,6 @@ packages:
     engines: {node: '>=24.2.0'}
     hasBin: true
 
-  '@red-cup-engineering/services-section-form-services-section@0.3.0-dev.0':
-    resolution: {integrity: sha512-tyUVtNqdpDfXNmcesmx+wpAgVHnXNd6+R+x9b3KmNS1w2dTAmvlVWUNIyyrAHrN0b0Kj7Wijro9p2cBvhW3wFA==}
-    engines: {node: '>=24.2.0'}
-    hasBin: true
-
   '@red-cup-engineering/sheaf-laplacian-measurement-service@0.1.2':
     resolution: {integrity: sha512-DjckIQyvToOwrlnJK9RJU/TkvER0f9sgNZK607mhbtSOmgliAjredMiN53nbgz2rAWf1o5GuUu5ldTEFW7uJAA==}
 
@@ -1997,9 +1995,6 @@ packages:
 
   '@red-cup-engineering/signcell@0.12.3':
     resolution: {integrity: sha512-d7WTp4SxE78VfTphZ2KInPuonplS/FBkkzAUI0X1z/2pyqD/Qd/2P3marGfYt0MsFta07nxPLtG1HXeMzoMRcA==}
-
-  '@red-cup-engineering/signcell@0.13.1-dev.185':
-    resolution: {integrity: sha512-3MUGKVADetTd079F5XtE8+KkYUQpImebdHI0FAvFBBQOChVaYjYXEszSWkwIyTgEjfA0khaXOiZ38ZZeJOiiWg==}
 
   '@red-cup-engineering/signcell@0.13.1-dev.212':
     resolution: {integrity: sha512-49CrhrxOI+2zit3FSF2pk77cJBunG1s/noCdocGqqfIiZmWrT7NkPlkhOWR6zQgdryHheEMv885FwgoSfvUHuQ==}
@@ -2027,9 +2022,6 @@ packages:
   '@red-cup-engineering/signchain@0.2.1':
     resolution: {integrity: sha512-8gyt1j3zoTQGzODn74+2/3wjRt/qFvOtkbR3efO9Ev0b4b3SXqkPux03AENCBqLLBO5iKKopMSIQYEM0sMbBCQ==}
 
-  '@red-cup-engineering/signchain@0.4.2-dev.64':
-    resolution: {integrity: sha512-00nHvmpGaRyePN1kImTNN+0s5o6iQ1s54mDzXrTZ/RxCgdm/2K3PukiBUVek1Mm2I+a8H/4Iya3Pbt/tDHZ+hw==}
-
   '@red-cup-engineering/signchain@0.4.2-dev.72':
     resolution: {integrity: sha512-TRSkATDUl+rhbf0nLVKJaT9oC3ZE5rfwn8O2dM3klO7VN/uKBY/0afVt7mfFQDO/F0qBf4AdiVA/L5Tg0Uu5kg==}
 
@@ -2038,9 +2030,6 @@ packages:
 
   '@red-cup-engineering/signcraft@0.1.3':
     resolution: {integrity: sha512-RUJ8h5ADAx2ZWSpibwyR/e8hxaTrpDQleXVH7EIbfaBv+voSSVvn6hv+uJZyIWWV4rb0HY/Mim9lTYOnCYagIA==}
-
-  '@red-cup-engineering/signcraft@0.6.1-dev.495':
-    resolution: {integrity: sha512-NxuOEo0677rfU59U/7euBt7AFqvgBZ2EZc9IK3OTeZexMBcP12zdKqd3muVmuHCE3JNh2d0FwSh+2nQoQmz4PA==}
 
   '@red-cup-engineering/signcraft@0.6.2':
     resolution: {integrity: sha512-EWloh+yT68/ikRiqFrPSd4k1t9MSaCPq9sjYFuM2oDQ78fkNttY/Vvpp0JoPFYJ+zEDkKtwjDbHOrLPNGl7jEA==}
@@ -2053,9 +2042,6 @@ packages:
 
   '@red-cup-engineering/signgraph@0.2.1':
     resolution: {integrity: sha512-Ge4oquomjtHSqJhaE/6xmnpjMBFeMxx8uzKj+mNvldOAMstVuuFK+lEM0veFAMePQJAjuBuCEuKbs6DvR6iQLw==}
-
-  '@red-cup-engineering/signgraph@0.7.1-dev.353':
-    resolution: {integrity: sha512-EHjsgElr6y2ZnS5QueiuXrn2JNfvFLKRol/lf8mZpMObjjdGeR6cakYLTBWfn7NkSsxOyXnGynVpQlwIf2iBIw==}
 
   '@red-cup-engineering/signgraph@0.7.1-dev.364':
     resolution: {integrity: sha512-vtIVY3h3dVq6dz9X9pzLABORPDT31V4e7YD62KCorJGEcPb1xwLenNkTAglga+eRmWpHRQulx1KTqysSA3s2Tg==}
@@ -4610,6 +4596,8 @@ snapshots:
     dependencies:
       jsbi: 4.3.2
 
+  '@lenticule-science/agent-science-services-section@0.1.0': {}
+
   '@lenticule-science/articulating@0.2.2':
     dependencies:
       '@red-cup-engineering/transform-json-schema-to-typescript-service': 0.1.0
@@ -4993,7 +4981,30 @@ snapshots:
       '@red-cup-engineering/signchain': 0.1.0
       '@red-cup-engineering/signcraft': 0.1.1
 
+  '@red-cup-engineering/agentic-character-engineering-services-section@0.1.0':
+    dependencies:
+      '@lenticule-science/agent-science-services-section': 0.1.0
+      '@red-cup-engineering/json-schema-services-section': 0.5.0
+      '@red-cup-engineering/playing': 0.3.0
+      '@red-cup-engineering/signcell': 0.4.0
+      '@red-cup-engineering/signgraph': 0.2.0
+
   '@red-cup-engineering/agentic-computer-system-organization-services-section-engineering-services-section@0.1.2':
+    dependencies:
+      '@coesite-operations/enterprise-branding-services-section': 0.1.5
+      '@red-cup-engineering/computer-file-engineering-services-section': 0.4.0
+      '@red-cup-engineering/computer-filepath-engineering-services-section': 0.1.0
+      '@red-cup-engineering/eavt-services-section': 0.14.1
+      '@red-cup-engineering/javascript-node-services-section': 0.3.2
+      '@red-cup-engineering/json-schema-services-section': 0.5.0
+      '@red-cup-engineering/markdown-engineering-services-section': 0.5.2
+      '@red-cup-engineering/node-process-services-section': 0.3.0
+      '@red-cup-engineering/read-markdown-features-service': 0.2.0
+      '@red-cup-engineering/read-markdown-structure-service': 0.2.0
+      '@red-cup-engineering/signcraft': 0.6.2
+      '@red-cup-engineering/yaml-frontmatter-codec-service': 0.1.8
+
+  '@red-cup-engineering/agentic-organization-services-section-engineering-services-section@0.1.2':
     dependencies:
       '@coesite-operations/enterprise-branding-services-section': 0.1.5
       '@red-cup-engineering/computer-file-engineering-services-section': 0.4.0
@@ -6589,23 +6600,6 @@ snapshots:
       '@red-cup-engineering/signcell': 0.4.0
       '@red-cup-engineering/uri-services-section': 0.1.1
 
-  '@red-cup-engineering/eavt-services-section@0.14.0':
-    dependencies:
-      '@red-cup-engineering/cbor-services-section': 0.1.1
-      '@red-cup-engineering/computer-content-address-engineering-services-section': 0.2.0
-      '@red-cup-engineering/computer-content-engineering-services-section': 0.1.0
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
-      '@red-cup-engineering/computer-file-engineering-services-section': 0.4.0
-      '@red-cup-engineering/computer-filepath-engineering-services-section': 0.1.0
-      '@red-cup-engineering/computer-text-content-engineering-services-section': 0.1.0
-      '@red-cup-engineering/datom-services-section': 0.1.1
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
-      '@red-cup-engineering/json-services-section': 0.4.0
-      '@red-cup-engineering/jsonl-services-section': 0.1.0
-      '@red-cup-engineering/metrologic': 0.4.0
-      '@red-cup-engineering/signcell': 0.4.0
-      '@red-cup-engineering/uri-services-section': 0.1.1
-
   '@red-cup-engineering/eavt-services-section@0.14.1':
     dependencies:
       '@red-cup-engineering/cbor-services-section': 0.1.1
@@ -7962,13 +7956,7 @@ snapshots:
       '@red-cup-engineering/exact-number-data-service': 0.1.1
       '@red-cup-engineering/json-services-section': 0.4.0
 
-  '@red-cup-engineering/metrologic@0.14.3-dev.1':
-    dependencies:
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
-      '@red-cup-engineering/exact-number-data-service': 0.1.1
-      '@red-cup-engineering/json-services-section': 0.4.0
-
-  '@red-cup-engineering/metrologic@0.14.3-dev.1325':
+  '@red-cup-engineering/metrologic@0.14.3':
     dependencies:
       '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
       '@red-cup-engineering/exact-number-data-service': 0.1.1
@@ -7981,12 +7969,6 @@ snapshots:
       '@red-cup-engineering/json-services-section': 0.4.0
 
   '@red-cup-engineering/metrologic@0.14.3-dev.1377':
-    dependencies:
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
-      '@red-cup-engineering/exact-number-data-service': 0.1.1
-      '@red-cup-engineering/json-services-section': 0.4.0
-
-  '@red-cup-engineering/metrologic@0.14.3-dev.3':
     dependencies:
       '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
       '@red-cup-engineering/exact-number-data-service': 0.1.1
@@ -8453,8 +8435,10 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@red-cup-engineering/organizing@0.8.0-dev.1103(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)':
+  '@red-cup-engineering/organizing@0.8.0(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)':
     dependencies:
+      '@red-cup-engineering/agentic-character-engineering-services-section': 0.1.0
+      '@red-cup-engineering/agentic-organization-services-section-engineering-services-section': 0.1.2
       '@red-cup-engineering/animating': 0.3.0(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)
       '@red-cup-engineering/computer-code-engineering-services-section': 0.1.5
       '@red-cup-engineering/computer-content-address-engineering-services-section': 0.2.0
@@ -8463,7 +8447,7 @@ snapshots:
       '@red-cup-engineering/computer-text-content-engineering-services-section': 0.1.0
       '@red-cup-engineering/computing': 0.2.3(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)
       '@red-cup-engineering/cryptographic-computer-data-engineering-services-section': 0.3.1
-      '@red-cup-engineering/eavt-services-section': 0.14.0
+      '@red-cup-engineering/eavt-services-section': 0.14.1
       '@red-cup-engineering/exact-number-data-service': 0.1.1
       '@red-cup-engineering/gaming': 0.1.11(@types/node@26.6.6)(bufferutil@4.1.0)(debug@4.4.3)(ethers@6.17.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@3.25.76)
       '@red-cup-engineering/git-services-section': 0.1.3
@@ -8471,13 +8455,12 @@ snapshots:
       '@red-cup-engineering/immutable-content-custody-service': 0.4.1
       '@red-cup-engineering/javascript-node-services-section': 0.3.2
       '@red-cup-engineering/jsnode-package-services-section': 0.5.0
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
+      '@red-cup-engineering/json-schema-services-section': 0.5.2
       '@red-cup-engineering/json-services-section': 0.4.0
-      '@red-cup-engineering/metrologic': 0.14.3-dev.1
-      '@red-cup-engineering/playing': 0.2.9
+      '@red-cup-engineering/metrologic': 0.14.3
+      '@red-cup-engineering/playing': 0.3.0
       '@red-cup-engineering/relating': 0.10.5
       '@red-cup-engineering/semiotic-eavt-services-section': 0.1.1
-      '@red-cup-engineering/services-section-form-services-section': 0.3.0-dev.0
       '@red-cup-engineering/signcell': 0.4.2
       '@red-cup-engineering/signchain': 0.2.1
       '@red-cup-engineering/signcraft': 0.1.3
@@ -8543,6 +8526,17 @@ snapshots:
       - utf-8-validate
 
   '@red-cup-engineering/playing@0.2.9':
+    dependencies:
+      '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
+      '@red-cup-engineering/json-schema-services-section': 0.5.0
+      '@red-cup-engineering/json-services-section': 0.4.0
+      '@red-cup-engineering/jsonl-services-section': 0.1.0
+      '@red-cup-engineering/relating': 0.10.5
+      '@red-cup-engineering/signcell': 0.4.0
+      '@red-cup-engineering/signcraft': 0.1.3
+      '@red-cup-engineering/signgraph': 0.2.0
+
+  '@red-cup-engineering/playing@0.3.0':
     dependencies:
       '@red-cup-engineering/computer-data-engineering-services-section': 0.2.0
       '@red-cup-engineering/json-schema-services-section': 0.5.0
@@ -8934,17 +8928,6 @@ snapshots:
       '@red-cup-engineering/json-schema-services-section': 0.5.0
       '@red-cup-engineering/markdown-engineering-services-section': 0.5.2
 
-  '@red-cup-engineering/services-section-form-services-section@0.3.0-dev.0':
-    dependencies:
-      '@coesite-operations/enterprise-branding-services-section': 0.1.5
-      '@red-cup-engineering/computer-file-engineering-services-section': 0.4.0
-      '@red-cup-engineering/computer-filepath-engineering-services-section': 0.1.0
-      '@red-cup-engineering/javascript-node-services-section': 0.3.2
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
-      '@red-cup-engineering/markdown-engineering-services-section': 0.5.2
-      '@red-cup-engineering/node-process-services-section': 0.3.0
-      '@red-cup-engineering/signcraft': 0.6.1-dev.495
-
   '@red-cup-engineering/sheaf-laplacian-measurement-service@0.1.2':
     dependencies:
       '@red-cup-engineering/signgraph': 0.1.0
@@ -8988,16 +8971,6 @@ snapshots:
       '@red-cup-engineering/metrologic': 0.13.0
       '@red-cup-engineering/semiotic-content-address': 0.1.1
     optional: true
-
-  '@red-cup-engineering/signcell@0.13.1-dev.185':
-    dependencies:
-      '@red-cup-engineering/cbor-services-section': 0.1.1
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.7.1
-      '@red-cup-engineering/computer-serialized-content-engineering-services-section': 0.1.0
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
-      '@red-cup-engineering/metrologic': 0.14.3-dev.3
-      '@red-cup-engineering/semiotic-content-address': 0.1.1
-      '@red-cup-engineering/semiotic-eavt-services-section': 0.3.2
 
   '@red-cup-engineering/signcell@0.13.1-dev.212':
     dependencies:
@@ -9075,16 +9048,6 @@ snapshots:
       '@red-cup-engineering/semiotic-eavt-services-section': 0.1.0
       '@red-cup-engineering/signcell': 0.4.2
 
-  '@red-cup-engineering/signchain@0.4.2-dev.64':
-    dependencies:
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.3.1
-      '@red-cup-engineering/exact-number-data-service': 0.1.1
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
-      '@red-cup-engineering/metrologic': 0.14.3-dev.3
-      '@red-cup-engineering/semiotic-content-address': 0.1.1
-      '@red-cup-engineering/semiotic-eavt-services-section': 0.3.2
-      '@red-cup-engineering/signcell': 0.13.1-dev.185
-
   '@red-cup-engineering/signchain@0.4.2-dev.72':
     dependencies:
       '@red-cup-engineering/computer-data-engineering-services-section': 0.3.1
@@ -9120,20 +9083,6 @@ snapshots:
       '@red-cup-engineering/signcell': 0.4.0
       '@red-cup-engineering/signchain': 0.2.0
       '@red-cup-engineering/signgraph': 0.2.0
-
-  '@red-cup-engineering/signcraft@0.6.1-dev.495':
-    dependencies:
-      '@red-cup-engineering/computer-code-engineering-services-section': 0.1.2
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.7.1
-      '@red-cup-engineering/eavt-services-section': 0.11.0
-      '@red-cup-engineering/exact-number-data-service': 0.1.2
-      '@red-cup-engineering/html-structural-projection-service': 0.3.3
-      '@red-cup-engineering/json-services-section': 0.4.0
-      '@red-cup-engineering/metrologic': 0.14.3-dev.1325
-      '@red-cup-engineering/semiotic-content-address': 0.1.1
-      '@red-cup-engineering/signcell': 0.13.1-dev.185
-      '@red-cup-engineering/signchain': 0.4.2-dev.64
-      '@red-cup-engineering/signgraph': 0.7.1-dev.353
 
   '@red-cup-engineering/signcraft@0.6.2':
     dependencies:
@@ -9194,23 +9143,6 @@ snapshots:
       '@red-cup-engineering/metrologic': 0.4.0
       '@red-cup-engineering/signcell': 0.4.2
       '@red-cup-engineering/signchain': 0.2.1
-      '@red-cup-engineering/uri-services-section': 0.1.1
-      '@red-cup-engineering/xml-document-rendering-service': 0.1.7
-
-  '@red-cup-engineering/signgraph@0.7.1-dev.353':
-    dependencies:
-      '@red-cup-engineering/cbor-services-section': 0.1.1
-      '@red-cup-engineering/computer-code-engineering-services-section': 0.1.2
-      '@red-cup-engineering/computer-content-engineering-services-section': 0.1.0
-      '@red-cup-engineering/computer-data-engineering-services-section': 0.7.1
-      '@red-cup-engineering/eavt-services-section': 0.11.0
-      '@red-cup-engineering/exact-number-data-service': 0.1.7
-      '@red-cup-engineering/json-schema-services-section': 0.5.0
-      '@red-cup-engineering/json-services-section': 0.4.0
-      '@red-cup-engineering/metrologic': 0.14.3-dev.3
-      '@red-cup-engineering/semiotic-content-address': 0.1.1
-      '@red-cup-engineering/signcell': 0.13.1-dev.185
-      '@red-cup-engineering/signchain': 0.4.2-dev.64
       '@red-cup-engineering/uri-services-section': 0.1.1
       '@red-cup-engineering/xml-document-rendering-service': 0.1.7
 

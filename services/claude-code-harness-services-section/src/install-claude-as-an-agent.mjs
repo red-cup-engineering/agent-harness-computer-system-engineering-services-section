@@ -204,7 +204,7 @@ function findSkills(office, duties) {
   for (const [name, from] of [...record.providesSkill.map((n) => [n, record.sectionPath]), ...duties.flatMap((d) => d.skills.map((n) => [n, sectionPathOf(dirname(d.record))]))]) {
     const skill = resolveRecord(registry, "skills", name, from);
     if (skill === undefined) die(`office '${office.id}' names skill '${name}', which no section's agency records hold.`);
-    found.set(skill.key, { name: skill.id, file: sourcePath(skill) });
+    found.set(skill.key, { key: skill.key, name: skill.id, file: sourcePath(skill) });
   }
   return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -237,8 +237,12 @@ function describeCanonical(spec) {
 }
 
 // Exported for callers that need to assay the office's projection without
-// installing or checking it.
-export function renderAgent(office, duties, skills) {
+// installing or checking it. `name` is the agent's name when the office id is
+// taken by another section's office. `skillNames` maps a skill's registry key to
+// the native Claude Code skill a harness projection installed for it: given it, the
+// agent names its skills in `skills:` (Claude Code preloads them into the agent)
+// instead of carrying their text, so each skill has one projected source.
+export function renderAgent(office, duties, skills, { name = office.id, skillNames } = {}) {
   const spec = office.spec;
   let description;
   let body;
@@ -289,8 +293,12 @@ export function renderAgent(office, duties, skills) {
     body = stripFrontmatter(readFileSync(spoken, "utf8")).trim() + "\n\n";
   }
 
-  const skillSection =
-    `## Skills\n\n` +
+  const native = skillNames === undefined ? undefined : skills.map((s) => skillNames.get(s.key)).filter(Boolean);
+  const skillSection = native !== undefined
+    ? `## Skills\n\n` +
+      `The office's skills are loaded with this agent: ${native.map((n) => `\`${n}\``).join(", ")}. ` +
+      `Scripts a skill names seat at their recorded repository paths; run them from the repository root.\n`
+    : `## Skills\n\n` +
     `The office's skills follow in full — you hold them from session start; there is ` +
     `nothing to invoke. Scripts a skill names seat at their recorded repository paths; ` +
     `run them from the repository root.\n\n` +
@@ -306,12 +314,13 @@ export function renderAgent(office, duties, skills) {
   const harness = (office.canonical && office.spec["x-agent"]) || {};
   return (
     `---\n` +
-    `name: ${office.id}\n` +
+    `name: ${name}\n` +
     `description: ${JSON.stringify(description)}\n` +
     `model: ${harness.model || "sonnet"}\n` +
     (harness.effort ? `effort: ${harness.effort}\n` : "") +
     (harness.maxTurns ? `maxTurns: ${harness.maxTurns}\n` : "") +
     (Array.isArray(harness.tools) && harness.tools.length ? `tools: ${harness.tools.join(", ")}\n` : "") +
+    (native?.length ? `skills:\n${native.map((n) => `  - ${n}\n`).join("")}` : "") +
     `---\n\n` +
     body +
     skillSection +
@@ -322,7 +331,7 @@ export function renderAgent(office, duties, skills) {
 /** One office's agent file, projected from an already-read registry with no effect: `{ id, text }`.
  *  Refuses (throws) as the installer does: a non-office record, a named skill no section holds,
  *  or an office holding no skill. */
-export function projectOfficeAgent({ repoRoot, agency: registry, office: key }) {
+export function projectOfficeAgent({ repoRoot, agency: registry, office: key, name, skillNames }) {
   configureFilesystem();
   REPO_ROOT = resolve(repoRoot);
   AGENCY_ROOT = registry.root;
@@ -333,7 +342,8 @@ export function projectOfficeAgent({ repoRoot, agency: registry, office: key }) 
   const duties = resolveDuties(office);
   const skills = findSkills(office, duties);
   checkSkills(skills, office);
-  return Object.freeze({ id: office.id, text: renderAgent(office, duties, skills) });
+  const id = name ?? office.id;
+  return Object.freeze({ id, text: renderAgent(office, duties, skills, { name: id, skillNames }) });
 }
 
 // --- manifest: which offices installed agents here, so clean is exact -------------

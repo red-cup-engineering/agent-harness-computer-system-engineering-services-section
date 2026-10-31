@@ -108,6 +108,7 @@
     "test/inference-receiving-carrier.test.mjs",
     "test/receiving-judgement-export.test.mjs",
     "test/session-journal-hook.test.mjs",
+    "test/claude-harness-corpus-projection.test.mjs",
     "test/claude-harness-projection.test.mjs",
     "test/claude-mcp-headers-entry.test.mjs",
     "test/claude-sign-in.test.mjs",
@@ -143,7 +144,7 @@
     "@red-cup-engineering/computer-system-engine": "0.1.4",
     "@red-cup-engineering/computer-systems-fabrication-engineering-services-section": "0.4.14",
     "@red-cup-engineering/feltos": "0.20.2",
-    "@red-cup-engineering/organizing": "0.8.0-dev.1103",
+    "@red-cup-engineering/organizing": "0.8.0",
     "@red-cup-engineering/animating": "0.2.4",
     "@red-cup-engineering/agentic-computer-system-organization-services-section-engineering-services-section": "0.1.2"
   },
@@ -171,6 +172,7 @@
     "test/inference-receiving-carrier.test.mjs",
     "test/receiving-judgement-export.test.mjs",
     "test/session-journal-hook.test.mjs",
+    "test/claude-harness-corpus-projection.test.mjs",
     "test/claude-harness-projection.test.mjs",
     "test/claude-mcp-headers-entry.test.mjs",
     "test/claude-sign-in.test.mjs"
